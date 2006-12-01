@@ -6,9 +6,19 @@ using System.Windows.Forms;
 
 namespace MovieSplicer.Components
 {
+    /// <summary>
+    /// This is essentially a subclass of System.Windows.Forms.ListView that provides
+    /// an auto-expanding last column and virtualization.
+    /// 
+    /// TODO::There's an issue with item caching. When enabled, the caches (if multiple listviews
+    /// are defined and accessed) collide (overwrite each other), so access goes beyond the range
+    /// of the chache's source pointer (this definition sucks, but it sorta makes sense to me so :P)
+    /// </summary>
     public class TASListView: ListView
     {            
-
+        /// <summary>
+        // Constantly redraw the last column so its width is equal to the width of the control
+        /// </summary>
         protected override void WndProc(ref Message message)
         {
             const int WM_PAINT = 0xf;
@@ -28,10 +38,14 @@ namespace MovieSplicer.Components
             base.WndProc(ref message);
         }
 
+        /// <summary>
+        /// Create a new TASListView object with an event handler on RetriveVirtualItem
+        /// </summary>
         public TASListView()
         {
             this.RetrieveVirtualItem += new RetrieveVirtualItemEventHandler(GetVirtualItem);
         }
+
         public ArrayList VirtualListSource;
         
         //private ListViewItem[] m_cache;
