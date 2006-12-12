@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
+
 
 
 /***************************************************************************************************
@@ -12,6 +14,16 @@ namespace MovieSplicer.Data
     {
         const byte HEADER_SIZE = 64;
         const byte INFO_SIZE   = 192;
+        
+        private byte[] fileContents;
+        private uint   saveStateOffset;
+        private uint   controllerDataOffset;
+
+        public string      Filename;
+        public VBMHeader   Header;
+        public VBMOptions  Options;
+        public VBMRomInfo  RomInfo;
+        public VBMMetadata Metadata;
 
         static Functions fn  = new Functions();
         static int[] offsets = {
@@ -68,5 +80,121 @@ namespace MovieSplicer.Data
                   //    or SRAM inside file, set to 0 if unused
             0x3C  // 4-byte little-endian unsigned int: offset to the controller data inside file
         };
+        
+        /// <summary>
+        /// Create a fully instantiated SMV object from the passed file
+        /// </summary>        
+        public VisualBoyAdvance(string VBMFile)
+        {
+            Filename = VBMFile;
+
+            FileStream fs = File.OpenRead(VBMFile);
+            BinaryReader br = new BinaryReader(fs);
+            
+            fileContents = br.ReadBytes((int)fs.Length);
+
+            br.Close(); br = null; fs.Dispose();
+
+            Header   = new VBMHeader(ref fileContents);
+            Options  = new VBMOptions(ref fileContents);
+            RomInfo  = new VBMRomInfo(ref fileContents);
+            Metadata = new VBMMetadata(ref fileContents);
+
+            saveStateOffset      = fn.Read32(fn.readBytes(ref fileContents, offsets[17], 4));
+            controllerDataOffset = fn.Read32(fn.readBytes(ref fileContents, offsets[18], 4));
+        }  
+                    
+        public class VBMHeader
+        {
+            public string Signature;
+            public uint   Version;
+            public string UID;
+            public uint   FrameCount;
+            public uint   RerecordCount;
+
+            public VBMHeader(ref byte[] byteArray)
+            {
+                Signature     = fn.ReadHEX(fn.readBytes(ref byteArray, offsets[0], 4));
+                Version       = fn.Read32(fn.readBytes(ref byteArray, offsets[1], 4));
+                UID           = fn.ConvertUNIXTime((fn.Read32(fn.readBytes(ref byteArray, offsets[2], 4))));
+                FrameCount    = fn.Read32(fn.readBytes(ref byteArray, offsets[3], 4));
+                RerecordCount = fn.Read32(fn.readBytes(ref byteArray, offsets[4], 4));
+            }
+        }
+
+        /// <summary>
+        /// Parse the VBM Options flags out to boolean arrays.
+        /// 
+        /// NOTE::This is the most effective way to do this, though not the most readable
+        /// TODO::These routines can all be read through for loops
+        /// </summary>
+        public class VBMOptions
+        {
+            public bool[] MovieStart  = { false, false, false };
+            public bool[] Controllers = { false, false, false, false };
+            public bool[] SystemType  = { false, false, false, false };
+            public bool[] BIOSFlags   = { false, false, false, false, false, false };
+
+            public VBMOptions(ref byte[] byteArray)
+            {
+                MovieStart[0]  = ((byteArray[offsets[5]] >> 0) == 1) ? true : false;
+                MovieStart[1]  = ((byteArray[offsets[5]] >> 1) == 1) ? true : false;
+                
+                Controllers[0] = ((byteArray[offsets[6]] >> 0) == 1) ? true : false;
+                Controllers[1] = ((byteArray[offsets[6]] >> 1) == 1) ? true : false;
+                Controllers[2] = ((byteArray[offsets[6]] >> 2) == 1) ? true : false;
+                Controllers[3] = ((byteArray[offsets[6]] >> 3) == 1) ? true : false;
+                
+                SystemType[0]  = ((byteArray[offsets[7]] >> 0) == 1) ? true : false;
+                SystemType[1]  = ((byteArray[offsets[7]] >> 1) == 1) ? true : false;
+                SystemType[2]  = ((byteArray[offsets[7]] >> 2) == 1) ? true : false;
+                
+                BIOSFlags[0]   = ((byteArray[offsets[8]] >> 0) == 1) ? true : false;
+                BIOSFlags[1]   = ((byteArray[offsets[8]] >> 1) == 1) ? true : false;
+                BIOSFlags[2]   = ((byteArray[offsets[8]] >> 2) == 1) ? true : false;
+                BIOSFlags[3]   = ((byteArray[offsets[8]] >> 3) == 1) ? true : false;
+                BIOSFlags[4]   = ((byteArray[offsets[8]] >> 4) == 1) ? true : false;
+                BIOSFlags[5]   = ((byteArray[offsets[8]] >> 5) == 1) ? true : false;
+
+                // if no other start flag is set, start from poweron
+                if (MovieStart[0] == false && MovieStart[1] == false)
+                    MovieStart[2] = true;
+
+                // if no other system is set, system type is GB
+                if (SystemType[0] == false && SystemType[1] == false && SystemType[2] == false)
+                    SystemType[3] = true;
+            }
+        }
+
+        public class VBMRomInfo
+        {             
+            public string Name; // 12
+            public string CRC;
+            public string Checksum;
+            public int GameCode;
+
+            public VBMRomInfo(ref byte[] byteArray)
+            {
+                Name = fn.ReadChars(fn.readBytes(ref byteArray, offsets[12], 12));
+                CRC  = fn.ReadChars(fn.readBytes(ref byteArray, offsets[14], 1));
+                //Checksum = fn.ReadChars(fn.readBytes(ref byteArray, offsets[14], 1));
+            }
+        }
+
+        public class VBMMetadata
+        {
+            public string Author;
+            public string Description;
+
+            public VBMMetadata(ref byte[] byteArray)
+            {
+                byte[] author = fn.readBytes(ref byteArray, HEADER_SIZE, 64);
+                byte[] description = fn.readBytes(ref byteArray, HEADER_SIZE + 64, 128);
+
+                Author = fn.ReadChars(fn.readBytes(ref author, 0, fn.seekNullPosition(author, 0)));
+                Description = fn.ReadChars(fn.readBytes(ref description, 0, fn.seekNullPosition(description, 0)));
+            }
+        }
+
     }
 }

@@ -69,9 +69,7 @@ namespace MovieSplicer.Data
     #region "Structure"
 
         /// <summary>
-        /// FCM Header Data
-        /// 
-        /// TODO::I don't like the structure anymore ... clean and optimize
+        /// FCM Header Data        
         /// </summary>
         public class FCMHeader
         {                                
@@ -216,14 +214,14 @@ namespace MovieSplicer.Data
                 // return the string representation of the controller inputs
                 string[] frameData = new string[4];
                 for (int i = 0; i < 4; i++)
-                {
-                    if ((1 & (joop[i] >> 0)) == 1) frameData[i] += "A";
-                    if ((1 & (joop[i] >> 1)) == 1) frameData[i] += "B";
-                    if ((1 & (joop[i] >> 2)) == 1) frameData[i] += "s";
-                    if ((1 & (joop[i] >> 3)) == 1) frameData[i] += "S";
-                    if ((1 & (joop[i] >> 4)) == 1) frameData[i] += "^";
-                    if ((1 & (joop[i] >> 5)) == 1) frameData[i] += "v";
-                    if ((1 & (joop[i] >> 6)) == 1) frameData[i] += "<";
+                {                                              // add elses to align data by column
+                    if ((1 & (joop[i] >> 0)) == 1) frameData[i] += "A"; //else frameData[i] += " ";
+                    if ((1 & (joop[i] >> 1)) == 1) frameData[i] += "B"; //else frameData[i] += " ";
+                    if ((1 & (joop[i] >> 2)) == 1) frameData[i] += "s"; //else frameData[i] += " ";
+                    if ((1 & (joop[i] >> 3)) == 1) frameData[i] += "S"; //else frameData[i] += " ";
+                    if ((1 & (joop[i] >> 4)) == 1) frameData[i] += "^"; //else frameData[i] += " ";
+                    if ((1 & (joop[i] >> 5)) == 1) frameData[i] += "v"; //else frameData[i] += " ";
+                    if ((1 & (joop[i] >> 6)) == 1) frameData[i] += "<"; //else frameData[i] += " ";
                     if ((1 & (joop[i] >> 7)) == 1) frameData[i] += ">";
                 }
                 return frameData;

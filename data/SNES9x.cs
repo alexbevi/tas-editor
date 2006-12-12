@@ -121,7 +121,7 @@ namespace MovieSplicer.Data
         /// SMV synch option flags parser        
         /// </summary>
         public class SMVOptions
-        {                   
+        {                               
             public bool HASROMINFO;
             public bool WIP1TIMING;
             public bool LEFTRIGHT;
