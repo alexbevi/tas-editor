@@ -12,18 +12,19 @@ namespace MovieSplicer
     public enum MovieType
     {
         None = 0,
-        SMV = 1,
-        FCM = 2,
-        GMV = 3,
-        FMV = 4,
-        VBM = 5
+        SMV  = 1,
+        FCM  = 2,
+        GMV  = 3,
+        FMV  = 4,
+        VBM  = 5,
+        M64  = 6
     }
 
     public enum SpliceOptions
     {
         FromStart = 1,
-        Range = 2,
-        ToEnd = 3
+        Range     = 2,
+        ToEnd     = 3
     }
         
     /// <summary>
@@ -32,11 +33,12 @@ namespace MovieSplicer
     public class Functions
     {
         // OpenFileDialog and SaveFileDialog filters (this isn't the most elegant way to share data)
-        public string ALL_FILTER = "All Supported Movie Formats (*.*) | *.smv;*.fcm;*.gmv;*.fmv";
+        public string ALL_FILTER = "All Supported Movie Formats (*.*) | *.smv;*.fcm;*.gmv;*.fmv;*.vbm";
         public string SMV_FILTER = "SNES9x Movie (*.smv)|*.smv";
-        public string FCM_FILTER = "FCEU Ultra Movie (*.fcm)|*.fcm";
+        public string FCM_FILTER = "FCE Ultra Movie (*.fcm)|*.fcm";
         public string GMV_FILTER = "Gens Movie (*.gmv)|*.gmv";
         public string FMV_FILTER = "Famtasia Movie (*.fmv)|*.fmv";
+        public string VBM_FILTER = "VisualBoyAdvance Movie (*.vbm)|*.vbm";
     
         /// <summary>
         /// Read first 4-bytes from file
@@ -78,7 +80,7 @@ namespace MovieSplicer
         {
             byte[] flippedBytes = new byte[4];
             flippedBytes[0] = (byte)(value & 0xFF);
-            flippedBytes[1] = (byte)((value >> 8) & 0xFF);
+            flippedBytes[1] = (byte)((value >> 8)  & 0xFF);
             flippedBytes[2] = (byte)((value >> 16) & 0xFF);
             flippedBytes[3] = (byte)((value >> 24) & 0xFF);
             return flippedBytes;
@@ -165,15 +167,8 @@ namespace MovieSplicer
         /// </summary>
         public bool IsNumeric(string value)
         {
-            try
-            {
-                Int32.Parse(value);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            try   { Int32.Parse(value); return true; }
+            catch { return false; }
         }
 
         /// <summary>
@@ -189,6 +184,8 @@ namespace MovieSplicer
 
         /// <summary>
         /// Convert a UTC file timestamp to a local string representation
+        /// 
+        /// DEBUG::I'm not sure that this is actually working properly
         /// </summary>
         public string ConvertUNIXTime(uint timeStamp)
         {           
@@ -202,6 +199,10 @@ namespace MovieSplicer
             // use the standard formatting methods of the DateTime object.
             return dateTime.ToShortDateString() + " " + dateTime.ToShortTimeString();           
         }
+
+
+        // TODO::IsValid<format> functions can likely be amalgamated as they
+        // all do the exact same thing, but checking for a different byte pattern
 
         /// <summary>
         /// Check a file for a valid Snes9x header
@@ -250,6 +251,19 @@ namespace MovieSplicer
             if (signature != SIGNATURE) return false;            
             else return true;
             
+        }
+
+        /// <summary>
+        /// Check a file for a valid VisualBoyAdvance header
+        /// </summary>     
+        public bool IsValidVBM(string filename)
+        {
+            const uint SIGNATURE = 0x56424D1A;
+            uint signature = ReadHeader(filename);
+
+            if (signature != SIGNATURE) return false;
+            else return true;
         }        
+
     }   
 }
