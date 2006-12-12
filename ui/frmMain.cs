@@ -28,27 +28,10 @@ namespace MovieSplicer.UI
 
         public frmMain()
         {
-            InitializeComponent();         
+            InitializeComponent();
         }
 
-    #region "Misc Form Control Event Handlers"
-       
-        /// <summary>
-        /// Keep the user locked into the current movie format when a movie is loaded.
-        /// This is a hack since tabPages don't have direct access to an Enabled property
-        /// </summary>        
-        private void tabsEmulators_Deselecting(object sender, TabControlCancelEventArgs e)
-        {
-            if (movieType == MovieType.SMV && tabsEmulators.SelectedTab == tabSMV) e.Cancel = true;
-            if (movieType == MovieType.FMV && tabsEmulators.SelectedTab == tabFMV) e.Cancel = true;
-            if (movieType == MovieType.GMV && tabsEmulators.SelectedTab == tabGMV) e.Cancel = true;
-            if (movieType == MovieType.FCM && tabsEmulators.SelectedTab == tabFCM) e.Cancel = true;
-            if (movieType == MovieType.VBM && tabsEmulators.SelectedTab == tabVBM) e.Cancel = true;
-        }
-
-    #endregion 
-
-    #region "SMV Specific"
+    #region "Instantiate Movie Objects"
 
         static SNES9x SMV;
 
@@ -57,86 +40,25 @@ namespace MovieSplicer.UI
         /// an OpenDialog call
         /// </summary>
         private void loadSMVFile(string filename)
-        {
-            tabsEmulators.SelectedTab = tabSMV;
-            clearSMVTabControls();
-
+        {            
             SMV      = new SNES9x(filename);
             arrInput = SMV.ControllerData.ControllerInput;
 
-            txtFrameCount.Text    = String.Format("{0:0,0}", SMV.Header.FrameCount);            
-            txtReRecordCount.Text = String.Format("{0:0,0}", SMV.Header.ReRecordCount);
-            txtRomTitle.Text      = SMV.ROMInfo.Name;
-            txtRomCRC.Text        = SMV.ROMInfo.CRC;
-            txtRecordingDate.Text = SMV.Header.UID;
-            txtMetadata.Text      = SMV.Header.Metadata;            
-            sbarFrameCount.Text   = SMV.Header.FrameCount.ToString();
+            tvInfo.Nodes.Clear();
+            Methods.PopulateMovieInfo.SMV(ref tvInfo, ref SMV);
             
-            setSyncMiscOptions();
-            setSMVControllersUsed();
-        }
-
-        /// <summary>
-        /// Clear the SMV tab controls
-        /// </summary>
-        private void clearSMVTabControls()
-        {
-            txtFrameCount.Text    = "";
-            txtReRecordCount.Text = "";
-            txtRomCRC.Text        = "";
-            txtRomTitle.Text      = "";
-            txtRecordingDate.Text = "";
-            txtMetadata.Text      = "";
-
-            for (int i = 0; i < 5; i++) chklstSyncOptions.SetItemChecked(i, false);
-            for (int i = 0; i < 5; i++) chklstControllers.SetItemChecked(i, false);
-            for (int i = 0; i < 4; i++) chklstMovieOptions.SetItemChecked(i, false);
-        }
-
-        private void setSyncMiscOptions()
-        {
-            if (SMV.Options.WIP1TIMING) chklstSyncOptions.SetItemChecked(0, true);
-            if (SMV.Options.LEFTRIGHT)  chklstSyncOptions.SetItemChecked(1, true);
-            if (SMV.Options.VOLUMEENVX) chklstSyncOptions.SetItemChecked(2, true);
-            if (SMV.Options.FAKEMUTE)   chklstSyncOptions.SetItemChecked(3, true);
-            if (SMV.Options.SYNCSOUND)  chklstSyncOptions.SetItemChecked(4, true);
-            if (SMV.Options.RESET)
-                chklstMovieOptions.SetItemChecked(1, true);
-            else
-                chklstMovieOptions.SetItemChecked(0, true);
-            if (SMV.Options.PAL)
-                chklstMovieOptions.SetItemChecked(3, true);
-            else
-                chklstMovieOptions.SetItemChecked(2, true);
-        }
-
-        /// <summary>
-        /// Set listView columns based on the number of controllers in use and
-        /// populates the checkedlistbox
-        /// </summary>
-        public void setSMVControllersUsed()
-        {            
             for (int i = 0; i < 5; i++)
             {
-                if (SMV.ControllerData.Controller[i] == true)
-                {
-                    lvInput.Columns.Add("Controller " + (i + 1), 75);
-                    chklstControllers.SetItemChecked(i, true);
-                }
+                if (SMV.ControllerData.Controller[i] == true)                
+                    lvInput.Columns.Add("Controller " + (i + 1), 75);                                    
             }
 
-            // enable the input controls based on which controllers are in use
-            // TODO::I don't really like this method
             txtFrameDataC1.Enabled = SMV.ControllerData.Controller[0];
             txtFrameDataC2.Enabled = SMV.ControllerData.Controller[1];
             txtFrameDataC3.Enabled = SMV.ControllerData.Controller[2];
-            txtFrameDataC4.Enabled = SMV.ControllerData.Controller[3];
+            txtFrameDataC4.Enabled = SMV.ControllerData.Controller[3];            
         }
 
-    #endregion
-
-    #region "FCM Specific"
-        
         static FCEU FCM;
 
         /// <summary>
@@ -144,68 +66,25 @@ namespace MovieSplicer.UI
         /// an OpenDialog call
         /// </summary>
         private void loadFCMFile(string filename)
-        {
-            tabsEmulators.SelectedTab = tabFCM;
-            clearFCMTabControls();
-
+        {                        
             FCM      = new FCEU(filename);
-            arrInput = FCM.ControllerData.ControllerInput;                        
+            arrInput = FCM.ControllerData.ControllerInput;
 
-            txtFCMRomTitle.Text      = FCM.Header.ROMName;
-            txtFCMRomCRC.Text        = FCM.Header.ROMCRC;
-            txtFCMFrameCount.Text    = String.Format("{0:0,0}", FCM.Header.FrameCount);
-            txtFCMRerecordCount.Text = String.Format("{0:0,0}", FCM.Header.ReRecordCount);
-            txtFCMEmulatorUsed.Text  = FCM.Header.EmulatorVersion.ToString();
-            txtFCMAuthor.Text        = FCM.Header.Author;            
-            sbarFrameCount.Text      = FCM.Header.FrameCount.ToString();
-                       
-            setFCMOptions();
-            setFCMControllersUsed();
-        }
-        
-        /// <summary>
-        /// Clear the FCEU tab page's controls
-        /// </summary>
-        private void clearFCMTabControls()
-        {
-            txtFCMRerecordCount.Text = "";
-            txtFCMFrameCount.Text    = "";
-            txtFCMRomCRC.Text        = "";
-            txtFCMRomTitle.Text      = "";
-            txtFCMEmulatorUsed.Text  = "";
-            txtFCMAuthor.Text        = "";
-            for (int i = 0; i < 4; i++) chklstFCMControllers.SetItemChecked(i, false);
-            for (int i = 0; i < 2; i++) chklstFCMMovieStart.SetItemChecked(i, false);
-        }
-        
-        private void setFCMOptions()
-        {
-            if (FCM.Header.StartFromReset == true)  chklstFCMMovieStart.SetItemChecked(0, true);
-            if (FCM.Header.StartFromReset == false) chklstFCMMovieStart.SetItemChecked(1, true);
-        }
-       
-        private void setFCMControllersUsed()
-        {                       
+            tvInfo.Nodes.Clear();
+            Methods.PopulateMovieInfo.FCM(ref tvInfo, ref FCM);
+
+            // set the controller columns and enable the editing fields
             for (int i = 0; i < 4; i++)
             {
-                if (FCM.ControllerData.Controller[i] == true)
-                {
-                    lvInput.Columns.Add("Controller " + (i + 1), 75);
-                    chklstFCMControllers.SetItemChecked(i, true);
-                }
+                if (FCM.ControllerData.Controller[i] == true)                
+                    lvInput.Columns.Add("Controller " + (i + 1), 75);                                    
             }
 
-            // enable the input controls based on which controllers are in use
-            // TODO::I don't really like this method
             txtFrameDataC1.Enabled = FCM.ControllerData.Controller[0];
             txtFrameDataC2.Enabled = FCM.ControllerData.Controller[1];
             txtFrameDataC3.Enabled = FCM.ControllerData.Controller[2];
-            txtFrameDataC4.Enabled = FCM.ControllerData.Controller[3];
-        }       
-
-    #endregion
-
-    #region "GMV Specific"
+            txtFrameDataC4.Enabled = FCM.ControllerData.Controller[3];           
+        }    
 
         static Gens GMV;
 
@@ -214,99 +93,28 @@ namespace MovieSplicer.UI
         /// an OpenDialog call
         /// </summary>        
         private void loadGMVFile(string filename)
-        {            
-            tabsEmulators.SelectedTab = tabGMV;
-            clearGMVTabControls();
-
+        {                        
             GMV      = new Gens(filename);
-            arrInput = GMV.ControllerData.ControllerInput;         
+            arrInput = GMV.ControllerData.ControllerInput;
 
-            txtGMVMovieVersion.Text  = GMV.Header.Signature;
-            txtGMVRerecordCount.Text = String.Format("{0:0,0}", GMV.Header.RerecordCount);            
-            txtGMVFrameCount.Text    = String.Format("{0:0,0}", GMV.Header.FrameCount);            
-            txtGMVAuthorNotes.Text   = GMV.Header.MovieName;            
-            sbarFrameCount.Text      = GMV.Header.FrameCount.ToString();
-               
-            setGMVOptions();
-            setGMVControllersUsed();
-        }
+            tvInfo.Nodes.Clear();
+            Methods.PopulateMovieInfo.GMV(ref tvInfo, ref GMV);
 
-        /// <summary>
-        /// Set the GMV's options in the related form controls
-        /// </summary>
-        private void setGMVOptions()
-        {
-            if (GMV.Header.Player1Config == "3")
-                optGMVC1_3Button.Checked = true;
-            else
-                optGMVC1_6Button.Checked = true;
-
-            if (GMV.Header.Player2Config == "3")
-                optGMVC2_3Button.Checked = true;
-            else
-                optGMVC2_6Button.Checked = true;
+            txtFrameDataC1.Enabled = true;
+            txtFrameDataC2.Enabled = true;
 
             if (GMV.Header.Version > 0x09)
             {
-                txtGMVFPS.Text = GMV.Options.FPS;
-                chklstGMVMovieStart.SetItemChecked(0, GMV.Options.StartFromReset);
-                chklstGMVMovieStart.SetItemChecked(1, GMV.Options.StartFromSave);
-                
-                chklstGMVControllers.SetItemChecked(0, true);
-                chklstGMVControllers.SetItemChecked(1, true);
-
-                txtFrameDataC1.Enabled = true;
-                txtFrameDataC2.Enabled = true;
-
-                if (GMV.Options.ControllerCount == 3)
-                {
-                    chklstGMVControllers.SetItemChecked(2, true);
-                    txtFrameDataC3.Enabled = true;
-                }
-                    
-            }
-        }
-
-        /// <summary>
-        /// Clear the GMV tab's form control values
-        /// </summary>
-        private void clearGMVTabControls()
-        {
-            txtGMVMovieVersion.Text  = "";
-            txtGMVRerecordCount.Text = "";
-            txtGMVFrameCount.Text    = "";
-            txtGMVAuthorNotes.Text   = "";
-            optGMVC1_3Button.Checked = false;
-            optGMVC1_6Button.Checked = false;
-            optGMVC2_3Button.Checked = false;
-            optGMVC2_6Button.Checked = false;
-            txtGMVFPS.Text           = "";
-
-            // set controllers and options
-            for (int i = 0; i < chklstGMVControllers.Items.Count; i++)
-                chklstGMVControllers.SetItemChecked(i, false);
-            for (int i = 0; i < chklstGMVMovieStart.Items.Count; i++)
-                chklstGMVMovieStart.SetItemChecked(i, false);
-        }  
-      
-        /// <summary>
-        /// Set the available (if version is above 9) options used in the movie
-        /// </summary>
-        private void setGMVControllersUsed()
-        {   
-            if (GMV.Header.Version > 0x09)
                 for (int i = 1; i <= GMV.Options.ControllerCount; i++)
                     lvInput.Columns.Add("Controller " + i, 75);
+                txtFrameDataC3.Enabled = true;
+            }
             else
             {
                 lvInput.Columns.Add("Controller 1", 75);
                 lvInput.Columns.Add("Controller 2", 75);
             }
-        }        
-    
-    #endregion   
-
-    #region "FMV Specific"
+        }                  
 
         static Famtasia FMV;
 
@@ -315,54 +123,40 @@ namespace MovieSplicer.UI
         /// an OpenDialog call
         /// </summary>        
         private void loadFMVFile(string filename)
-        {
-            tabsEmulators.SelectedTab = tabFMV;
-            clearFMVTabControls();
-
+        {            
             FMV = new Famtasia(filename);
             arrInput = FMV.ControllerInput;
-
-            txtFMVEmulatorID.Text    = FMV.Header.EmulatorID;
-            txtFMVFrameCount.Text    = String.Format("{0:0,0}", FMV.Header.FrameCount);
-            sbarFrameCount.Text      = FMV.Header.FrameCount.ToString();
-            txtFMVMovieTitle.Text    = FMV.Header.MovieTitle;
-            txtFMVRerecordCount.Text = String.Format("{0:0,0}", FMV.Header.ReRecordCount);
-
-            chklstFMVOptions.SetItemChecked(0, FMV.Header.StartFromReset);
-            chklstFMVOptions.SetItemChecked(1, FMV.Header.StartFromSave);
-
-            setFMVControllersUsed();          
-        }
-
-        private void clearFMVTabControls()
-        {
-            txtFMVEmulatorID.Text    = "";
-            txtFMVFrameCount.Text    = "";
-            txtFMVMovieTitle.Text    = "";
-            txtFMVRerecordCount.Text = "";
-            chklstFMVControllers.SetItemChecked(0, false);
-            chklstFMVControllers.SetItemChecked(1, false);
-            chklstFMVOptions.SetItemChecked(0, false);
-            chklstFMVOptions.SetItemChecked(1, false);
-        }
-        
-        private void setFMVControllersUsed()
-        {
-           
+            
+            tvInfo.Nodes.Clear();
+            Methods.PopulateMovieInfo.FMV(ref tvInfo, ref FMV);  
+            
             if (FMV.Header.Controllers[0] == true)
             {
-                lvInput.Columns.Add("Controller 1", 75);
-                chklstFMVControllers.SetItemChecked(0, true);
+                lvInput.Columns.Add("Controller 1", 75);                
                 txtFrameDataC1.Enabled = true;
             }
             if (FMV.Header.Controllers[1] == true)
             {
-                lvInput.Columns.Add("Controller 2", 75);
-                chklstFMVControllers.SetItemChecked(1, true);
+                lvInput.Columns.Add("Controller 2", 75);               
                 txtFrameDataC2.Enabled = true;
             }
         }
-    
+   
+        static VisualBoyAdvance VBM;
+
+        /// <summary>
+        /// Instantiates the Gens object with a validated VBM file read in from
+        /// an OpenDialog call
+        /// </summary>        
+        private void loadVBMFile(string filename)
+        {            
+            VBM = new VisualBoyAdvance(filename);
+            //arrInput = FMV.ControllerInput;           
+
+            tvInfo.Nodes.Clear();
+            Methods.PopulateMovieInfo.VBM(ref tvInfo, ref VBM);
+        }
+
     #endregion
 
     #region "Frame Data Listview Handlers"
@@ -408,14 +202,14 @@ namespace MovieSplicer.UI
         /// </summary>        
         private void btnGo_Click(object sender, EventArgs e)
         {                        
-            // if not numeric, return
-            if (fn.IsNumeric(txtJumpToFrame.Text) == false) return;
+            // if not numeric or no movie loaded
+            if (fn.IsNumeric(txtJumpToFrame.Text) == false || arrInput == null) return;
 
             // subtract 1 since we're looking for an index
             int targetFrame = Convert.ToInt32(txtJumpToFrame.Text) - 1;                
 
             // check for valid range
-            if(targetFrame <= Convert.ToInt32(sbarFrameCount.Text) && targetFrame > 0)
+            if(targetFrame <= arrInput.Count && targetFrame > 0)
             {
                 lvInput.Items[targetFrame].Selected = true;
                 lvInput.Focus();
@@ -435,12 +229,20 @@ namespace MovieSplicer.UI
             bool validFile = false;
 
             dlgOpen        = new OpenFileDialog();
-            dlgOpen.Filter = fn.ALL_FILTER + "|" + fn.SMV_FILTER + "|" + fn.FCM_FILTER + "|" + fn.GMV_FILTER + "|" + fn.FMV_FILTER;
+            dlgOpen.Filter = fn.ALL_FILTER + "|" + fn.SMV_FILTER + "|" + fn.FCM_FILTER + "|" + fn.GMV_FILTER + "|" + fn.FMV_FILTER + "|" + fn.VBM_FILTER;
             dlgOpen.ShowDialog();
 
             if (dlgOpen.FileName.Length > 0)
             {
                 resetApplication();
+
+                // make sure the file isn't locked before we do anything else
+                try { System.IO.File.OpenRead(dlgOpen.FileName); }
+                catch
+                {
+                    MessageBox.Show(dlgOpen.FileName + " cannot be accessed at the moment", "File Possibly Locked");
+                    return;
+                }
 
                 // load an SMV file if it verifies
                 if (fn.IsValidSMV(dlgOpen.FileName))
@@ -470,11 +272,16 @@ namespace MovieSplicer.UI
                     loadFMVFile(dlgOpen.FileName);
                     validFile = true;
                 }
-                if (validFile == true)
+                // load a VBM file if it verifies
+                else if (fn.IsValidVBM(dlgOpen.FileName))
                 {
-                    // add the opened filename to the form caption
-                    sbarFrameCount.ForeColor = Color.Blue;
-                    sbarMovieName.Text = fn.extractFilenameFromPath(dlgOpen.FileName);
+                    movieType = MovieType.VBM;
+                    loadVBMFile(dlgOpen.FileName);
+                    validFile = true;
+                }
+                if (validFile == true)
+                {          
+                    txtMovieFilename.Text = fn.extractFilenameFromPath(dlgOpen.FileName);
 
                     // enable grayed menu options
                     mnuSave.Enabled  = true;
@@ -504,10 +311,8 @@ namespace MovieSplicer.UI
         private void resetApplication()
         {
             // dispose movie containers and clear controls
-            SMV = null; clearSMVTabControls();
-            FCM = null; clearFCMTabControls();
-            GMV = null; clearGMVTabControls();
-            FMV = null; clearFMVTabControls();
+            SMV = null; FCM = null; GMV = null; FMV = null; VBM = null;
+            tvInfo.Nodes.Clear();
             
             arrInput  = null;
             movieType = MovieType.None;
@@ -516,25 +321,21 @@ namespace MovieSplicer.UI
             mnuSave.Enabled   = false;
             mnuSaveAs.Enabled = false;
             mnuClose.Enabled  = false;
+            
+            // reset filename
+            txtMovieFilename.Text = "";
 
             // reset the input list
             lvInput.Clear();            
             lvInput.Columns.Add("Frame");
             lvInput.VirtualListSize = 0;                      
-
-            // clear the status bar info
-            sbarMovieName.Text       = "No Movie Loaded";
-            sbarFrameCount.Text      = "0";
-            sbarFrameCount.ForeColor = Color.Blue;
-
+            
             // clear and disable the frame editing fields
             txtFrameDataC1.Enabled = false; txtFrameDataC1.Text = "";
             txtFrameDataC2.Enabled = false; txtFrameDataC2.Text = "";
             txtFrameDataC3.Enabled = false; txtFrameDataC3.Text = "";
             txtFrameDataC4.Enabled = false; txtFrameDataC4.Text = "";
-            txtWorkingFrame.Text = "";
-
-            
+            txtWorkingFrame.Text = "";      
         }
 
         /// <summary>
@@ -686,7 +487,7 @@ namespace MovieSplicer.UI
                     break;                                                    
             }
 
-            MessageBox.Show(sbarMovieName.Text + " written successfully", " Save");
+            MessageBox.Show(txtMovieFilename.Text + " written successfully", " Save");
         }
         private void mnuSaveAs_Click(object sender, EventArgs e)
         {
@@ -742,10 +543,7 @@ namespace MovieSplicer.UI
         {
             lvInput.VirtualListSize = arrInput.Count;
             lvInput.Refresh();
-
-            sbarFrameCount.ForeColor = Color.Red;
-            sbarFrameCount.Text = arrInput.Count.ToString();
-
+          
             lvInput.SelectedIndices.Clear();
         }
 
@@ -758,7 +556,7 @@ namespace MovieSplicer.UI
         /// </summary>        
         private void mnuViewBuffer_Click(object sender, EventArgs e)
         {            
-            frmBuffer frm = new frmBuffer(arrBuffer, bufferMovieType, lvInput.Columns.Count - 1);
+            frmBuffer frm = new frmBuffer(ref arrBuffer, bufferMovieType, lvInput.Columns.Count - 1);
             frm.ShowDialog(this);
             frm.Dispose(ref arrBuffer);
             
@@ -799,9 +597,9 @@ namespace MovieSplicer.UI
             int totalFrames   = lvInput.SelectedIndices.Count;
                      
             // this is a much faster way to create an arrayList, but the sourceArray (arrInput)
-            // still has the max. controllers amount of elements (must parse when pasting)
+            // still has the max. controllers amount of elements (must parse when pasting)            
             arrBuffer = arrInput.GetRange(frameIndex, totalFrames);           
-            
+                        
             sbarCopyBufferType.Text     = Enum.GetName(typeof(MovieType), bufferMovieType);
             sbarCopyBufferSize.Text     = arrBuffer.Count.ToString();
             cmnuitemPasteFrames.Enabled = true;

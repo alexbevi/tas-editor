@@ -52,23 +52,23 @@ namespace MovieSplicer.UI
             // 
             // btnLoad
             // 
-            this.btnLoad.Enabled = false;
             this.btnLoad.Location = new System.Drawing.Point(2, 252);
             this.btnLoad.Name = "btnLoad";
             this.btnLoad.Size = new System.Drawing.Size(75, 23);
             this.btnLoad.TabIndex = 4;
             this.btnLoad.Text = "&Load";
             this.btnLoad.UseVisualStyleBackColor = true;
+            this.btnLoad.Click += new System.EventHandler(this.btnLoad_Click);
             // 
             // btnSave
             // 
-            this.btnSave.Enabled = false;
             this.btnSave.Location = new System.Drawing.Point(2, 223);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(75, 23);
             this.btnSave.TabIndex = 4;
             this.btnSave.Text = "&Save";
             this.btnSave.UseVisualStyleBackColor = true;
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // statusStrip1
             // 
@@ -108,7 +108,7 @@ namespace MovieSplicer.UI
             this.lvInputBuffer.TabIndex = 7;
             this.lvInputBuffer.UseCompatibleStateImageBehavior = false;
             this.lvInputBuffer.View = System.Windows.Forms.View.Details;
-            this.lvInputBuffer.VirtualMode = true;            
+            this.lvInputBuffer.VirtualMode = true;
             // 
             // columnHeader1
             // 

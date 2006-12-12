@@ -28,7 +28,7 @@ namespace MovieSplicer.UI
         /// Create the frmBuffer form object and populate the listview based on the 
         /// arrayList of string[] content
         /// </summary>
-        public frmBuffer(ArrayList buffer, MovieType type, int columns)
+        public frmBuffer(ref ArrayList buffer, MovieType type, int columns)
         {
             InitializeComponent();
             
@@ -81,6 +81,29 @@ namespace MovieSplicer.UI
         {
             buffer = bufferedInput;
             this.Dispose();            
+        }
+
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.ShowDialog();
+            if (dlg.FileName.Length > 0)
+            {
+                Methods.MovieBufferIO.Save(dlg.FileName, sbarMovieType.Text, bufferedInput);
+            }
+        }
+
+        private void btnLoad_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.ShowDialog();
+            if (dlg.FileName.Length > 0)
+            {
+                ArrayList buffer = new ArrayList();
+                string bufferType = null ;
+                Methods.MovieBufferIO.Load(dlg.FileName, ref bufferType, ref buffer);
+                sbarMovieType.Text = bufferType;
+            }
         }
     }
 }
