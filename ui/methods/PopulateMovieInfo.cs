@@ -12,6 +12,9 @@ namespace MovieSplicer.UI.Methods
     /// </summary>
     class PopulateMovieInfo
     {
+        /// <summary>
+        /// Populate an SNES9x movie file's header information
+        /// </summary>        
         public static void SMV(ref TreeView tv, ref SNES9x movie)
         {
             tv.Nodes.Add("Header");
@@ -46,10 +49,12 @@ namespace MovieSplicer.UI.Methods
             tv.Nodes[4].Nodes.Add("Controller 3 Present: " + movie.ControllerData.Controller[2].ToString());
             tv.Nodes[4].Nodes.Add("Controller 4 Present: " + movie.ControllerData.Controller[3].ToString());
 
-            tv.ExpandAll();
-            tv.Focus();
+            tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
         }
-        
+
+        /// <summary>
+        /// Populate an FCE Ultra movie file's header information
+        /// </summary>
         public static void FCM(ref TreeView tv, ref FCEU movie)
         {
             string movieStart = (movie.Header.StartFromReset) ? "From Reset" : "From Save";
@@ -77,9 +82,12 @@ namespace MovieSplicer.UI.Methods
             tv.Nodes[3].Nodes.Add("Controller 3: " + movie.ControllerData.Controller[2].ToString());
             tv.Nodes[3].Nodes.Add("Controller 4: " + movie.ControllerData.Controller[3].ToString());
 
-            tv.ExpandAll();
+            tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
         }
 
+        /// <summary>
+        /// Populate a VisualBoyAdvance movie file's header information
+        /// </summary>
         public static void VBM(ref TreeView tv, ref VisualBoyAdvance movie)
         {
             tv.Nodes.Add("Header");                       
@@ -112,18 +120,21 @@ namespace MovieSplicer.UI.Methods
 
             tv.Nodes.Add("ROM Information");
             tv.Nodes[3].Nodes.Add("ROM Name: " + movie.RomInfo.Name);
-            tv.Nodes[3].Nodes.Add("ROM CRC:  " + movie.RomInfo.CRC);
-            tv.Nodes[3].Nodes.Add("Check:    " + movie.RomInfo.Checksum);
+            tv.Nodes[3].Nodes.Add("ROM CRC:  " + movie.RomInfo.CRC.ToString());
+            tv.Nodes[3].Nodes.Add("Check:    " + movie.RomInfo.Checksum.ToString());
             
             tv.Nodes.Add("Controllers");
             tv.Nodes[4].Nodes.Add("Controller 1 Present: " + movie.Options.Controllers[0].ToString());
             tv.Nodes[4].Nodes.Add("Controller 2 Present: " + movie.Options.Controllers[1].ToString());
             tv.Nodes[4].Nodes.Add("Controller 3 Present: " + movie.Options.Controllers[2].ToString());
             tv.Nodes[4].Nodes.Add("Controller 4 Present: " + movie.Options.Controllers[3].ToString());
-            
-            tv.ExpandAll();
+
+            tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
         }
 
+        /// <summary>
+        /// Populate a Famtasia movie file's header information
+        /// </summary>
         public static void FMV(ref TreeView tv, ref Famtasia movie)
         {
             string movieStart = (movie.Header.StartFromReset) ? "From Reset" : "From Save";            
@@ -140,9 +151,12 @@ namespace MovieSplicer.UI.Methods
             tv.Nodes[1].Nodes.Add("Controller 1: " + movie.Header.Controllers[0].ToString());
             tv.Nodes[1].Nodes.Add("Controller 2: " + movie.Header.Controllers[1].ToString());
 
-            tv.ExpandAll();
+            tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
         }
 
+        /// <summary>
+        /// Populate a Gens movie file's header information
+        /// </summary>
         public static void GMV(ref TreeView tv, ref Gens movie)
         {                        
             tv.Nodes.Add("Header");
@@ -167,10 +181,8 @@ namespace MovieSplicer.UI.Methods
             if (movie.Header.Version > 0x09)
                 if(movie.Options.ControllerCount == 3)
                     tv.Nodes[1].Nodes[2].Text = "Controller 3: true";
-        
-                    
 
-            tv.ExpandAll();
+            tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
         }
 
     }

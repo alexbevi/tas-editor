@@ -59,7 +59,7 @@ namespace MovieSplicer
         /// </summary>
         public UInt16 Read16(byte[] byteArray)
         {           
-           return Convert.ToUInt16(byteArray[0] | (byteArray[1]));            
+           return Convert.ToUInt16(byteArray[0] | (byteArray[1] << 8));            
         }
 
         /// <summary>

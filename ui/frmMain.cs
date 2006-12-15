@@ -151,10 +151,22 @@ namespace MovieSplicer.UI
         private void loadVBMFile(string filename)
         {            
             VBM = new VisualBoyAdvance(filename);
-            //arrInput = FMV.ControllerInput;           
+            arrInput = VBM.ControllerData;
 
             tvInfo.Nodes.Clear();
             Methods.PopulateMovieInfo.VBM(ref tvInfo, ref VBM);
+
+            // set the controller columns and enable the editing fields
+            for (int i = 0; i < 4; i++)
+            {
+                if (VBM.Options.Controllers[i])
+                    lvInput.Columns.Add("Controller " + (i + 1), 75);
+            }
+
+            txtFrameDataC1.Enabled = VBM.Options.Controllers[0];
+            txtFrameDataC2.Enabled = VBM.Options.Controllers[1];
+            txtFrameDataC3.Enabled = VBM.Options.Controllers[2];
+            txtFrameDataC4.Enabled = VBM.Options.Controllers[3];
         }
 
     #endregion
@@ -313,10 +325,7 @@ namespace MovieSplicer.UI
             // dispose movie containers and clear controls
             SMV = null; FCM = null; GMV = null; FMV = null; VBM = null;
             tvInfo.Nodes.Clear();
-            
-            arrInput  = null;
-            movieType = MovieType.None;
-
+                                    
             // disable menu commands that require a movie to be loaded in order to operate
             mnuSave.Enabled   = false;
             mnuSaveAs.Enabled = false;
@@ -328,7 +337,10 @@ namespace MovieSplicer.UI
             // reset the input list
             lvInput.Clear();            
             lvInput.Columns.Add("Frame");
-            lvInput.VirtualListSize = 0;                      
+            lvInput.VirtualListSize = 0;            
+
+            arrInput = null;
+            movieType = MovieType.None;
             
             // clear and disable the frame editing fields
             txtFrameDataC1.Enabled = false; txtFrameDataC1.Text = "";
@@ -408,9 +420,11 @@ namespace MovieSplicer.UI
                 if (confirmDelete != DialogResult.OK) return;
             }
 
-            // remove the selected frame(2) from the input array                
-            for (int i = 0; i < totalFrames; i++)
-                arrInput.RemoveAt(framePosition - 1);
+            // remove the selected frame(s) from the input array                
+            //for (int i = 0; i < totalFrames; i++)
+            //    arrInput.RemoveAt(framePosition - 1);
+
+            arrInput.RemoveRange(framePosition - 1, totalFrames);
 
             updateControlsAfterEdit();
         }
@@ -462,14 +476,7 @@ namespace MovieSplicer.UI
         /// Save the current movie, overwriting the original
         /// </summary>
         private void mnuSave_Click(object sender, EventArgs e)
-        {
-            // HACK::Not sure if FMV will be supported so just break out of the routine
-            if (movieType == MovieType.FMV)
-            {
-                MessageBox.Show("Famtasia movies cannot be saved", "Oops");
-                return;
-            }
-            
+        {            
             DialogResult verifyOverwrite = MessageBox.Show("Are you sure you want to overwrite the existing file?", "Confirm Overwrite", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
             if (verifyOverwrite != DialogResult.OK)
                 return;
@@ -479,32 +486,33 @@ namespace MovieSplicer.UI
                 case MovieType.FCM:
                     FCM.Save("", ref arrInput);
                     break;
+                case MovieType.FMV:
+                    FMV.Save("", ref arrInput);
+                    break;
                 case MovieType.GMV:
                     GMV.Save("", ref arrInput);
                     break;
                 case MovieType.SMV:
                     SMV.Save("", ref arrInput);
-                    break;                                                    
+                    break;
+                case MovieType.VBM:
+                    VBM.Save("", ref arrInput);
+                    break;                                
             }
 
             MessageBox.Show(txtMovieFilename.Text + " written successfully", " Save");
         }
         private void mnuSaveAs_Click(object sender, EventArgs e)
-        {
-            // HACK::Not sure if FMV will be supported so just break out of the routine
-            if (movieType == MovieType.FMV)
-            {
-                MessageBox.Show("Famtasia movies cannot be saved", "Oops");
-                return;
-            }
-
+        {           
             if (movieType != MovieType.None)
             {
                 SaveFileDialog dlgSave = new SaveFileDialog();
 
                 if (movieType == MovieType.FCM) dlgSave.Filter = fn.FCM_FILTER;
+                if (movieType == MovieType.FMV) dlgSave.Filter = fn.FMV_FILTER;
                 if (movieType == MovieType.GMV) dlgSave.Filter = fn.GMV_FILTER;
                 if (movieType == MovieType.SMV) dlgSave.Filter = fn.SMV_FILTER;
+                if (movieType == MovieType.VBM) dlgSave.Filter = fn.VBM_FILTER;
 
                 dlgSave.ShowDialog();
 
@@ -512,6 +520,9 @@ namespace MovieSplicer.UI
                 {
                     switch (movieType)
                     {
+                        case MovieType.FMV:
+                            FMV.Save(dlgSave.FileName, ref arrInput);
+                            break;
                         case MovieType.FCM:
                             FCM.Save(dlgSave.FileName, ref arrInput);
                             break;
@@ -520,7 +531,10 @@ namespace MovieSplicer.UI
                             break;
                         case MovieType.SMV:
                             SMV.Save(dlgSave.FileName, ref arrInput);
-                            break;                      
+                            break;
+                        case MovieType.VBM:
+                            VBM.Save(dlgSave.FileName, ref arrInput);
+                            break;   
                     }
                     MessageBox.Show(dlgSave.FileName + " written successfully", " Save As");
                 }
@@ -540,8 +554,8 @@ namespace MovieSplicer.UI
         /// Update the listview virtualListSize and the frame count in the statusbar
         /// </summary>
         private void updateControlsAfterEdit()
-        {
-            lvInput.VirtualListSize = arrInput.Count;
+        {                        
+            lvInput.VirtualListSize = arrInput.Count;            
             lvInput.Refresh();
           
             lvInput.SelectedIndices.Clear();
@@ -558,11 +572,13 @@ namespace MovieSplicer.UI
         {            
             frmBuffer frm = new frmBuffer(ref arrBuffer, bufferMovieType, lvInput.Columns.Count - 1);
             frm.ShowDialog(this);
-            frm.Dispose(ref arrBuffer);
+            frm.Dispose(ref arrBuffer, ref bufferMovieType);
             
             // if the buffer array comes back empty, reset all the copy/paste options
-            if (arrBuffer == null)            
-                clearCopyBuffer(); 
+            if (arrBuffer == null)
+                clearCopyBuffer();
+            else
+                enablePasteControls();
         }
 
         // DEBUG::This is only here until I can figure out why pasting a block more than
@@ -588,27 +604,41 @@ namespace MovieSplicer.UI
         {
             // make sure something is selected
             if (lvInput.SelectedIndices.Count == 0) return;
-            
-            arrBuffer       = new ArrayList();
-            bufferMovieType = movieType;
-
+                        
+            bufferMovieType   = movieType;
             int frameIndex    = lvInput.SelectedIndices[0];
             int framePosition = Convert.ToInt32(lvInput.Items[frameIndex].Text);
             int totalFrames   = lvInput.SelectedIndices.Count;
                      
             // this is a much faster way to create an arrayList, but the sourceArray (arrInput)
             // still has the max. controllers amount of elements (must parse when pasting)            
-            arrBuffer = arrInput.GetRange(frameIndex, totalFrames);           
-                        
+            arrBuffer = arrInput.GetRange(frameIndex, totalFrames);
+            
+            enablePasteControls();   
+        }
+
+        /// <summary>
+        /// Set various controls when the copy buffer is filled
+        /// </summary>
+        private void enablePasteControls()
+        {
             sbarCopyBufferType.Text     = Enum.GetName(typeof(MovieType), bufferMovieType);
             sbarCopyBufferSize.Text     = arrBuffer.Count.ToString();
             cmnuitemPasteFrames.Enabled = true;
-            mnuPaste.Enabled            = true;            
+            mnuPaste.Enabled            = true;
         }
+
+        /// <summary>
+        /// Copy Frames (main menu)
+        /// </summary>        
         private void mnuCopy_Click(object sender, EventArgs e)
         {
             copyFrames();
         }
+
+        /// <summary>
+        /// Copy Frames (context menu)
+        /// </summary>        
         private void cmnuitemCopyFrames_Click(object sender, EventArgs e)
         {
             copyFrames();
@@ -622,6 +652,24 @@ namespace MovieSplicer.UI
             // check for a valid paste position
             if (lvInput.SelectedIndices.Count == 0) return;
             
+
+            // DEBUG::If frames are loaded from file, they may not be of the same controller length
+            try
+            {
+                if (((string[])(arrBuffer[0])).Length != (((string[])(arrInput[0])).Length))
+                {
+                    MessageBox.Show("Copy buffer doesn't contain the same number of controller columns as the current movie, or the copy buffer became corrupt\nClearing contents. (This'll be fixed soon-ish)", "Oops");
+                    return;
+                }
+            }
+            // DEBUG::This'll catch an attempt to acces a corrupted buffer
+            catch
+            {
+                MessageBox.Show("Copy buffer became corrupt ... Clearing contents.\nNote that this seems to happen if you copy or load a buffer, add/remove frames then attempt a paste", "Oops");
+                clearCopyBuffer();
+                return;
+            }
+
             // ensure movie types are the same
             if (movieType != bufferMovieType)
             {
@@ -640,24 +688,32 @@ namespace MovieSplicer.UI
 
             // DEBUG::this works ONCE, then dies
             // TODO::either force this to work or go back to old method of manual array population            
-            arrInput.InsertRange(framePosition, arrBuffer);
+            arrInput.InsertRange(framePosition, arrBuffer);            
 
             // DEBUG::This is only here temporarily until the multi-paste crash bug is fixed
             arrBuffer = null;
             clearCopyBuffer();
 
-            updateControlsAfterEdit();
+            updateControlsAfterEdit();            
         }
+        
+        /// <summary>
+        /// Paste frames (main menu)
+        /// </summary>        
         private void mnuPaste_Click(object sender, EventArgs e)
         {
             pasteFrames();
         }
+
+        /// <summary>
+        /// Paste frames (context menu)
+        /// </summary>
         private void cmnuitemPasteFrames_Click(object sender, EventArgs e)
         {
             pasteFrames();
         }
 
-    #endregion
+    #endregion      
 
     }
 }

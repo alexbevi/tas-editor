@@ -31,18 +31,24 @@ namespace MovieSplicer.UI
         public frmBuffer(ref ArrayList buffer, MovieType type, int columns)
         {
             InitializeComponent();
-            
-            bufferedInput = buffer;
-            bufferedType  = type;
 
-            sbarMovieType.Text = Enum.GetName(typeof(MovieType), type);
+            if (buffer != null)
+            {
+                bufferedInput = buffer;
+                bufferedType = type;
 
-            if (bufferedInput == null) return;
-            
+                bindControllerDataToListview(columns);
+            }
+        }
+
+        private void bindControllerDataToListview(int columns)
+        {
+            sbarMovieType.Text = Enum.GetName(typeof(MovieType), bufferedType);
+
             // set controller columns            
             for (int j = 0; j < columns; j++)
-                lvInputBuffer.Columns.Add("Controller " + (j + 1), 75);                        
-            
+                lvInputBuffer.Columns.Add("Controller " + (j + 1), 75);
+
             // HACK::set the first column's width once all columns are set. 
             // This prevents a weird sizing error that occurs periodically
             lvInputBuffer.Columns[0].Width = 75;
@@ -56,7 +62,6 @@ namespace MovieSplicer.UI
             {
                 MessageBox.Show(ex.Message);
             }
-            
         }
 
         /// <summary>
@@ -66,44 +71,80 @@ namespace MovieSplicer.UI
         {
             // if this object hasn't been created yet, return
             if (bufferedInput == null) return;
-
-            bufferedInput = null;
-
-            lvInputBuffer.VirtualMode = false;
-            lvInputBuffer.Clear();
-            lvInputBuffer.Columns.Add("Frame");
-                                    
-            sbarMovieType.Text = "None";
-            bufferedType       = MovieType.None;            
+            
+            clearBuffer();            
         }
 
-        public void Dispose(ref ArrayList buffer)
+        private void clearBuffer()
+        {
+            bufferedInput = null;
+
+            lvInputBuffer.VirtualListSize = 0;
+            lvInputBuffer.Clear(); lvInputBuffer.Columns.Add("Frame");
+
+            sbarMovieType.Text = "None";
+            bufferedType = MovieType.None;            
+        }
+
+        /// <summary>
+        /// Destroy the form object, but pass the buffer and movie type back
+        /// </summary>        
+        public void Dispose(ref ArrayList buffer, ref MovieType type)
         {
             buffer = bufferedInput;
+            type = bufferedType;
             this.Dispose();            
         }
 
+        /// <summary>
+        /// Save the contents of the copy buffer to an external file
+        /// </summary>        
         private void btnSave_Click(object sender, EventArgs e)
         {
             SaveFileDialog dlg = new SaveFileDialog();
+            dlg.Filter = "TAS Movie Editor Copy Buffer (*.tmb)|*.tmb)";
             dlg.ShowDialog();
             if (dlg.FileName.Length > 0)
             {
-                Methods.MovieBufferIO.Save(dlg.FileName, sbarMovieType.Text, bufferedInput);
+                Methods.MovieBufferIO.Save(dlg.FileName, sbarMovieType.Text, bufferedInput, lvInputBuffer.Columns.Count - 1);
             }
         }
 
+        /// <summary>
+        /// Load the contents of an external file to the copy buffer
+        /// </summary>        
         private void btnLoad_Click(object sender, EventArgs e)
         {
             OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Filter = "TAS Movie Editor Copy Buffer (*.tmb)|*.tmb)";
             dlg.ShowDialog();
             if (dlg.FileName.Length > 0)
             {
                 ArrayList buffer = new ArrayList();
-                string bufferType = null ;
+                string bufferType = null;
                 Methods.MovieBufferIO.Load(dlg.FileName, ref bufferType, ref buffer);
-                sbarMovieType.Text = bufferType;
+                sbarMovieType.Text = bufferType;               
+
+                if (buffer.Count > 0)
+                {
+                    lvInputBuffer.Clear(); lvInputBuffer.Columns.Add("Frame");
+
+                    bufferedInput = buffer;
+                    bufferedType = (MovieType)Enum.Parse(typeof(MovieType), bufferType);
+                    int columns = ((string[])(bufferedInput[0])).Length;
+                    bindControllerDataToListview(columns);
+                }              
+                else 
+                    clearBuffer(); 
             }
+        }
+
+        /// <summary>
+        /// Close the View Buffer form
+        /// </summary>        
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }

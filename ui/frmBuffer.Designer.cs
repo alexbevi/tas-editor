@@ -37,12 +37,13 @@ namespace MovieSplicer.UI
             this.sbarMovieType = new System.Windows.Forms.ToolStripStatusLabel();
             this.lvInputBuffer = new MovieSplicer.Components.TASListView();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
+            this.btnClose = new System.Windows.Forms.Button();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnClear
             // 
-            this.btnClear.Location = new System.Drawing.Point(311, 223);
+            this.btnClear.Location = new System.Drawing.Point(307, 223);
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(75, 23);
             this.btnClear.TabIndex = 4;
@@ -115,11 +116,22 @@ namespace MovieSplicer.UI
             this.columnHeader1.Text = "Frame";
             this.columnHeader1.Width = 376;
             // 
+            // btnClose
+            // 
+            this.btnClose.Location = new System.Drawing.Point(307, 252);
+            this.btnClose.Name = "btnClose";
+            this.btnClose.Size = new System.Drawing.Size(75, 23);
+            this.btnClose.TabIndex = 8;
+            this.btnClose.Text = "C&lose";
+            this.btnClose.UseVisualStyleBackColor = true;
+            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
+            // 
             // frmBuffer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(386, 304);
+            this.Controls.Add(this.btnClose);
             this.Controls.Add(this.lvInputBuffer);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.btnSave);
@@ -150,5 +162,6 @@ namespace MovieSplicer.UI
         private System.Windows.Forms.ToolStripStatusLabel sbarMovieType;
         private MovieSplicer.Components.TASListView lvInputBuffer;
         private System.Windows.Forms.ColumnHeader columnHeader1;
+        private System.Windows.Forms.Button btnClose;
     }
 }

@@ -57,7 +57,7 @@ namespace MovieSplicer.Data
             0x20, // UTF16-coded movie title string (author info)   
          
             0x03, // Extra Rom Info -> Rom CRC
-            0x07 // Extra Rom Info -> Rom Name
+            0x07  // Extra Rom Info -> Rom Name
         };  
 
         /// <summary>

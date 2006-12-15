@@ -50,9 +50,8 @@ namespace MovieSplicer.Data
             br.Close(); br = null; fs.Dispose();
 
             Header = new FMVHeader(ref fileContents);
-            
-            ControllerInput = new ArrayList();
-            populateControllerData(ref fileContents, ref ControllerInput);
+                        
+            populateControllerData(ref fileContents);
         }
 
         /// <summary>
@@ -80,8 +79,9 @@ namespace MovieSplicer.Data
                 Controllers[1] = (1 & (byteArray[offsets[2]]) >> 6) == 1 ? true : false;
                 FDS            = (1 & (byteArray[offsets[2]]) >> 5) == 1 ? true : false;
                 MovieTitle     = fn.ReadChars(fn.readBytes(ref byteArray, offsets[7], 64));
-                EmulatorID     = fn.ReadChars(fn.readBytes(ref byteArray, offsets[6], 64));                
-                
+                EmulatorID     = fn.ReadChars(fn.readBytes(ref byteArray, offsets[6], 64));
+
+                bytesPerFrame = 0;
                 if (Controllers[0] == true) bytesPerFrame++;
                 if (Controllers[1] == true) bytesPerFrame++;
                 if (FDS == true) bytesPerFrame++;
@@ -93,18 +93,20 @@ namespace MovieSplicer.Data
         /// <summary>
         /// Convert FMV binary data to a readable string representation
         /// </summary>
-        private void populateControllerData(ref byte[] byteArray, ref ArrayList input)
-        {            
+        private void populateControllerData(ref byte[] byteArray)
+        {
+            ControllerInput = new ArrayList();
+                        
             for (int i = HEADER_SIZE; i < byteArray.Length; i++)
             {
-                string[] frameData = { null, null, null };
+                string[] frameData = new string[3];
                 
                 for (int j = 0; j < bytesPerFrame; j++)
                 {
                     frameData[j] = parseControllerData(byteArray[i]);
                     if(j > 0) i++;
                 }
-                input.Add(frameData);
+                ControllerInput.Add(frameData);
             }
         }
 
@@ -127,5 +129,54 @@ namespace MovieSplicer.Data
             return input;
         }
 
+        /// <summary>
+        /// Save input changes back out to file
+        /// </summary>        
+        public void Save(string filename, ref ArrayList input)
+        {
+            ArrayList outputFile = new ArrayList();
+
+            fn.bytesToArray(ref outputFile, this.fileContents, 0, offsets[8]);
+            string[] currentFrameInput = new string[bytesPerFrame];
+
+            for (int i = 0; i < input.Count; i++)
+            {
+                currentFrameInput = (string[])input[i];
+
+                for (int j = 0; j < currentFrameInput.Length; j++)
+                {
+                    if (currentFrameInput[j] != null)                                            
+                        outputFile.Add(parseControllerInput(currentFrameInput[j]));                    
+                }
+            }
+
+            if (filename == "") filename = this.Filename;
+
+            FileStream fs = File.Open(filename, FileMode.Create);
+            BinaryWriter writer = new BinaryWriter(fs);
+
+            foreach (byte b in outputFile) writer.Write(b);
+
+            writer.Close(); writer = null; fs.Dispose();     
+        }
+
+        /// <summary>
+        /// FMV input conversion (string -> bit position)
+        /// </summary> 
+        private byte parseControllerInput(string frameInput)
+        {
+            byte input = 0x00;
+            
+            if (frameInput.Contains(">")) input |= (1 << 0);
+            if (frameInput.Contains("<")) input |= (1 << 1);
+            if (frameInput.Contains("^")) input |= (1 << 2);
+            if (frameInput.Contains("v")) input |= (1 << 3);
+            if (frameInput.Contains("B")) input |= (1 << 4);
+            if (frameInput.Contains("A")) input |= (1 << 5);
+            if (frameInput.Contains("s")) input |= (1 << 6);
+            if (frameInput.Contains("S")) input |= (1 << 7);            
+
+            return input;
+        }
     }
 }

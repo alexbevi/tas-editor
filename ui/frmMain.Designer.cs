@@ -75,10 +75,10 @@ namespace MovieSplicer.UI
             this.tvInfo = new System.Windows.Forms.TreeView();
             this.groupBox11 = new System.Windows.Forms.GroupBox();
             this.txtMovieFilename = new System.Windows.Forms.TextBox();
+            this.groupBox12 = new System.Windows.Forms.GroupBox();
+            this.btnFindInput = new System.Windows.Forms.Button();
             this.lvInput = new MovieSplicer.Components.TASListView();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
-            this.groupBox12 = new System.Windows.Forms.GroupBox();
-            this.button1 = new System.Windows.Forms.Button();
             this.mnuMain.SuspendLayout();
             this.statMain.SuspendLayout();
             this.cmnu_lvInput.SuspendLayout();
@@ -115,7 +115,7 @@ namespace MovieSplicer.UI
             // 
             this.mnuOpen.Name = "mnuOpen";
             this.mnuOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.mnuOpen.Size = new System.Drawing.Size(151, 22);
+            this.mnuOpen.Size = new System.Drawing.Size(152, 22);
             this.mnuOpen.Text = "&Open";
             this.mnuOpen.Click += new System.EventHandler(this.mnuOpen_Click);
             // 
@@ -124,7 +124,7 @@ namespace MovieSplicer.UI
             this.mnuSave.Enabled = false;
             this.mnuSave.Name = "mnuSave";
             this.mnuSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.mnuSave.Size = new System.Drawing.Size(151, 22);
+            this.mnuSave.Size = new System.Drawing.Size(152, 22);
             this.mnuSave.Text = "&Save";
             this.mnuSave.Click += new System.EventHandler(this.mnuSave_Click);
             // 
@@ -132,7 +132,7 @@ namespace MovieSplicer.UI
             // 
             this.mnuSaveAs.Enabled = false;
             this.mnuSaveAs.Name = "mnuSaveAs";
-            this.mnuSaveAs.Size = new System.Drawing.Size(151, 22);
+            this.mnuSaveAs.Size = new System.Drawing.Size(152, 22);
             this.mnuSaveAs.Text = "Save &As";
             this.mnuSaveAs.Click += new System.EventHandler(this.mnuSaveAs_Click);
             // 
@@ -140,20 +140,20 @@ namespace MovieSplicer.UI
             // 
             this.mnuClose.Enabled = false;
             this.mnuClose.Name = "mnuClose";
-            this.mnuClose.Size = new System.Drawing.Size(151, 22);
+            this.mnuClose.Size = new System.Drawing.Size(152, 22);
             this.mnuClose.Text = "&Close";
             this.mnuClose.Click += new System.EventHandler(this.mnuClose_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(148, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
             // 
             // mnuQuit
             // 
             this.mnuQuit.Name = "mnuQuit";
             this.mnuQuit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Q)));
-            this.mnuQuit.Size = new System.Drawing.Size(151, 22);
+            this.mnuQuit.Size = new System.Drawing.Size(152, 22);
             this.mnuQuit.Text = "&Quit";
             this.mnuQuit.Click += new System.EventHandler(this.mnuExit_Click);
             // 
@@ -278,7 +278,7 @@ namespace MovieSplicer.UI
             this.cmnuitemCopyFrames,
             this.cmnuitemPasteFrames});
             this.cmnu_lvInput.Name = "cmnuInput";
-            this.cmnu_lvInput.Size = new System.Drawing.Size(210, 98);
+            this.cmnu_lvInput.Size = new System.Drawing.Size(210, 120);
             // 
             // cmnuitemAddFrame
             // 
@@ -483,6 +483,29 @@ namespace MovieSplicer.UI
             this.txtMovieFilename.TabIndex = 29;
             this.txtMovieFilename.TabStop = false;
             // 
+            // groupBox12
+            // 
+            this.groupBox12.Controls.Add(this.btnFindInput);
+            this.groupBox12.Controls.Add(this.lvInput);
+            this.groupBox12.Controls.Add(this.btnGotoFrame);
+            this.groupBox12.Controls.Add(this.txtJumpToFrame);
+            this.groupBox12.Location = new System.Drawing.Point(528, 27);
+            this.groupBox12.Name = "groupBox12";
+            this.groupBox12.Size = new System.Drawing.Size(385, 330);
+            this.groupBox12.TabIndex = 29;
+            this.groupBox12.TabStop = false;
+            this.groupBox12.Text = "Frame Data";
+            // 
+            // btnFindInput
+            // 
+            this.btnFindInput.Enabled = false;
+            this.btnFindInput.Location = new System.Drawing.Point(6, 298);
+            this.btnFindInput.Name = "btnFindInput";
+            this.btnFindInput.Size = new System.Drawing.Size(98, 23);
+            this.btnFindInput.TabIndex = 27;
+            this.btnFindInput.Text = "&Find Input";
+            this.btnFindInput.UseVisualStyleBackColor = true;
+            // 
             // lvInput
             // 
             this.lvInput.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
@@ -506,28 +529,6 @@ namespace MovieSplicer.UI
             // 
             this.columnHeader1.Text = "Frame";
             this.columnHeader1.Width = 367;
-            // 
-            // groupBox12
-            // 
-            this.groupBox12.Controls.Add(this.button1);
-            this.groupBox12.Controls.Add(this.lvInput);
-            this.groupBox12.Controls.Add(this.btnGotoFrame);
-            this.groupBox12.Controls.Add(this.txtJumpToFrame);
-            this.groupBox12.Location = new System.Drawing.Point(528, 27);
-            this.groupBox12.Name = "groupBox12";
-            this.groupBox12.Size = new System.Drawing.Size(385, 330);
-            this.groupBox12.TabIndex = 29;
-            this.groupBox12.TabStop = false;
-            this.groupBox12.Text = "Frame Data";
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(6, 298);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(98, 23);
-            this.button1.TabIndex = 27;
-            this.button1.Text = "&Find Input";
-            this.button1.UseVisualStyleBackColor = true;
             // 
             // frmMain
             // 
@@ -612,7 +613,7 @@ namespace MovieSplicer.UI
         private System.Windows.Forms.GroupBox groupBox11;
         private System.Windows.Forms.TextBox txtMovieFilename;
         private System.Windows.Forms.GroupBox groupBox12;
-        private System.Windows.Forms.Button button1;       
+        private System.Windows.Forms.Button btnFindInput;       
     }
 }
 

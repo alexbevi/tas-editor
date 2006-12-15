@@ -19,7 +19,7 @@ namespace MovieSplicer.UI
     public partial class frmSplice : Form
     {      
         static Functions fn     = new Functions();
-        static string    filter = fn.ALL_FILTER + "|" + fn.SMV_FILTER + "|" + fn.FCM_FILTER + "|" + fn.GMV_FILTER + "|" + fn.FMV_FILTER;
+        static string filter = fn.ALL_FILTER + "|" + fn.SMV_FILTER + "|" + fn.FCM_FILTER + "|" + fn.GMV_FILTER + "|" + fn.FMV_FILTER + "|" + fn.VBM_FILTER;
         OpenFileDialog   dlg;
                 
         static object sourceMovie = null;
@@ -36,14 +36,7 @@ namespace MovieSplicer.UI
         /// values into the passed textboxes
         /// </summary>        
         private void loadMovieObject(ref object movie, TextBox fileName, TextBox frameCount)
-        {
-            // HACK::Not sure if FMV will be supported so just break out of the routine
-            if (movie is Famtasia)
-            {
-                MessageBox.Show("Famtasia movies cannot be spliced", "Oops");
-                return;
-            }
-
+        {           
             if (movie is Gens)
             {
                 fileName.Text = fn.extractFilenameFromPath(((Gens)movie).Filename);            
@@ -59,6 +52,17 @@ namespace MovieSplicer.UI
                 fileName.Text = fn.extractFilenameFromPath(((FCEU)movie).Filename);            
                 frameCount.Text = String.Format("{0:0,0}", ((FCEU)movie).Header.FrameCount);
             }
+            else if (movie is VisualBoyAdvance)
+            {
+                fileName.Text = fn.extractFilenameFromPath(((VisualBoyAdvance)movie).Filename);
+                frameCount.Text = String.Format("{0:0,0}", ((VisualBoyAdvance)movie).Header.FrameCount);
+            }
+            else if (movie is Famtasia)
+            {
+                fileName.Text = fn.extractFilenameFromPath(((Famtasia)movie).Filename);
+                frameCount.Text = String.Format("{0:0,0}", ((Famtasia)movie).Header.FrameCount);
+            }
+
         }        
         private void btnLoadSource_Click(object sender, EventArgs e)
         {
@@ -98,6 +102,7 @@ namespace MovieSplicer.UI
                     if (movieType == MovieType.SMV)  sourceMovie = new SNES9x(dlg.FileName);
                     if (movieType == MovieType.GMV)  sourceMovie = new Gens(dlg.FileName);
                     if (movieType == MovieType.FMV)  sourceMovie = new Famtasia(dlg.FileName);
+                    if (movieType == MovieType.VBM)  sourceMovie = new VisualBoyAdvance(dlg.FileName);
                     if (movieType == MovieType.None) sourceMovie = null;
                     break;
 
@@ -106,6 +111,7 @@ namespace MovieSplicer.UI
                     if (movieType == MovieType.SMV)  targetMovie = new SNES9x(dlg.FileName);
                     if (movieType == MovieType.GMV)  targetMovie = new Gens(dlg.FileName);
                     if (movieType == MovieType.FMV)  targetMovie = new Famtasia(dlg.FileName);
+                    if (movieType == MovieType.VBM) targetMovie  = new VisualBoyAdvance(dlg.FileName);
                     if (movieType == MovieType.None) targetMovie = null;
                     break;
             }
@@ -159,6 +165,18 @@ namespace MovieSplicer.UI
                 source    = ((FCEU)sourceMovie).ControllerData.ControllerInput;
                 target    = ((FCEU)targetMovie).ControllerData.ControllerInput;
                 movieType = MovieType.FCM;                                       
+            }
+            else if ((sourceMovie as Famtasia) != null && (targetMovie as Famtasia) != null)
+            {
+                source = ((Famtasia)sourceMovie).ControllerInput;
+                target = ((Famtasia)targetMovie).ControllerInput;
+                movieType = MovieType.FMV;
+            }
+            else if ((sourceMovie as VisualBoyAdvance) != null && (targetMovie as VisualBoyAdvance) != null)
+            {
+                source = ((VisualBoyAdvance)sourceMovie).ControllerData;
+                target = ((VisualBoyAdvance)targetMovie).ControllerData;
+                movieType = MovieType.VBM;
             }
             else
             {
@@ -240,6 +258,12 @@ namespace MovieSplicer.UI
                     break;
                 case MovieType.FCM:
                     ((FCEU)targetMovie).Save(filename, ref spliced);
+                    break;
+                case MovieType.FMV:
+                    ((Famtasia)targetMovie).Save(filename, ref spliced);
+                    break;
+                case MovieType.VBM:
+                    ((VisualBoyAdvance)targetMovie).Save(filename, ref spliced);
                     break;
             }
         

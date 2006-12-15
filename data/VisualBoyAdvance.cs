@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -24,6 +25,7 @@ namespace MovieSplicer.Data
         public VBMOptions  Options;
         public VBMRomInfo  RomInfo;
         public VBMMetadata Metadata;
+        public ArrayList   ControllerData;
 
         static Functions fn  = new Functions();
         static int[] offsets = {
@@ -82,7 +84,7 @@ namespace MovieSplicer.Data
         };
         
         /// <summary>
-        /// Create a fully instantiated SMV object from the passed file
+        /// Create a fully instantiated VBM object from the passed file
         /// </summary>        
         public VisualBoyAdvance(string VBMFile)
         {
@@ -102,8 +104,15 @@ namespace MovieSplicer.Data
 
             saveStateOffset      = fn.Read32(fn.readBytes(ref fileContents, offsets[17], 4));
             controllerDataOffset = fn.Read32(fn.readBytes(ref fileContents, offsets[18], 4));
-        }  
-                    
+
+            parseControllerData(ref fileContents);
+        }
+
+    #region "Structure"
+
+        /// <summary>
+        /// Parse basic VBM header values
+        /// </summary>
         public class VBMHeader
         {
             public string Signature;
@@ -166,21 +175,29 @@ namespace MovieSplicer.Data
             }
         }
 
+        /// <summary>
+        /// Parse the VBM ROM Info section
+        /// 
+        /// TODO::CRC/Checksum not really working
+        /// </summary>
         public class VBMRomInfo
         {             
-            public string Name; // 12
-            public string CRC;
-            public string Checksum;
-            public int GameCode;
+            public string Name; 
+            public int    CRC;
+            public int    Checksum;
+            public int    GameCode;
 
             public VBMRomInfo(ref byte[] byteArray)
             {
-                Name = fn.ReadChars(fn.readBytes(ref byteArray, offsets[12], 12));
-                CRC  = fn.ReadChars(fn.readBytes(ref byteArray, offsets[14], 1));
-                //Checksum = fn.ReadChars(fn.readBytes(ref byteArray, offsets[14], 1));
+                Name     = fn.ReadChars(fn.readBytes(ref byteArray, offsets[12], 12));
+                CRC      = (int)(fn.readBytes(ref byteArray, offsets[14], 1)[0]);
+                Checksum = fn.Read16(fn.readBytes(ref byteArray, offsets[15], 2));
             }
         }
 
+        /// <summary>
+        /// Parse VBM Extended Author information
+        /// </summary>
         public class VBMMetadata
         {
             public string Author;
@@ -195,6 +212,116 @@ namespace MovieSplicer.Data
                 Description = fn.ReadChars(fn.readBytes(ref description, 0, fn.seekNullPosition(description, 0)));
             }
         }
+
+        private void parseControllerData(ref byte[] byteArray)
+        {
+            ControllerData = new ArrayList();
+
+            for (int i = 0; i < byteArray.Length - (int)controllerDataOffset; i++)
+            {
+                string[] frameData = new string[4];
+                for (int j = 0; j < 4; j++)
+                {
+                    if (Options.Controllers[j])
+                        frameData[j] = parseInputToString(fn.readBytes(ref byteArray, (int)controllerDataOffset + i + j, 2));
+                }
+                ControllerData.Add(frameData);
+                i++;
+            }
+         }
+
+        /// <summary>
+        /// Parse the 2-byte controller state value to a string
+        /// </summary>        
+        private string parseInputToString(byte[] bytes)
+        {
+            string   input = "";
+            
+            int value = bytes[0] | bytes[1];
+
+            string[] inputValues = { "A", "B", "s", "S", ">", "<", "^", "v", "R", "L", "(reset)", "", "(left)", "(right)", "(down)", "(up)" };
+            
+            for (int i = 0; i < 16; i++)
+                if((1 & (value >> i)) == 1)
+                    input += inputValues[i];
+
+            
+            return input;
+        }
+
+    #endregion
+
+    #region "Methods"
+
+        public void Save(string filename, ref ArrayList input)
+        {
+            ArrayList outputFile = new ArrayList();
+
+            fn.bytesToArray(ref outputFile, this.fileContents, 0, (int)controllerDataOffset);
+
+            string[] currentFrameInput = new string[3];
+
+            for (int i = 0; i < input.Count; i++)
+            {
+                currentFrameInput = (string[])input[i];
+
+                for (int j = 0; j < currentFrameInput.Length; j++)
+                {
+                    // check if the controller we're about to process is used
+                    if (this.Options.Controllers[j])
+                    {
+                        byte[] parsed = parseControllerInput(currentFrameInput[j]);
+                        outputFile.Add(parsed[0]); outputFile.Add(parsed[1]);
+                    }
+                }
+            }
+            
+            if (filename == "") filename = this.Filename;
+
+            FileStream fs = File.Open(filename, FileMode.Create);
+            BinaryWriter writer = new BinaryWriter(fs);
+
+            // convert to 4-byte little-endian
+            byte[] newFrameCount = fn.Write32(input.Count);
+
+            // position in the target stream to insert the new values
+            outputFile[0x0C] = newFrameCount[0];
+            outputFile[0x0D] = newFrameCount[1];
+            outputFile[0x0E] = newFrameCount[2];
+            outputFile[0x0F] = newFrameCount[3];
+
+            foreach (byte b in outputFile) writer.Write(b);
+
+            writer.Close(); writer = null; fs.Dispose();           
+        }
+
+        private byte[] parseControllerInput(string frameInput)
+        {                                      
+            byte[] input = { 0x00, 0x00 };
+
+            // frameInput will be null if a blank, inserted frame is being processed
+            if (frameInput == null) return input;
+
+            if (frameInput.Contains("A")) input[0] |= (1 << 0);
+            if (frameInput.Contains("B")) input[0] |= (1 << 1);
+            if (frameInput.Contains("s")) input[0] |= (1 << 2);
+            if (frameInput.Contains("S")) input[0] |= (1 << 3);
+            if (frameInput.Contains(">")) input[0] |= (1 << 4);
+            if (frameInput.Contains("<")) input[0] |= (1 << 5);
+            if (frameInput.Contains("^")) input[0] |= (1 << 6);
+            if (frameInput.Contains("v")) input[0] |= (1 << 7);
+            if (frameInput.Contains("R")) input[1] |= (1 << 0);
+            if (frameInput.Contains("L")) input[1] |= (1 << 1);
+            if (frameInput.Contains("(reset)")) input[1] |= (1 << 2);
+            if (frameInput.Contains("(left)"))  input[1] |= (1 << 4);
+            if (frameInput.Contains("(right)")) input[1] |= (1 << 5);
+            if (frameInput.Contains("(down)"))  input[1] |= (1 << 6);
+            if (frameInput.Contains("(up)"))    input[1] |= (1 << 7);
+                    
+            return input;
+        }
+
+    #endregion
 
     }
 }
