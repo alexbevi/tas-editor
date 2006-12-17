@@ -50,14 +50,16 @@ namespace MovieSplicer.Data
             br.Close(); br = null; fs.Dispose();
 
             Header = new GMVHeader(ref fileContents);
-            
+
+            int controllerCount = 2;
             // options only set if version A or above
             if (Header.Version > 0x09)
             {
                 Options = new GMVOptions(Header.Version, Header.Options);
+                controllerCount = Options.ControllerCount;
             }
 
-            ControllerData = new GMVControllerData(ref fileContents, Header.FrameCount);
+            ControllerData = new GMVControllerData(ref fileContents, Header.FrameCount, controllerCount);
         }    
 
     #region "Structure"
@@ -131,10 +133,10 @@ namespace MovieSplicer.Data
         {
             public ArrayList ControllerInput;            
             
-            public GMVControllerData(ref byte[] byteArray, int frameCount)
+            public GMVControllerData(ref byte[] byteArray, int frameCount, int controllerCount)
             {
                 ControllerInput = new ArrayList();
-                string[] input;
+                string[] input = { "", "", "" };
 
                 // there are 3 bytes per frame of input
                 for (int i = 0; i < frameCount * 3; i++)
@@ -145,7 +147,11 @@ namespace MovieSplicer.Data
                     // run the array through a loop to be populated
                     input[0] = parseControllerData(byteArray[offsets[7] + i]);
                     input[1] = parseControllerData(byteArray[offsets[7] + i + 1]);
-                    input[2] = parseControllerData(byteArray[offsets[7] + i + 2]);
+
+                    if (controllerCount == 3)
+                        input[2] = parseControllerData(byteArray[offsets[7] + i + 2]);
+                    else
+                        parseAdditionalControllerData(byteArray[offsets[7] + i + 2], ref input[0], ref input[1]);
 
                     ControllerInput.Add(input);
                     i += 2;
@@ -169,6 +175,21 @@ namespace MovieSplicer.Data
                 if (((1 & frameInput >> 7)) == 0) input += "S";
 
                 return input;
+            }
+
+            /// <summary>
+            /// Convert byte values to string input if 2-player 6-button
+            /// </summary>
+            private void parseAdditionalControllerData(byte frameInput, ref string player1, ref string player2)
+            {               
+                if (((1 & frameInput >> 0)) == 0) player1 += "X";
+                if (((1 & frameInput >> 1)) == 0) player1 += "Y";
+                if (((1 & frameInput >> 2)) == 0) player1 += "Z";
+                if (((1 & frameInput >> 3)) == 0) player1 += "M";
+                if (((1 & frameInput >> 4)) == 0) player2 += "X";
+                if (((1 & frameInput >> 5)) == 0) player2 += "Y";
+                if (((1 & frameInput >> 6)) == 0) player2 += "Z";
+                if (((1 & frameInput >> 7)) == 0) player2 += "M";                
             }
         }
 
