@@ -57,8 +57,11 @@ namespace MovieSplicer.UI.Methods
         /// </summary>
         public static void FCM(ref TreeView tv, ref FCEU movie)
         {
-            string movieStart = (movie.Header.StartFromReset) ? "From Reset" : "From Save";
-            string movieTiming = (movie.Header.NTSC) ? "NTSC" : "PAL";
+            string movieStart  = (movie.Header.StartFromReset) ? "From Reset" : "From Save";
+            string movieTiming = "";
+
+            if (movie.Header.NTSC) movieTiming = "NTSC";
+            if (movie.Header.PAL)  movieTiming = "PAL";
             
             tv.Nodes.Add("Header");            
             tv.Nodes[0].Nodes.Add("Signature:        "+ movie.Header.Signature);
@@ -181,6 +184,49 @@ namespace MovieSplicer.UI.Methods
             if (movie.Header.Version > 0x09)
                 if(movie.Options.ControllerCount == 3)
                     tv.Nodes[1].Nodes[2].Text = "Controller 3: true";
+
+            tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
+        }
+
+        /// <summary>
+        /// Populate a Mupen64 movie file's header information
+        /// </summary>
+        public static void M64(ref TreeView tv, ref Mupen64 movie)
+        {
+            tv.Nodes.Add("Header");
+            tv.Nodes[0].Nodes.Add("Signature:      " + movie.Header.Signature);
+            tv.Nodes[0].Nodes.Add("Version:        " + movie.Header.Version.ToString());
+            tv.Nodes[0].Nodes.Add("UID:            " + movie.Header.UID);
+            tv.Nodes[0].Nodes.Add("Frame Count:    " + String.Format("{0:0,0}", movie.Header.FrameCount));
+            tv.Nodes[0].Nodes.Add("Rerecord Count: " + String.Format("{0:0,0}", movie.Header.RerecordCount));
+
+            tv.Nodes.Add("Options");
+            tv.Nodes[1].Nodes.Add("FPS:         " + movie.Options.FPS);
+            string startFrom = (movie.Options.MovieStart[0] == true) ? "From Snapshot" : "From Power-on";
+            tv.Nodes[1].Nodes.Add("Movie Start: " +startFrom);
+
+            tv.Nodes.Add("ROM Information");
+            tv.Nodes[2].Nodes.Add("Name:    " + movie.RomInfo.Name);
+            tv.Nodes[2].Nodes.Add("CRC:     " + movie.RomInfo.CRC);
+            tv.Nodes[2].Nodes.Add("Country: " + movie.RomInfo.Country);
+            
+            tv.Nodes.Add("Extra Information");
+            tv.Nodes[3].Nodes.Add("Author:       " + movie.ExtraInfo.Author);
+            tv.Nodes[3].Nodes.Add("Description:  " + movie.ExtraInfo.Description);
+            tv.Nodes[3].Nodes.Add("Video Plugin: " + movie.ExtraInfo.VideoPlugin);
+            tv.Nodes[3].Nodes.Add("Audio Plugin: " + movie.ExtraInfo.AudioPlugin);
+            tv.Nodes[3].Nodes.Add("Input Plugin: " + movie.ExtraInfo.InputPlugin);
+            tv.Nodes[3].Nodes.Add("RSP Plugin:   " + movie.ExtraInfo.RSPPlugin);
+
+            tv.Nodes.Add("Controller Information");
+            tv.Nodes[4].Nodes.Add("Count:  " + movie.Options.ControllerCount.ToString());
+            for (int i = 0; i < 4; i++)
+            {
+                tv.Nodes[4].Nodes.Add("Controller " + (i + 1));
+                tv.Nodes[4].Nodes[i+1].Nodes.Add("Controller Present: " + ((bool[])(movie.Options.Controllers[i]))[0]);
+                tv.Nodes[4].Nodes[i+1].Nodes.Add("Mempak Present:     " + ((bool[])(movie.Options.Controllers[i]))[1]);
+                tv.Nodes[4].Nodes[i+1].Nodes.Add("Rumblepak Present:  " + ((bool[])(movie.Options.Controllers[i]))[2]);
+            }
 
             tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
         }

@@ -47,6 +47,8 @@ namespace MovieSplicer.UI
             this.mnuViewBuffer = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.mnuCompareMovieInputRange = new System.Windows.Forms.ToolStripMenuItem();
+            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.autoFireUpdateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statMain = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
             this.sbarCopyBufferSize = new System.Windows.Forms.ToolStripStatusLabel();
@@ -79,6 +81,8 @@ namespace MovieSplicer.UI
             this.btnFindInput = new System.Windows.Forms.Button();
             this.lvInput = new MovieSplicer.Components.TASListView();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
+            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.sbarFrameCount = new System.Windows.Forms.ToolStripStatusLabel();
             this.mnuMain.SuspendLayout();
             this.statMain.SuspendLayout();
             this.cmnu_lvInput.SuspendLayout();
@@ -92,7 +96,8 @@ namespace MovieSplicer.UI
             this.mnuMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuFile,
             this.mnuAbout,
-            this.mnuEdit});
+            this.mnuEdit,
+            this.optionsToolStripMenuItem});
             this.mnuMain.Location = new System.Drawing.Point(0, 0);
             this.mnuMain.Name = "mnuMain";
             this.mnuMain.Size = new System.Drawing.Size(917, 24);
@@ -115,7 +120,7 @@ namespace MovieSplicer.UI
             // 
             this.mnuOpen.Name = "mnuOpen";
             this.mnuOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.mnuOpen.Size = new System.Drawing.Size(152, 22);
+            this.mnuOpen.Size = new System.Drawing.Size(151, 22);
             this.mnuOpen.Text = "&Open";
             this.mnuOpen.Click += new System.EventHandler(this.mnuOpen_Click);
             // 
@@ -124,7 +129,7 @@ namespace MovieSplicer.UI
             this.mnuSave.Enabled = false;
             this.mnuSave.Name = "mnuSave";
             this.mnuSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.mnuSave.Size = new System.Drawing.Size(152, 22);
+            this.mnuSave.Size = new System.Drawing.Size(151, 22);
             this.mnuSave.Text = "&Save";
             this.mnuSave.Click += new System.EventHandler(this.mnuSave_Click);
             // 
@@ -132,7 +137,7 @@ namespace MovieSplicer.UI
             // 
             this.mnuSaveAs.Enabled = false;
             this.mnuSaveAs.Name = "mnuSaveAs";
-            this.mnuSaveAs.Size = new System.Drawing.Size(152, 22);
+            this.mnuSaveAs.Size = new System.Drawing.Size(151, 22);
             this.mnuSaveAs.Text = "Save &As";
             this.mnuSaveAs.Click += new System.EventHandler(this.mnuSaveAs_Click);
             // 
@@ -140,20 +145,20 @@ namespace MovieSplicer.UI
             // 
             this.mnuClose.Enabled = false;
             this.mnuClose.Name = "mnuClose";
-            this.mnuClose.Size = new System.Drawing.Size(152, 22);
+            this.mnuClose.Size = new System.Drawing.Size(151, 22);
             this.mnuClose.Text = "&Close";
             this.mnuClose.Click += new System.EventHandler(this.mnuClose_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(148, 6);
             // 
             // mnuQuit
             // 
             this.mnuQuit.Name = "mnuQuit";
             this.mnuQuit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Q)));
-            this.mnuQuit.Size = new System.Drawing.Size(152, 22);
+            this.mnuQuit.Size = new System.Drawing.Size(151, 22);
             this.mnuQuit.Text = "&Quit";
             this.mnuQuit.Click += new System.EventHandler(this.mnuExit_Click);
             // 
@@ -228,14 +233,31 @@ namespace MovieSplicer.UI
             this.mnuCompareMovieInputRange.Size = new System.Drawing.Size(222, 22);
             this.mnuCompareMovieInputRange.Text = "&Compare Movie Input Range";
             // 
+            // optionsToolStripMenuItem
+            // 
+            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.autoFireUpdateToolStripMenuItem});
+            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
+            this.optionsToolStripMenuItem.Text = "&Options";
+            // 
+            // autoFireUpdateToolStripMenuItem
+            // 
+            this.autoFireUpdateToolStripMenuItem.CheckOnClick = true;
+            this.autoFireUpdateToolStripMenuItem.Name = "autoFireUpdateToolStripMenuItem";
+            this.autoFireUpdateToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.autoFireUpdateToolStripMenuItem.Text = "&Auto-Fire Update";
+            // 
             // statMain
             // 
             this.statMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripStatusLabel1,
+            this.sbarFrameCount,
             this.toolStripStatusLabel3,
             this.sbarCopyBufferSize,
             this.toolStripStatusLabel4,
             this.sbarCopyBufferType});
-            this.statMain.Location = new System.Drawing.Point(0, 363);
+            this.statMain.Location = new System.Drawing.Point(0, 362);
             this.statMain.Name = "statMain";
             this.statMain.Size = new System.Drawing.Size(917, 22);
             this.statMain.SizingGrip = false;
@@ -278,7 +300,7 @@ namespace MovieSplicer.UI
             this.cmnuitemCopyFrames,
             this.cmnuitemPasteFrames});
             this.cmnu_lvInput.Name = "cmnuInput";
-            this.cmnu_lvInput.Size = new System.Drawing.Size(210, 120);
+            this.cmnu_lvInput.Size = new System.Drawing.Size(210, 98);
             // 
             // cmnuitemAddFrame
             // 
@@ -517,7 +539,7 @@ namespace MovieSplicer.UI
             this.lvInput.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.lvInput.Location = new System.Drawing.Point(8, 24);
             this.lvInput.Name = "lvInput";
-            this.lvInput.Size = new System.Drawing.Size(371, 268);
+            this.lvInput.Size = new System.Drawing.Size(371, 265);
             this.lvInput.TabIndex = 26;
             this.lvInput.UseCompatibleStateImageBehavior = false;
             this.lvInput.View = System.Windows.Forms.View.Details;
@@ -530,11 +552,26 @@ namespace MovieSplicer.UI
             this.columnHeader1.Text = "Frame";
             this.columnHeader1.Width = 367;
             // 
+            // toolStripStatusLabel1
+            // 
+            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(73, 17);
+            this.toolStripStatusLabel1.Text = "Frame Count:";
+            // 
+            // sbarFrameCount
+            // 
+            this.sbarFrameCount.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
+            this.sbarFrameCount.BorderStyle = System.Windows.Forms.Border3DStyle.Raised;
+            this.sbarFrameCount.ForeColor = System.Drawing.Color.Blue;
+            this.sbarFrameCount.Name = "sbarFrameCount";
+            this.sbarFrameCount.Size = new System.Drawing.Size(17, 17);
+            this.sbarFrameCount.Text = "0";
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(917, 385);
+            this.ClientSize = new System.Drawing.Size(917, 384);
             this.Controls.Add(this.groupBox12);
             this.Controls.Add(this.statMain);
             this.Controls.Add(this.groupBox11);
@@ -546,7 +583,7 @@ namespace MovieSplicer.UI
             this.MaximizeBox = false;
             this.Name = "frmMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "TAS Movie Editor v0.8";
+            this.Text = "TAS Movie Editor v0.8.1";
             this.mnuMain.ResumeLayout(false);
             this.mnuMain.PerformLayout();
             this.statMain.ResumeLayout(false);
@@ -613,7 +650,11 @@ namespace MovieSplicer.UI
         private System.Windows.Forms.GroupBox groupBox11;
         private System.Windows.Forms.TextBox txtMovieFilename;
         private System.Windows.Forms.GroupBox groupBox12;
-        private System.Windows.Forms.Button btnFindInput;       
+        private System.Windows.Forms.Button btnFindInput;
+        private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem autoFireUpdateToolStripMenuItem;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.ToolStripStatusLabel sbarFrameCount;       
     }
 }
 

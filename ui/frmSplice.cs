@@ -7,19 +7,19 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
-using MovieSplicer.Data;
 
+using MovieSplicer.Data;
+using MovieSplicer.Data.Structures;
 /*****************************************************************************************************
  * Copy a range of frames from the source movie to the target movie
- * 
- * TODO::write from end untested, splice untested
  ****************************************************************************************************/
 namespace MovieSplicer.UI
 {        
     public partial class frmSplice : Form
     {      
         static Functions fn     = new Functions();
-        static string filter = fn.ALL_FILTER + "|" + fn.SMV_FILTER + "|" + fn.FCM_FILTER + "|" + fn.GMV_FILTER + "|" + fn.FMV_FILTER + "|" + fn.VBM_FILTER;
+        static string    filter = fn.ALL_FILTER + "|" + fn.SMV_FILTER + "|" + fn.FCM_FILTER + "|" + 
+                                  fn.GMV_FILTER + "|" + fn.FMV_FILTER + "|" + fn.VBM_FILTER;
         OpenFileDialog   dlg;
                 
         static object sourceMovie = null;
@@ -62,13 +62,20 @@ namespace MovieSplicer.UI
                 fileName.Text = fn.extractFilenameFromPath(((Famtasia)movie).Filename);
                 frameCount.Text = String.Format("{0:0,0}", ((Famtasia)movie).Header.FrameCount);
             }
-
-        }        
+        }   
+     
+        /// <summary>
+        /// Load a source movie file
+        /// </summary>        
         private void btnLoadSource_Click(object sender, EventArgs e)
         {
             loadFile(true);
             loadMovieObject(ref sourceMovie, txtSourceFileName, txtSourceFrameCount);            
-        }       
+        }   
+    
+        /// <summary>
+        /// Load a target movie file
+        /// </summary>        
         private void btnLoadTarget_Click(object sender, EventArgs e)
         {
             loadFile(false);
@@ -87,32 +94,26 @@ namespace MovieSplicer.UI
             // if no file loaded, exit
             if (dlg.FileName.Length == 0) { dlg.Dispose(); return; }
 
-            MovieType movieType = MovieType.None;
-
-            // set flag based on how the movie validates
-            if (fn.IsValidFCM(dlg.FileName))      movieType = MovieType.FCM;
-            else if (fn.IsValidSMV(dlg.FileName)) movieType = MovieType.SMV;
-            else if (fn.IsValidGMV(dlg.FileName)) movieType = MovieType.GMV;
-            else if (fn.IsValidFMV(dlg.FileName)) movieType = MovieType.FMV;            
+            MovieType movieType = fn.IsValid(dlg.FileName);
             
             switch(sourceFile)
             {
                 case true:
-                    if (movieType == MovieType.FCM)  sourceMovie = new FCEU(dlg.FileName);
-                    if (movieType == MovieType.SMV)  sourceMovie = new SNES9x(dlg.FileName);
-                    if (movieType == MovieType.GMV)  sourceMovie = new Gens(dlg.FileName);
-                    if (movieType == MovieType.FMV)  sourceMovie = new Famtasia(dlg.FileName);
-                    if (movieType == MovieType.VBM)  sourceMovie = new VisualBoyAdvance(dlg.FileName);
-                    if (movieType == MovieType.None) sourceMovie = null;
+                    if      (movieType == MovieType.FCM)  sourceMovie = new FCEU(dlg.FileName);
+                    else if (movieType == MovieType.SMV)  sourceMovie = new SNES9x(dlg.FileName);
+                    else if (movieType == MovieType.GMV)  sourceMovie = new Gens(dlg.FileName);
+                    else if (movieType == MovieType.FMV)  sourceMovie = new Famtasia(dlg.FileName);
+                    else if (movieType == MovieType.VBM)  sourceMovie = new VisualBoyAdvance(dlg.FileName);
+                    else if (movieType == MovieType.None) sourceMovie = null;
                     break;
 
                 case false:
-                    if (movieType == MovieType.FCM)  targetMovie = new FCEU(dlg.FileName);
-                    if (movieType == MovieType.SMV)  targetMovie = new SNES9x(dlg.FileName);
-                    if (movieType == MovieType.GMV)  targetMovie = new Gens(dlg.FileName);
-                    if (movieType == MovieType.FMV)  targetMovie = new Famtasia(dlg.FileName);
-                    if (movieType == MovieType.VBM) targetMovie  = new VisualBoyAdvance(dlg.FileName);
-                    if (movieType == MovieType.None) targetMovie = null;
+                    if      (movieType == MovieType.FCM)  targetMovie = new FCEU(dlg.FileName);
+                    else if (movieType == MovieType.SMV)  targetMovie = new SNES9x(dlg.FileName);
+                    else if (movieType == MovieType.GMV)  targetMovie = new Gens(dlg.FileName);
+                    else if (movieType == MovieType.FMV)  targetMovie = new Famtasia(dlg.FileName);
+                    else if (movieType == MovieType.VBM)  targetMovie = new VisualBoyAdvance(dlg.FileName);
+                    else if (movieType == MovieType.None) targetMovie = null;
                     break;
             }
             

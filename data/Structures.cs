@@ -34,9 +34,23 @@ namespace MovieSplicer.Data.Structures
     /// </summary>
     public class ControllerData
     {
-        public string Controller1;
-        public string Controller2;
-        public string Controller3;
-        public string Controller4;
+        public int           ControllersCount = 0;
+        public bool[]        ControllersInUse = { false, false, false, false };
+        public Controllers[] Frame;
+
+        public ControllerData(int frameCount)
+        {
+            Frame = new Controllers[frameCount];
+        }
+    }
+
+    public class Controllers
+    {
+        public string[] Pad;
+
+        public Controllers()
+        {
+            Pad = new string[4];
+        }
     }
 }

@@ -6,10 +6,12 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+
+using MovieSplicer.Data.Structures;
 /***************************************************************************************************
  * Show the Copy Buffer form
  * 
- * Contains options for Loading/Saving a buffers contents as well as clearing the currently
+ * Contains options for Loading/Saving a buffer's contents as well as clearing the currently
  * buffered information.
  **************************************************************************************************/
 namespace MovieSplicer.UI
@@ -102,7 +104,7 @@ namespace MovieSplicer.UI
         private void btnSave_Click(object sender, EventArgs e)
         {
             SaveFileDialog dlg = new SaveFileDialog();
-            dlg.Filter = "TAS Movie Editor Copy Buffer (*.tmb)|*.tmb)";
+            dlg.Filter = "TAS Movie Editor Copy Buffer (*.tmb)|*.tmb";
             dlg.ShowDialog();
             if (dlg.FileName.Length > 0)
             {
@@ -116,7 +118,7 @@ namespace MovieSplicer.UI
         private void btnLoad_Click(object sender, EventArgs e)
         {
             OpenFileDialog dlg = new OpenFileDialog();
-            dlg.Filter = "TAS Movie Editor Copy Buffer (*.tmb)|*.tmb)";
+            dlg.Filter = "TAS Movie Editor Copy Buffer (*.tmb)|*.tmb";
             dlg.ShowDialog();
             if (dlg.FileName.Length > 0)
             {

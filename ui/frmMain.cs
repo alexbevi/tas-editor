@@ -9,8 +9,9 @@ using System.Text;
 using System.Windows.Forms;
 
 using MovieSplicer.Data;
+using MovieSplicer.Data.Structures;
 /***************************************************************************************************
- * TAS Movie Splicer
+ * TAS Movie Editor
  * Author: Alex Bevilacqua (aka Maximus)
  * Revision: 0-8
  **************************************************************************************************/
@@ -18,12 +19,13 @@ namespace MovieSplicer.UI
 {
     public partial class frmMain : Form
     {
-        Functions      fn        = new Functions();
-        MovieType      movieType = MovieType.None;
+        Functions      fn = new Functions();
         OpenFileDialog dlgOpen;             
         
-        static ArrayList arrInput;  // this array will hold the input from the loaded movie file                        
-        MovieType        bufferMovieType = MovieType.None;
+        MovieType movieType       = MovieType.None;
+        MovieType bufferMovieType = MovieType.None;        
+        
+        static ArrayList arrInput;  // this array will hold the input from the loaded movie file                                
         static ArrayList arrBuffer; // this array will hold the buffered frame data for copy-pasting
 
         public frmMain()
@@ -68,8 +70,8 @@ namespace MovieSplicer.UI
         private void loadFCMFile(string filename)
         {                        
             FCM      = new FCEU(filename);
-            arrInput = FCM.ControllerData.ControllerInput;
-
+            arrInput = FCM.ControllerData.ControllerInput;            
+            
             tvInfo.Nodes.Clear();
             Methods.PopulateMovieInfo.FCM(ref tvInfo, ref FCM);
 
@@ -125,7 +127,7 @@ namespace MovieSplicer.UI
         private void loadFMVFile(string filename)
         {            
             FMV = new Famtasia(filename);
-            arrInput = FMV.ControllerInput;
+            arrInput = FMV.ControllerInput;            
             
             tvInfo.Nodes.Clear();
             Methods.PopulateMovieInfo.FMV(ref tvInfo, ref FMV);  
@@ -167,6 +169,33 @@ namespace MovieSplicer.UI
             txtFrameDataC2.Enabled = VBM.Options.Controllers[1];
             txtFrameDataC3.Enabled = VBM.Options.Controllers[2];
             txtFrameDataC4.Enabled = VBM.Options.Controllers[3];
+        }
+
+        static Mupen64 M64;
+
+        /// <summary>
+        /// Instantiates the Mupen64 object with a validated M64 file read in from
+        /// an OpenDialog call
+        /// </summary>        
+        private void loadM64File(string filename)
+        {
+            M64 = new Mupen64(filename);
+            //arrInput = VBM.ControllerData;
+
+            tvInfo.Nodes.Clear();
+            Methods.PopulateMovieInfo.M64(ref tvInfo, ref M64);
+
+            // set the controller columns and enable the editing fields
+            //for (int i = 0; i < 4; i++)
+            //{
+            //    if (VBM.Options.Controllers[i])
+            //        lvInput.Columns.Add("Controller " + (i + 1), 75);
+            //}
+
+            //txtFrameDataC1.Enabled = VBM.Options.Controllers[0];
+            //txtFrameDataC2.Enabled = VBM.Options.Controllers[1];
+            //txtFrameDataC3.Enabled = VBM.Options.Controllers[2];
+            //txtFrameDataC4.Enabled = VBM.Options.Controllers[3];
         }
 
     #endregion
@@ -238,10 +267,9 @@ namespace MovieSplicer.UI
         /// </summary>        
         private void mnuOpen_Click(object sender, EventArgs e)
         {
-            bool validFile = false;
-
             dlgOpen        = new OpenFileDialog();
-            dlgOpen.Filter = fn.ALL_FILTER + "|" + fn.SMV_FILTER + "|" + fn.FCM_FILTER + "|" + fn.GMV_FILTER + "|" + fn.FMV_FILTER + "|" + fn.VBM_FILTER;
+            dlgOpen.Filter = fn.ALL_FILTER + "|" + fn.SMV_FILTER + "|" + fn.FCM_FILTER + "|" + fn.GMV_FILTER + "|" +
+                             fn.FMV_FILTER + "|" + fn.VBM_FILTER + "|" + fn.M64_FILTER;
             dlgOpen.ShowDialog();
 
             if (dlgOpen.FileName.Length > 0)
@@ -256,56 +284,41 @@ namespace MovieSplicer.UI
                     return;
                 }
 
-                // load an SMV file if it verifies
-                if (fn.IsValidSMV(dlgOpen.FileName))
+                movieType = fn.IsValid(dlgOpen.FileName);
+                switch (movieType)
                 {
-                    movieType = MovieType.SMV;
-                    loadSMVFile(dlgOpen.FileName);
-                    validFile = true;
+                    case MovieType.SMV:
+                        loadSMVFile(dlgOpen.FileName); break;
+                    case MovieType.FCM:
+                        loadFCMFile(dlgOpen.FileName); break;
+                    case MovieType.GMV:
+                        loadGMVFile(dlgOpen.FileName); break;
+                    case MovieType.FMV:
+                        loadFMVFile(dlgOpen.FileName); break;
+                    case MovieType.VBM:
+                        loadVBMFile(dlgOpen.FileName); break;
+                    case MovieType.M64:
+                        loadM64File(dlgOpen.FileName); return; // DEBUG
+                    case MovieType.None:
+                        dlgOpen.Dispose(); return;
                 }
-                // load an FCM file if it verifies                
-                else if (fn.IsValidFCM(dlgOpen.FileName))
-                {
-                    movieType = MovieType.FCM;
-                    loadFCMFile(dlgOpen.FileName);
-                    validFile = true;
-                }
-                // load a GMV file if it verifies
-                else if (fn.IsValidGMV(dlgOpen.FileName))
-                {
-                    movieType = MovieType.GMV;
-                    loadGMVFile(dlgOpen.FileName);
-                    validFile = true;
-                }
-                // load a FMV file if it verifies
-                else if (fn.IsValidFMV(dlgOpen.FileName))
-                {
-                    movieType = MovieType.FMV;
-                    loadFMVFile(dlgOpen.FileName);
-                    validFile = true;
-                }
-                // load a VBM file if it verifies
-                else if (fn.IsValidVBM(dlgOpen.FileName))
-                {
-                    movieType = MovieType.VBM;
-                    loadVBMFile(dlgOpen.FileName);
-                    validFile = true;
-                }
-                if (validFile == true)
-                {          
-                    txtMovieFilename.Text = fn.extractFilenameFromPath(dlgOpen.FileName);
+                
+                txtMovieFilename.Text = fn.extractFilenameFromPath(dlgOpen.FileName);
 
-                    // enable grayed menu options
-                    mnuSave.Enabled  = true;
-                    mnuSaveAs.Enabled = true;
-                    mnuClose.Enabled  = true;
+                // enable grayed menu options
+                mnuSave.Enabled   = true;
+                mnuSaveAs.Enabled = true;
+                mnuClose.Enabled  = true;
 
-                    // populate the virtual listview
-                    lvInput.VirtualListSource = arrInput;
-                    lvInput.VirtualListSize = arrInput.Count;
-                    lvInput.Columns[0].Width = 75;                    
-                }
+                // populate the virtual listview
+                lvInput.VirtualListSource = arrInput;
+                lvInput.VirtualListSize = arrInput.Count;
+                lvInput.Columns[0].Width = 75;
+
+                // add frame count to statusbar
+                sbarFrameCount.Text = arrInput.Count.ToString();
             }
+
             dlgOpen.Dispose();
         }
 
@@ -333,6 +346,7 @@ namespace MovieSplicer.UI
             
             // reset filename
             txtMovieFilename.Text = "";
+            sbarFrameCount.Text   = "0";
 
             // reset the input list
             lvInput.Clear();            
@@ -554,11 +568,14 @@ namespace MovieSplicer.UI
         /// Update the listview virtualListSize and the frame count in the statusbar
         /// </summary>
         private void updateControlsAfterEdit()
-        {                        
-            lvInput.VirtualListSize = arrInput.Count;            
+        {
+            lvInput.VirtualListSize = arrInput.Count;
+            //lvInput.ClearVirtualCache();
             lvInput.Refresh();
           
             lvInput.SelectedIndices.Clear();
+
+            sbarFrameCount.Text = arrInput.Count.ToString();
         }
 
     #endregion
@@ -656,9 +673,10 @@ namespace MovieSplicer.UI
             // DEBUG::If frames are loaded from file, they may not be of the same controller length
             try
             {
-                if (((string[])(arrBuffer[0])).Length != (((string[])(arrInput[0])).Length))
+                if (((string[])(arrBuffer[0])).Length != lvInput.Columns.Count - 1)
                 {
                     MessageBox.Show("Copy buffer doesn't contain the same number of controller columns as the current movie, or the copy buffer became corrupt\nClearing contents. (This'll be fixed soon-ish)", "Oops");
+                    clearCopyBuffer();
                     return;
                 }
             }
@@ -714,6 +732,6 @@ namespace MovieSplicer.UI
         }
 
     #endregion      
-
+     
     }
 }

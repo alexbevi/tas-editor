@@ -15,23 +15,88 @@ namespace MovieSplicer.Components
     /// of the chache's source pointer (this definition sucks, but it sorta makes sense to me so :P)
     /// </summary>
     public class TASListView: ListView
-    {            
+    {
+        private const int WM_HSCROLL = 0x114;
+        private const int WM_VSCROLL = 0x115;
+        private const int WM_PAINT   = 0xF;
+
+        public ArrayList VirtualListSource;
+
+        //private ListViewItem[] m_cache;
+        //private int            m_firstItem;
+
         /// <summary>
-        // Constantly redraw the last column so its width is equal to the width of the control
+        /// Horizontal scroll position has changed event
+        /// </summary>
+        public event ScrollEventHandler HorzScrollValueChanged;
+
+        /// <summary>
+        /// Vertical scroll position has changed event
+        /// </summary>
+        public event ScrollEventHandler VertScrollValueChanged;        
+
+        // Based on SB_* constants
+        private static ScrollEventType[] _events =
+            new ScrollEventType[] {
+									  ScrollEventType.SmallDecrement,
+									  ScrollEventType.SmallIncrement,
+									  ScrollEventType.LargeDecrement,
+									  ScrollEventType.LargeIncrement,
+									  ScrollEventType.ThumbPosition,
+									  ScrollEventType.ThumbTrack,
+									  ScrollEventType.First,
+									  ScrollEventType.Last,
+									  ScrollEventType.EndScroll
+								  };
+        /// <summary>
+        /// Decode the type of scroll message
+        /// </summary>
+        /// <param name="wParam">Lower word of scroll notification</param>
+        /// <returns></returns>
+        private ScrollEventType GetEventType(uint wParam)
+        {
+            if (wParam < _events.Length)
+                return _events[wParam];
+            else
+                return ScrollEventType.EndScroll;
+        }
+    
+        /// <summary>
+        // Various message handlers for this control
         /// </summary>
         protected override void WndProc(ref Message message)
-        {
-            const int WM_PAINT = 0xf;
-
-            // if the control is in details view mode and columns
-            // have been added, then intercept the WM_PAINT message
-            // and reset the last column width to fill the list view
+        {                       
             switch (message.Msg)
             {
+                // if the control is in details view mode and columns
+                // have been added, then intercept the WM_PAINT message
+                // and reset the last column width to fill the list view
                 case WM_PAINT:
                     if (this.View == View.Details && this.Columns.Count > 0)
                         this.Columns[this.Columns.Count - 1].Width = -2;
                     break;
+
+                // Was this a horizontal scroll message?
+                case WM_HSCROLL:                    
+                    if (HorzScrollValueChanged != null)
+                    {
+                        uint wParam = (uint)message.WParam.ToInt32();
+                        HorzScrollValueChanged(this,
+                            new ScrollEventArgs(
+                                GetEventType(wParam & 0xffff), (int)(wParam >> 16)));
+                    }
+                    break;
+                    
+                // or a vertical scroll message?
+                case WM_VSCROLL:                    
+                    if (VertScrollValueChanged != null)
+                    {
+                        uint wParam = (uint)message.WParam.ToInt32();
+                        VertScrollValueChanged(this,
+                            new ScrollEventArgs(
+                            GetEventType(wParam & 0xffff), (int)(wParam >> 16)));
+                    }
+                    break;                    
             }
 
             // pass messages on to the base control for processing
@@ -44,14 +109,10 @@ namespace MovieSplicer.Components
         public TASListView()
         {
             this.RetrieveVirtualItem += new RetrieveVirtualItemEventHandler(GetVirtualItem);
-        }
+            //this.CacheVirtualItems +=new CacheVirtualItemsEventHandler(CacheVirtualItemsList);
+        }        
 
-        public ArrayList VirtualListSource;
-        
-        //private ListViewItem[] m_cache;
-        //private int m_firstItem;
-
-        //private void ClearVirtualCache()
+        //public void ClearVirtualCache()
         //{
         //    m_cache = null;
         //}
@@ -62,7 +123,7 @@ namespace MovieSplicer.Components
             //if (m_cache != null && e.ItemIndex >= m_firstItem && e.ItemIndex < m_firstItem + m_cache.Length)
             //    e.Item = m_cache[e.ItemIndex - m_firstItem];
             //else
-            e.Item = GetListItem(e.ItemIndex);
+                e.Item = GetListItem(e.ItemIndex);
         }
 
         private ListViewItem GetListItem(int i)
@@ -79,7 +140,7 @@ namespace MovieSplicer.Components
             if (i % 2 == 0) lv.BackColor = System.Drawing.Color.BlanchedAlmond;
 
             return lv;
-        }        
+        }
 
         //private void CacheVirtualItemsList(object sender, CacheVirtualItemsEventArgs e)
         //{

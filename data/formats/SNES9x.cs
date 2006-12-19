@@ -292,6 +292,8 @@ namespace MovieSplicer.Data
         {
             byte[] input = { 0x00, 0x00 };
             
+            if (inputValues == null) return input;
+
             if (inputValues.Contains(">")) input[1] |= (1 << 0);
             if (inputValues.Contains("<")) input[1] |= (1 << 1);
             if (inputValues.Contains("v")) input[1] |= (1 << 2);

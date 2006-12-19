@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+
+using MovieSplicer.Data.Structures;
 /***************************************************************************************************
  * Read and parse a Famtasia FMV movie file
  **************************************************************************************************/
@@ -16,7 +18,7 @@ namespace MovieSplicer.Data
         
         public string    Filename;
         public FMVHeader Header;
-        public ArrayList ControllerInput;
+        public ArrayList ControllerInput;        
 
         static byte      bytesPerFrame; // populated when FMVHeader() is created
         static Functions fn = new Functions();
@@ -96,18 +98,18 @@ namespace MovieSplicer.Data
         private void populateControllerData(ref byte[] byteArray)
         {
             ControllerInput = new ArrayList();
-                        
+
             for (int i = HEADER_SIZE; i < byteArray.Length; i++)
             {
                 string[] frameData = new string[3];
-                
+
                 for (int j = 0; j < bytesPerFrame; j++)
                 {
                     frameData[j] = parseControllerData(byteArray[i]);
-                    if(j > 0) i++;
+                    if (j > 0) i++;
                 }
                 ControllerInput.Add(frameData);
-            }
+            }           
         }
 
         /// <summary>
