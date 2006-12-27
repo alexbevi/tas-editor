@@ -1,9 +1,10 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Windows.Forms;
+
+using MovieSplicer.Data;
 
 namespace MovieSplicer.UI.Methods
 {
@@ -14,53 +15,58 @@ namespace MovieSplicer.UI.Methods
     {
         /// <summary>
         /// Load the contents of an external file to the copy buffer
+        /// Returns the column count
         /// </summary>        
-        public static void Load(string filename, ref string bufferType, ref ArrayList buffer)
+        public int Load(string filename, ref string bufferType, ref TASMovieInput[] buffer)
         {
             StreamReader reader = File.OpenText(filename);
+            bufferType = reader.ReadLine();            
 
-            bufferType = reader.ReadLine();
+            int columns = 0;
 
             // TODO::This is a weak validation routine
             if (bufferType.Length != 3)
             {
                 MessageBox.Show("Buffer file appears to be invalid", "Oops");
-                return;
+                return 0;
             }
 
-            string lineItem = null;
-            
+            string lineItem = null;            
             while ((lineItem = reader.ReadLine()) != null)
             {
-                string[] frame = lineItem.Split('|');
-                buffer.Add(frame);
+                TASMovieInput frame = new TASMovieInput();
+                string[]      split = lineItem.Split('|');
+                for (int i = 0; i < split.Length; i++)                
+                    frame.Controller[i] = split[i];
+                                    
+                TASMovieInput.Insert(ref buffer, frame, buffer.Length, 1);
+                columns = split.Length;
             }
 
             reader.Close(); reader.Dispose();
+
+            return columns;
         }
 
         /// <summary>
         /// Save the contents of the copy buffer out to file
         /// </summary>        
-        public static void Save(string filename, string bufferType, ArrayList buffer, int columns)
+        public static void Save(string filename, string bufferType, ref TASMovieInput[] buffer, int columns)
         {
             TextWriter writer = File.CreateText(filename);
 
             writer.WriteLine(bufferType);
-            
-            foreach (string[] frame in buffer)
+
+            for (int i = 0; i < buffer.Length; i++)
             {
                 string lineItem = "";
-
-                for (int i = 0; i < columns; i++)
+                for (int j = 0; j < columns; j++)
                 {
-                    lineItem += frame[i] + "|";
-                }                                
+                    lineItem += buffer[i].Controller[j] + "|";
+                }
                 lineItem = lineItem.Remove(lineItem.Length - 1); // trim last char
-                
                 writer.WriteLine(lineItem);
-            }
-
+            }            
             writer.Close(); writer.Dispose();
         }
 

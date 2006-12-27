@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-namespace MovieSplicer.ui
+namespace MovieSplicer.UI
 {
     public partial class frmCompare : Form
     {

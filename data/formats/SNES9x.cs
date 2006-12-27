@@ -1,27 +1,46 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using System.IO;
-/***************************************************************************************************
- * Read and parse an SMV file
- **************************************************************************************************/
-namespace MovieSplicer.Data
-{
-    public class SNES9x
-    {                       
-        const byte BYTES_PER_FRAME = 2;        
-                
-        private byte[] fileContents;
-        
-        public string            Filename;
-        public SMVHeader         Header;
-        public SMVOptions        Options;
-        public SMVROMInfo        ROMInfo;
-        public SMVControllerData ControllerData;
 
-        static Functions fn = new Functions();
-        static int[] offsets = {
+namespace MovieSplicer.Data.Formats
+{
+    public class SNES9x : TASMovie
+    {
+        /// <summary>
+        /// Contains Format Specific items
+        /// </summary>
+        public struct FormatSpecific
+        {
+            public bool HASROMINFO;
+            public bool WIP1TIMING;
+            public bool LEFTRIGHT;
+            public bool VOLUMEENVX;
+            public bool FAKEMUTE;
+            public bool SYNCSOUND;
+
+            public FormatSpecific(byte options)
+            {
+                WIP1TIMING = (1 & (options >> 1)) == 1 ? true : false;
+                LEFTRIGHT  = (1 & (options >> 2)) == 1 ? true : false;
+                VOLUMEENVX = (1 & (options >> 3)) == 1 ? true : false;
+                FAKEMUTE   = (1 & (options >> 4)) == 1 ? true : false;
+                SYNCSOUND  = (1 & (options >> 5)) == 1 ? true : false;
+                HASROMINFO = (1 & (options >> 6)) == 1 ? true : false;
+            }
+        } 
+
+        const byte BYTES_PER_FRAME   = 2;
+        const byte EXTRAROMINFO_SIZE = 30;
+        const byte METADATA_LENGTH   = 30;  
+
+        public Header         SMVHeader;
+        public Options        SMVOptions;
+        public Extra          SMVExtra;
+        public Input          SMVInput;
+        public FormatSpecific SMVSpecific;
+
+        private string[] InputValues = { ">", "<", "v", "^", "S", "s", "Y", "B", "R", "L", "X", "A" };
+        private int[]    Offsets = {
             0x00, // 4-byte signature: 53 4D 56 1A "SMV\x1A"
             0x04, // 4-byte little-endian unsigned int: version number, must be 1
             0x08, // 4-byte little-endian integer: movie "uid" - recording time in Unix epoch format
@@ -58,259 +77,140 @@ namespace MovieSplicer.Data
          
             0x03, // Extra Rom Info -> Rom CRC
             0x07  // Extra Rom Info -> Rom Name
-        };  
+        };
 
-        /// <summary>
-        /// Create a fully instantiated SMV object from the passed file
-        /// </summary>        
         public SNES9x(string SMVFile)
         {
             Filename = SMVFile;
+            FillByteArrayFromFile(SMVFile, ref FileContents);
 
-            FileStream   fs = File.OpenRead(SMVFile);
-            BinaryReader br = new BinaryReader(fs);
+            ControllerDataOffset = Read32(ref FileContents, Offsets[10]);
+            SaveStateOffset = Read32(ref FileContents, Offsets[9]);
+
+            SMVHeader = new Header();
+            SMVHeader.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
+            SMVHeader.Version       = Read32(ref FileContents, Offsets[1]);
+            SMVHeader.UID           = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
+            SMVHeader.FrameCount    = Read32(ref FileContents, Offsets[4]);
+            SMVHeader.RerecordCount = Read32(ref FileContents, Offsets[3]);
             
-            fileContents = br.ReadBytes((int)fs.Length);
+            SMVOptions = new Options(true);
+            SMVOptions.MovieStartFlag[0]  = (1 & (FileContents[Offsets[6]] >> 0)) == 1 ? true : false;
+            SMVOptions.MovieStartFlag[1]  = (1 & (FileContents[Offsets[6]] >> 0)) == 0 ? true : false;
+            SMVOptions.MovieTimingFlag[0] = (1 & (FileContents[Offsets[6]] >> 1)) == 0 ? true : false;
+            SMVOptions.MovieTimingFlag[1] = (1 & (FileContents[Offsets[6]] >> 1)) == 1 ? true : false;
 
-            br.Close(); br = null; fs.Dispose();
-            
-            Header         = new SMVHeader(ref fileContents);
-            Options        = new SMVOptions(Header.SyncOptionsFlags, Header.MovieOptionsFlags);
-            ROMInfo        = new SMVROMInfo(ref fileContents, Options.HASROMINFO, Header.SaveStateOffset);
-            ControllerData = new SMVControllerData(ref fileContents, Header.ControllerFlags, (int)Header.FrameCount, Header.ControllerDataOffset);
-        }                      
+            SMVSpecific = new FormatSpecific(FileContents[Offsets[8]]);
 
-    #region "Structure"
+            SMVExtra = new Extra();
+            if (SMVSpecific.HASROMINFO)
+            {
+                SMVExtra.ROM = ReadChars(ref FileContents, 0x07 + SaveStateOffset - EXTRAROMINFO_SIZE, 23);
+                SMVExtra.CRC = ReadHEXUnicode(ref FileContents, 0x03 + SaveStateOffset - EXTRAROMINFO_SIZE, 4); 
+            }
+            SMVExtra.Author = ReadChars16(ref FileContents, SaveStateOffset - METADATA_LENGTH, METADATA_LENGTH);
 
-        /// <summary>
-        /// Parse the SMV Header information
-        /// </summary>
-        public class SMVHeader
+            SMVInput = new Input(5, false);
+            for (int c = 0; c < 5; c++)            
+                SMVInput.Controllers[c] = ((1 & (FileContents[Offsets[5]] >> c)) == 1) ? true : false;
+
+            getFrameInput(ref FileContents);                                     
+        }
+
+        private void getFrameInput(ref byte[] byteArray)
         {
-            const byte METADATA_LENGTH = 30;            
-
-            public string Signature;
-            public uint   Version;
-            public string UID;
-            public uint   ReRecordCount;
-            public uint   FrameCount;
-            public byte   ControllerFlags;
-            public byte   MovieOptionsFlags;
-            public byte   SyncOptionsFlags;
-            public uint   SaveStateOffset;
-            public uint   ControllerDataOffset;
-            public string Metadata;
-            
-            public SMVHeader(ref byte[] byteArray)
-            {
-                Signature            = fn.ReadHEX(fn.readBytes(ref byteArray, offsets[0], 4));
-                Version              = fn.Read32(fn.readBytes(ref byteArray, offsets[1], 4));
-                UID                  = fn.ConvertUNIXTime((fn.Read32(fn.readBytes(ref byteArray, offsets[2], 4))));
-                ReRecordCount        = fn.Read32(fn.readBytes(ref byteArray, offsets[3], 4));
-                FrameCount           = fn.Read32(fn.readBytes(ref byteArray, offsets[4], 4));
-                ControllerFlags      = fn.readBytes(ref byteArray, offsets[5], 1)[0];
-                MovieOptionsFlags    = fn.readBytes(ref byteArray, offsets[6], 1)[0];
-                SyncOptionsFlags     = fn.readBytes(ref byteArray, offsets[8], 1)[0];
-                SaveStateOffset      = fn.Read32(fn.readBytes(ref byteArray, offsets[9], 4));
-                ControllerDataOffset = fn.Read32(fn.readBytes(ref byteArray, offsets[10], 4));
-                Metadata             = fn.ReadChars16(fn.readBytes(ref byteArray, offsets[11], (int)SaveStateOffset - METADATA_LENGTH));             
-            }
-        }
-
-        /// <summary>
-        /// SMV synch option flags parser        
-        /// </summary>
-        public class SMVOptions
-        {                               
-            public bool HASROMINFO;
-            public bool WIP1TIMING;
-            public bool LEFTRIGHT;
-            public bool VOLUMEENVX;
-            public bool FAKEMUTE;
-            public bool SYNCSOUND;
-
-            public bool RESET = false; // check if movie starts from save or reset
-            public bool PAL   = false; // check if movie is ntsc or pal
-            
-            public SMVOptions(byte syncOptions, byte movieOptions)
-            {
-                WIP1TIMING = (1 & (syncOptions >> 1)) == 1 ? true : false;
-                LEFTRIGHT  = (1 & (syncOptions >> 2)) == 1 ? true : false;
-                VOLUMEENVX = (1 & (syncOptions >> 3)) == 1 ? true : false;
-                FAKEMUTE   = (1 & (syncOptions >> 4)) == 1 ? true : false;
-                SYNCSOUND  = (1 & (syncOptions >> 5)) == 1 ? true : false;
-                HASROMINFO = (1 & (syncOptions >> 6)) == 1 ? true : false;
-
-                if (movieOptions == 0x01 || movieOptions == 0x03) RESET = true;
-                if (movieOptions == 0x02 || movieOptions == 0x03) PAL   = true;                
-            }                     
-        }
-
-        /// <summary>
-        /// Encapsulates Extra ROM Info (if available)        
-        /// </summary>        
-        public class SMVROMInfo
-        {
-            const byte EXTRAROMINFO_SIZE = 30;
-
-            public string CRC = "";
-            public string Name = "";
-            
-            public SMVROMInfo(ref byte[] byteArray, bool extraInfo, uint offset)
-            {
-                if (!extraInfo) return;
-               
-                // 000 3 bytes of zero padding: 00 00 00
-                // 003 4-byte integer: CRC32 of the ROM
-                // 007 23-byte ascii string:
-                //      the game name copied from the ROM, truncated to 23 bytes
-                //      (the game name in the ROM is 21 bytes)
-                
-                CRC = fn.ReadHEXUnicode(fn.readBytes(ref byteArray, 
-                    (0x03 + (int)offset - EXTRAROMINFO_SIZE), 4));
-                Name = fn.ReadChars(fn.readBytes(ref byteArray, 
-                    (0x07 + (int)offset - EXTRAROMINFO_SIZE), 23));
-            
-            }
-        }
-
-        /// <summary>
-        /// Parse the controller data into an array, along with a textual representation of the input
-        /// Also contains a bool array of the controllers in use
-        /// </summary>
-        public class SMVControllerData
-        {            
-            public bool[]    Controller = { false, false, false, false, false };                        
-            public ArrayList ControllerInput = new ArrayList();
-           
-            public SMVControllerData(ref byte[] byteArray, byte controllerFlags, int frameCount, uint offset)
-            {
-                byte controllerCount = 0;
-                
-                // check which controllers are in use
-                for (int c = 0; c < 5; c++)
-                {
-                    if ((1 & (controllerFlags >> c)) == 1)
-                    {
-                        Controller[c] = true;
-                        controllerCount++;
-                    }
-                }                
-               
-                // parse frame data
-                for (int i = 0; i < frameCount; i++)
-                {
-                    string[] input = new string[controllerCount];
-                    
-                    // cycle through the controller data for the current frame
-                    for (int j = 0; j < controllerCount; j++)
-                        input[j] = parseControllerData(fn.readBytes(ref byteArray,
-                            (int)offset + (i * BYTES_PER_FRAME) + (j * BYTES_PER_FRAME),
-                            BYTES_PER_FRAME));
-
-                    ControllerInput.Add(input);
-                }
-            }
-
-            /// <summary>
-            /// Convert the binary representation of input to meaningful values 
-            /// </summary>
-            private string parseControllerData(byte[] byteArray)
-            {                
-                string   input = "";                
-                string[] inputValues = { ">", "<", "v", "^", "S", "s", "Y", "B", "R", "L", "X", "A" };                
-              
-                // check the first byte of input
-                for (int i = 0; i < 8; i++)
-                {                    
-                    if ((1 & (byteArray[1] >> i)) == 1)
-                        input += inputValues[i];                    
-                }
-                // check the second byte of input
-                for (int j = 4; j < 8; j++)
-                {
-                    if ((1 & (byteArray[0] >> j)) == 1)
-                        input += inputValues[j+4];
-                }               
-                return input;
-            }
-            
-        }
-
-    #endregion
-
-    #region "Methods"       
-       
-        /// <summary>
-        /// Save an SMV file back out to disk
-        /// </summary>
-        public void Save(string filename, ref ArrayList input)
-        {
-            ArrayList outputFile = new ArrayList();            
-
-            // get the initial file contents up to the controller data
-            fn.bytesToArray(ref outputFile, this.fileContents, 0, (int)this.Header.ControllerDataOffset);
+            SMVInput.FrameData = new TASMovieInput[SMVHeader.FrameCount];
 
             // parse frame data
-            for (int i = 0; i < input.Count; i++)
+            for (int i = 0; i < SMVHeader.FrameCount; i++)
             {
-                string[] frameData = (string[])input[i];
-                //cycle through the controller data for the current frame
-                for (int j = 0; j < frameData.Length; j++)
+                SMVInput.FrameData[i] = new TASMovieInput();
+
+                // cycle through the controller data for the current frame
+                for (int j = 0; j < SMVInput.ControllerCount; j++)
                 {
-                    byte[] convertedInput = parseControllerData(frameData[j]);
-                    outputFile.Add(convertedInput[0]);
-                    outputFile.Add(convertedInput[1]);
-                }
+                    byte[] frame = ReadBytes(ref byteArray, 
+                        ControllerDataOffset + (i * BYTES_PER_FRAME) + (j * BYTES_PER_FRAME), 
+                        BYTES_PER_FRAME);
+
+                    SMVInput.FrameData[i].Controller[j] = parseControllerData(frame);
+                }                  
             }
+        }
+
+        /// <summary>
+        /// Convert the binary representation of input to meaningful values 
+        /// </summary>
+        private string parseControllerData(byte[] byteArray)
+        {
+            string   input = "";
             
-            // if no filename provided, assign current filename
-            if (filename == "") filename = this.Filename;
-
-            FileStream   fs     = File.Open(filename, FileMode.Create);
-            BinaryWriter writer = new BinaryWriter(fs);
-
-            // convert to 4-byte little-endian
-            byte[] newFrameCount = fn.Write32(input.Count);
-
-            // position in the target stream to insert the new values
-            outputFile[0x10] = newFrameCount[0];
-            outputFile[0x11] = newFrameCount[1];
-            outputFile[0x12] = newFrameCount[2];
-            outputFile[0x13] = newFrameCount[3];
-
-            // write out the new file's contents
-            foreach (byte b in outputFile) writer.Write(b);
-
-            writer.Close(); writer = null; fs.Dispose();       
-        } 
+            // check the first byte of input
+            for (int i = 0; i < 8; i++)
+            {
+                if ((1 & (byteArray[1] >> i)) == 1)
+                    input += InputValues[i];
+            }
+            // check the second byte of input
+            for (int j = 4; j < 8; j++)
+            {
+                if ((1 & (byteArray[0] >> j)) == 1)
+                    input += InputValues[j + 4];
+            }
+            return input;
+        }
 
         /// <summary>
         /// Convert the string representation of input back to binary values
         /// </summary>
-        private byte[] parseControllerData(string inputValues)
+        private byte[] parseControllerData(string frameInput)
         {
             byte[] input = { 0x00, 0x00 };
+
+            if (frameInput == null || frameInput == "") return input;
             
-            if (inputValues == null) return input;
+            for (int i = 0; i < 8; i++)            
+                if (frameInput.Contains(InputValues[i])) input[1] |= (byte)(1 << i);                                        
+            for (int j = 4; j < 8; j++)
+                if (frameInput.Contains(InputValues[j + 4])) input[0] |= (byte)(1 << j);                                        
+            
+            return input;
+        }
 
-            if (inputValues.Contains(">")) input[1] |= (1 << 0);
-            if (inputValues.Contains("<")) input[1] |= (1 << 1);
-            if (inputValues.Contains("v")) input[1] |= (1 << 2);
-            if (inputValues.Contains("^")) input[1] |= (1 << 3);
-            if (inputValues.Contains("S")) input[1] |= (1 << 4);
-            if (inputValues.Contains("s")) input[1] |= (1 << 5);
-            if (inputValues.Contains("Y")) input[1] |= (1 << 6);
-            if (inputValues.Contains("B")) input[1] |= (1 << 7);
-            if (inputValues.Contains("R")) input[0] |= (1 << 4);
-            if (inputValues.Contains("L")) input[0] |= (1 << 5);
-            if (inputValues.Contains("X")) input[0] |= (1 << 6);
-            if (inputValues.Contains("A")) input[0] |= (1 << 7);
+        /// <summary>
+        /// Save an SMV file back out to disk
+        /// </summary>
+        public void Save(string filename, ref TASMovieInput[] input)
+        {            
+            byte[] head = ReadBytes(ref FileContents, 0, ControllerDataOffset);
+            int size = 0;
+            int controllers = SMVInput.ControllerCount;
 
-            return input;        
+            // get the size of the file byte[] (minus the header)
+            for (int i = 0; i < input.Length; i++)
+                for (int j = 0; j < controllers; j++)                    
+                        size += BYTES_PER_FRAME;
+
+            // create the output array and copy in the contents
+            byte[] outputFile = new byte[head.Length + size];
+            head.CopyTo(outputFile, 0);
+
+            // add the controller data
+            int position = 0;
+            for (int i = 0; i < input.Length; i++)
+            {
+                for (int j = 0; j < controllers; j++)
+                {
+                    // check if the controller we're about to process is used
+                    if (SMVInput.Controllers[j])
+                    {
+                        byte[] parsed = parseControllerData(input[i].Controller[j]);
+                        outputFile[head.Length + position++] = parsed[0];
+                        outputFile[head.Length + position++] = parsed[1];
+                    }
+                }
+            }
+            WriteByteArrayToFile(ref outputFile, filename, input.Length, Offsets[4]);  
         } 
-              
-    #endregion
-    
     }
 }

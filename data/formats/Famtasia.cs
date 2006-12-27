@@ -1,28 +1,31 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
 
-using MovieSplicer.Data.Structures;
-/***************************************************************************************************
- * Read and parse a Famtasia FMV movie file
- **************************************************************************************************/
-namespace MovieSplicer.Data
+namespace MovieSplicer.Data.Formats
 {
-    public class Famtasia
+    public class Famtasia : TASMovie
     {
-        const byte HEADER_SIZE = 144;
-                
-        private byte[] fileContents;
-        
-        public string    Filename;
-        public FMVHeader Header;
-        public ArrayList ControllerInput;        
+        /// <summary>
+        /// Contains Format Specific items
+        /// </summary>
+        public struct FormatSpecific
+        {
+            public bool FDS;
+        }   
 
-        static byte      bytesPerFrame; // populated when FMVHeader() is created
-        static Functions fn = new Functions();
-        static int[] offsets = {
+        const byte HEADER_SIZE = 144;
+
+        public Header         FMVHeader;
+        public Options        FMVOptions;
+        public Extra          FMVExtra;
+        public Input          FMVInput;
+        public FormatSpecific FMVSpecific;
+
+        private byte     BytesPerFrame = 0;
+        private string[] InputValues = { ">", "<", "^", "v", "B", "A", "s", "S" };
+        private int[]    Offsets = {
             0x00, // 4-byte signature: 46 4D 56 1A "FMV\x1A"
             0x04, // 1-byte flags:
                   //      bit 7: 0=reset-based, 1=savestate-based
@@ -41,75 +44,59 @@ namespace MovieSplicer.Data
         };
 
         public Famtasia(string FMVFile)
-        {
+        {                        
             Filename = FMVFile;
+            FillByteArrayFromFile(FMVFile, ref FileContents);
 
-            FileStream   fs = File.OpenRead(FMVFile);
-            BinaryReader br = new BinaryReader(fs);
+            FMVOptions = new Options(true);            
+            FMVOptions.MovieStartFlag[0] = (1 & (FileContents[Offsets[1]]) >> 7) == 0 ? true : false;
+            FMVOptions.MovieStartFlag[1] = (1 & (FileContents[Offsets[1]]) >> 7) == 1 ? true : false;
+            
+            FMVExtra = new Extra();
+            FMVExtra.Description = ReadChars(ref FileContents, Offsets[7], 64);
 
-            fileContents = br.ReadBytes((int)fs.Length);
-
-            br.Close(); br = null; fs.Dispose();
-
-            Header = new FMVHeader(ref fileContents);
-                        
-            populateControllerData(ref fileContents);
-        }
-
-        /// <summary>
-        /// Encapsulates all FMV Header information
-        /// </summary>
-        public class FMVHeader
-        {
-            public string Signature;
-            public bool   StartFromReset;
-            public bool   StartFromSave;           
-            public bool   FDS;
-            public int    FrameCount;
-            public uint   ReRecordCount;
-            public string EmulatorID;
-            public string MovieTitle;
-            public bool[] Controllers = { false, false };
-
-            public FMVHeader(ref byte[] byteArray)
+            FMVInput = new Input(2, false);            
+            for (int i = 0; i < 2; i++)
             {
-                Signature      = fn.ReadHEX(fn.readBytes(ref byteArray, offsets[0], 4));
-                StartFromReset = (1 & (byteArray[offsets[1]]) >> 7) == 0 ? true : false;
-                StartFromSave  = (1 & (byteArray[offsets[1]]) >> 7) == 1 ? true : false;
-                ReRecordCount  = fn.Read32(fn.readBytes(ref byteArray, offsets[4], 4)) - 1;
-                Controllers[0] = (1 & (byteArray[offsets[2]]) >> 7) == 1 ? true : false;
-                Controllers[1] = (1 & (byteArray[offsets[2]]) >> 6) == 1 ? true : false;
-                FDS            = (1 & (byteArray[offsets[2]]) >> 5) == 1 ? true : false;
-                MovieTitle     = fn.ReadChars(fn.readBytes(ref byteArray, offsets[7], 64));
-                EmulatorID     = fn.ReadChars(fn.readBytes(ref byteArray, offsets[6], 64));
-
-                bytesPerFrame = 0;
-                if (Controllers[0] == true) bytesPerFrame++;
-                if (Controllers[1] == true) bytesPerFrame++;
-                if (FDS == true) bytesPerFrame++;
-                
-                FrameCount = byteArray.Length - HEADER_SIZE / bytesPerFrame;                
+                if ((1 & (FileContents[Offsets[2]]) >> 7 - i) == 1)
+                {
+                    FMVInput.Controllers[i] = true;                    
+                    BytesPerFrame++;
+                }
             }
+
+            FMVSpecific = new FormatSpecific();
+            if ((1 & (FileContents[Offsets[2]]) >> 5) == 1)
+            {
+                FMVSpecific.FDS = true;
+                BytesPerFrame++;
+            }
+            else
+                FMVSpecific.FDS = false;
+
+            FMVHeader = new Header();
+            FMVHeader.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
+            FMVHeader.RerecordCount = Read32(ref FileContents, Offsets[4]);
+            FMVHeader.EmulatorID    = ReadChars(ref FileContents, Offsets[6], 64);
+            FMVHeader.FrameCount    = FileContents.Length - HEADER_SIZE / BytesPerFrame;
+
+            getFrameInput(ref FileContents);
         }
 
         /// <summary>
         /// Convert FMV binary data to a readable string representation
         /// </summary>
-        private void populateControllerData(ref byte[] byteArray)
+        private void getFrameInput(ref byte[] byteArray)
         {
-            ControllerInput = new ArrayList();
-
-            for (int i = HEADER_SIZE; i < byteArray.Length; i++)
+            FMVInput.FrameData = new TASMovieInput[FMVHeader.FrameCount];
+            
+            for (int i = 0; i < FMVHeader.FrameCount; i++)
             {
-                string[] frameData = new string[3];
-
-                for (int j = 0; j < bytesPerFrame; j++)
-                {
-                    frameData[j] = parseControllerData(byteArray[i]);
-                    if (j > 0) i++;
-                }
-                ControllerInput.Add(frameData);
-            }           
+                FMVInput.FrameData[i] = new TASMovieInput();
+                for (int j = 0; j < BytesPerFrame; j++)                
+                    FMVInput.FrameData[i].Controller[j] = parseControllerData(byteArray[HEADER_SIZE + i + j]);                                    
+                i += BytesPerFrame - 1;
+            }
         }
 
         /// <summary>
@@ -118,67 +105,47 @@ namespace MovieSplicer.Data
         private string parseControllerData(byte frameInput)
         {
             string input = "";
-             
-            if((1 & (frameInput >> 0)) == 1) input += ">";
-            if((1 & (frameInput >> 1)) == 1) input += "<";
-            if((1 & (frameInput >> 2)) == 1) input += "^";
-            if((1 & (frameInput >> 3)) == 1) input += "v";
-            if((1 & (frameInput >> 4)) == 1) input += "B";
-            if((1 & (frameInput >> 5)) == 1) input += "A";
-            if((1 & (frameInput >> 6)) == 1) input += "s";
-            if((1 & (frameInput >> 7)) == 1) input += "S";
+
+            for (int i = 0; i < 8; i++)
+                if ((1 & (frameInput >> i)) == 1) input += InputValues[i];
+            
+            return input;
+        }
+       
+        /// <summary>
+        /// FMV input conversion (string -> bit position)
+        /// </summary> 
+        private byte parseControllerData(string frameValue)
+        {
+            byte input = 0x00;
+
+            for (int i = 0; i < 8; i++)
+                if (frameValue.Contains(InputValues[i])) input |= (byte)(1 << i);
 
             return input;
         }
 
         /// <summary>
         /// Save input changes back out to file
+        /// 
+        /// TODO::Save might fail if this is an FDS movie (since FDS is factored into the BytesPerFrame)
         /// </summary>        
-        public void Save(string filename, ref ArrayList input)
+        public void Save(string filename, ref TASMovieInput[] input)
         {
-            ArrayList outputFile = new ArrayList();
+            byte[] head = ReadBytes(ref FileContents, 0, Offsets[8]);
 
-            fn.bytesToArray(ref outputFile, this.fileContents, 0, offsets[8]);
-            string[] currentFrameInput = new string[bytesPerFrame];
-
-            for (int i = 0; i < input.Count; i++)
-            {
-                currentFrameInput = (string[])input[i];
-
-                for (int j = 0; j < currentFrameInput.Length; j++)
-                {
-                    if (currentFrameInput[j] != null)                                            
-                        outputFile.Add(parseControllerInput(currentFrameInput[j]));                    
-                }
-            }
-
-            if (filename == "") filename = this.Filename;
-
-            FileStream fs = File.Open(filename, FileMode.Create);
-            BinaryWriter writer = new BinaryWriter(fs);
-
-            foreach (byte b in outputFile) writer.Write(b);
-
-            writer.Close(); writer = null; fs.Dispose();     
-        }
-
-        /// <summary>
-        /// FMV input conversion (string -> bit position)
-        /// </summary> 
-        private byte parseControllerInput(string frameInput)
-        {
-            byte input = 0x00;
+            // create the output array and copy in the contents
+            byte[] outputFile = new byte[head.Length + input.Length * BytesPerFrame];
+            head.CopyTo(outputFile, 0);
             
-            if (frameInput.Contains(">")) input |= (1 << 0);
-            if (frameInput.Contains("<")) input |= (1 << 1);
-            if (frameInput.Contains("^")) input |= (1 << 2);
-            if (frameInput.Contains("v")) input |= (1 << 3);
-            if (frameInput.Contains("B")) input |= (1 << 4);
-            if (frameInput.Contains("A")) input |= (1 << 5);
-            if (frameInput.Contains("s")) input |= (1 << 6);
-            if (frameInput.Contains("S")) input |= (1 << 7);            
-
-            return input;
+            int position = 0;
+            int controllers = FMVInput.ControllerCount;
+            for (int i = 0; i < input.Length; i++)            
+                for (int j = 0; j < controllers; j++)                
+                    outputFile[head.Length + position++] = parseControllerData(input[i].Controller[j]);                                                          
+           
+            // NOTE::FMV files calculate frameCount based on filesize
+            WriteByteArrayToFile(ref outputFile, filename, 0, 0);  
         }
     }
 }

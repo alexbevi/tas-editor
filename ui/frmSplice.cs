@@ -9,17 +9,15 @@ using System.Windows.Forms;
 using System.IO;
 
 using MovieSplicer.Data;
-using MovieSplicer.Data.Structures;
+using MovieSplicer.Data.Formats;
+using MovieSplicer.Components;
 /*****************************************************************************************************
  * Copy a range of frames from the source movie to the target movie
  ****************************************************************************************************/
 namespace MovieSplicer.UI
 {        
-    public partial class frmSplice : Form
-    {      
-        static Functions fn     = new Functions();
-        static string    filter = fn.ALL_FILTER + "|" + fn.SMV_FILTER + "|" + fn.FCM_FILTER + "|" + 
-                                  fn.GMV_FILTER + "|" + fn.FMV_FILTER + "|" + fn.VBM_FILTER;
+    public partial class frmSplice : TASForm
+    {              
         OpenFileDialog   dlg;
                 
         static object sourceMovie = null;
@@ -39,28 +37,28 @@ namespace MovieSplicer.UI
         {           
             if (movie is Gens)
             {
-                fileName.Text = fn.extractFilenameFromPath(((Gens)movie).Filename);            
-                frameCount.Text = String.Format("{0:0,0}", ((Gens)movie).Header.FrameCount);
+                fileName.Text = FilenameFromPath(((Gens)movie).Filename);            
+                frameCount.Text = String.Format("{0:0,0}", ((Gens)movie).GMVHeader.FrameCount);
             }
             else if (movie is SNES9x)
             {
-                fileName.Text = fn.extractFilenameFromPath(((SNES9x)movie).Filename);
-                frameCount.Text = String.Format("{0:0,0}", ((SNES9x)movie).Header.FrameCount);
+                fileName.Text = FilenameFromPath(((SNES9x)movie).Filename);
+                frameCount.Text = String.Format("{0:0,0}", ((SNES9x)movie).SMVHeader.FrameCount);
             }
             else if (movie is FCEU)
             {
-                fileName.Text = fn.extractFilenameFromPath(((FCEU)movie).Filename);            
-                frameCount.Text = String.Format("{0:0,0}", ((FCEU)movie).Header.FrameCount);
+                fileName.Text = FilenameFromPath(((FCEU)movie).Filename);            
+                frameCount.Text = String.Format("{0:0,0}", ((FCEU)movie).FCMHeader.FrameCount);
             }
             else if (movie is VisualBoyAdvance)
             {
-                fileName.Text = fn.extractFilenameFromPath(((VisualBoyAdvance)movie).Filename);
-                frameCount.Text = String.Format("{0:0,0}", ((VisualBoyAdvance)movie).Header.FrameCount);
+                fileName.Text = FilenameFromPath(((VisualBoyAdvance)movie).Filename);
+                frameCount.Text = String.Format("{0:0,0}", ((VisualBoyAdvance)movie).VBMHeader.FrameCount);
             }
             else if (movie is Famtasia)
             {
-                fileName.Text = fn.extractFilenameFromPath(((Famtasia)movie).Filename);
-                frameCount.Text = String.Format("{0:0,0}", ((Famtasia)movie).Header.FrameCount);
+                fileName.Text = FilenameFromPath(((Famtasia)movie).Filename);
+                frameCount.Text = String.Format("{0:0,0}", ((Famtasia)movie).FMVHeader.FrameCount);
             }
         }   
      
@@ -88,13 +86,14 @@ namespace MovieSplicer.UI
         private void loadFile(bool sourceFile)
         {
             dlg = new OpenFileDialog();
-            dlg.Filter = filter;
+            dlg.Filter = TAS_FILTER;
+
             dlg.ShowDialog();
 
             // if no file loaded, exit
             if (dlg.FileName.Length == 0) { dlg.Dispose(); return; }
 
-            MovieType movieType = fn.IsValid(dlg.FileName);
+            MovieType movieType = IsValid(dlg.FileName);
             
             switch(sourceFile)
             {
@@ -144,39 +143,39 @@ namespace MovieSplicer.UI
         /// </summary>        
         private void btnSplice_Click(object sender, EventArgs e)
         {
-            ArrayList source;
-            ArrayList target;            
+            TASMovieInput[] source;
+            TASMovieInput[] target;                        
             MovieType movieType = MovieType.None;
 
             // make sure loaded movies are of the same type
-            if ((sourceMovie as SNES9x) != null && (targetMovie as SNES9x) != null)            
+            if ((sourceMovie as SNES9x) != null && (targetMovie as SNES9x) != null)
             {
-                source    = ((SNES9x)sourceMovie).ControllerData.ControllerInput;
-                target    = ((SNES9x)targetMovie).ControllerData.ControllerInput;
+                source = ((SNES9x)sourceMovie).SMVInput.FrameData;
+                target = ((SNES9x)targetMovie).SMVInput.FrameData;
                 movieType = MovieType.SMV;
             }
             else if ((sourceMovie as Gens) != null && (targetMovie as Gens) != null)
             {
-                source    = ((Gens)sourceMovie).ControllerData.ControllerInput;
-                target    = ((Gens)targetMovie).ControllerData.ControllerInput;
+                source = ((Gens)sourceMovie).GMVInput.FrameData;
+                target = ((Gens)targetMovie).GMVInput.FrameData;
                 movieType = MovieType.GMV;
             }
             else if ((sourceMovie as FCEU) != null && (targetMovie as FCEU) != null)
             {
-                source    = ((FCEU)sourceMovie).ControllerData.ControllerInput;
-                target    = ((FCEU)targetMovie).ControllerData.ControllerInput;
-                movieType = MovieType.FCM;                                       
+                source = ((FCEU)sourceMovie).FCMInput.FrameData;
+                target = ((FCEU)targetMovie).FCMInput.FrameData;
+                movieType = MovieType.FCM;
             }
             else if ((sourceMovie as Famtasia) != null && (targetMovie as Famtasia) != null)
             {
-                source = ((Famtasia)sourceMovie).ControllerInput;
-                target = ((Famtasia)targetMovie).ControllerInput;
+                source = ((Famtasia)sourceMovie).FMVInput.FrameData;
+                target = ((Famtasia)targetMovie).FMVInput.FrameData;
                 movieType = MovieType.FMV;
             }
             else if ((sourceMovie as VisualBoyAdvance) != null && (targetMovie as VisualBoyAdvance) != null)
             {
-                source = ((VisualBoyAdvance)sourceMovie).ControllerData;
-                target = ((VisualBoyAdvance)targetMovie).ControllerData;
+                source = ((VisualBoyAdvance)sourceMovie).VBMInput.FrameData;
+                target = ((VisualBoyAdvance)targetMovie).VBMInput.FrameData;
                 movieType = MovieType.VBM;
             }
             else
@@ -186,21 +185,21 @@ namespace MovieSplicer.UI
             }
 
             // if movies loaded successfully, create the container for the spliced input
-            ArrayList spliced = new ArrayList();
+            TASMovieInput[] spliced;
 
             // convert input field values to numbers
-            int sourceFrom   = (fn.IsNumeric(txtCopyFromFrame.Text)) ? Convert.ToInt32(txtCopyFromFrame.Text) : 0;
-            int sourceTo     = (fn.IsNumeric(txtCopyToFrame.Text)) ? Convert.ToInt32(txtCopyToFrame.Text) : 0;
-            int targetInsert = (fn.IsNumeric(txtTargetFrameInsertPosition.Text)) ? Convert.ToInt32(txtTargetFrameInsertPosition.Text) : 0;
-            int targetResume = (fn.IsNumeric(txtTargetFrameResumePostion.Text)) ? Convert.ToInt32(txtTargetFrameResumePostion.Text) : 0;
+            int sourceFrom   = (IsNumeric(txtCopyFromFrame.Text)) ? Convert.ToInt32(txtCopyFromFrame.Text) : 0;
+            int sourceTo     = (IsNumeric(txtCopyToFrame.Text)) ? Convert.ToInt32(txtCopyToFrame.Text) : 0;
+            int targetInsert = (IsNumeric(txtTargetFrameInsertPosition.Text)) ? Convert.ToInt32(txtTargetFrameInsertPosition.Text) : 0;
+            int targetResume = (IsNumeric(txtTargetFrameResumePostion.Text)) ? Convert.ToInt32(txtTargetFrameResumePostion.Text) : 0;
 
             // ensure frame positions aren't out of bounds
-            if (sourceFrom < 0 || sourceFrom > source.Count || sourceTo < 0 || sourceTo > source.Count)
+            if (sourceFrom < 0 || sourceFrom > source.Length || sourceTo < 0 || sourceTo > source.Length)
             {
                 MessageBox.Show("Source frame position out of bounds", "Error");
                 return;
             }
-            else if (targetInsert < 0 || targetInsert > target.Count || targetResume < 0 || targetResume > target.Count)
+            else if (targetInsert < 0 || targetInsert > target.Length || targetResume < 0 || targetResume > target.Length)
             {
                 MessageBox.Show("Target frame position out of bounds", "Error");
                 return;
@@ -211,23 +210,14 @@ namespace MovieSplicer.UI
             {
                 // make sure the values needed for the loops exist
                 if (sourceTo == 0 || targetResume == 0) return;
-
-                for (int i = 0; i < sourceTo; i++)
-                    spliced.Add(source[i]);
-                for (int j = targetResume; j < target.Count; j++)
-                    spliced.Add(target[j]);
-
+                spliced = TASMovieInput.Splice(ref source, ref target, 0, sourceTo, targetResume, target.Length);                
             }
             // write the target movie (start -> position) and the source movie (position -> end) into a new array
             else if (chkEndOfMovie.Checked)
             {
                 // make sure the values needed for the loops exist
                 if (targetInsert == 0 || sourceFrom == 0) return;
-
-                for (int i = 0; i < targetInsert; i++)
-                    spliced.Add(target[i]);
-                for (int j = sourceFrom; j < source.Count; j++)
-                    spliced.Add(source[j]);
+                spliced = TASMovieInput.Splice(ref target, ref source, 0, targetInsert, sourceFrom, source.Length);                
             }
             // write the target movie (start -> insertPos), add the source range (sourceTo -> sourceFrom), then
             // add the target movie again (resumePos -> end)
@@ -235,13 +225,8 @@ namespace MovieSplicer.UI
             {
                 // make sure the values needed for the loops exist
                 if (sourceTo == 0 || targetResume == 0 || targetInsert == 0 || sourceFrom == 0) return;
-
-                for (int i = 0; i < targetInsert; i++)
-                    spliced.Add(target[i]);
-                for (int j = sourceFrom; j < sourceTo - 1; j ++)
-                    spliced.Add(source[j]);
-                for (int k = targetResume; k < target.Count; k++)
-                    spliced.Add(target[k]);
+                TASMovieInput[] temp = TASMovieInput.Splice(ref target, ref source, 0 , targetInsert, sourceFrom, sourceTo);
+                spliced = TASMovieInput.Splice(ref temp, ref target, 0, temp.Length, targetResume, target.Length);                
             }
             
             // prepend "spliced-" to the current filename

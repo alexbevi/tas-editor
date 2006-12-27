@@ -1,32 +1,48 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using System.IO;
 
-/***************************************************************************************************
- * Read and parse a VisualBoyAdvance VBM file
- **************************************************************************************************/
-namespace MovieSplicer.Data
+namespace MovieSplicer.Data.Formats
 {
-    public class VisualBoyAdvance
+    public class VisualBoyAdvance : TASMovie
     {
+        /// <summary>
+        /// Contains Format Specific items
+        /// </summary>
+        public struct FormatSpecific
+        {
+            public bool[] SystemType;
+            public bool[] BIOSFlags;
+
+            public FormatSpecific(int sys, int bios)
+            {
+                SystemType = new bool[4];
+                BIOSFlags  = new bool[6];
+
+                for (int i = 0; i < SystemType.Length; i++)
+                    SystemType[i] = ((sys >> i) == 1) ? true : false;
+
+                // if no other system is set, system type is GB
+                if (SystemType[0] == false && SystemType[1] == false && SystemType[2] == false)
+                    SystemType[3] = true;
+
+                for (int j = 0; j < BIOSFlags.Length; j++)
+                    BIOSFlags[j] = ((bios >> j) == 1) ? true : false;                
+            }
+        }
+
         const byte HEADER_SIZE = 64;
         const byte INFO_SIZE   = 192;
-        
-        private byte[] fileContents;
-        private uint   saveStateOffset;
-        private uint   controllerDataOffset;
 
-        public string      Filename;
-        public VBMHeader   Header;
-        public VBMOptions  Options;
-        public VBMRomInfo  RomInfo;
-        public VBMMetadata Metadata;
-        public ArrayList   ControllerData;
+        public Header         VBMHeader;
+        public Options        VBMOptions;
+        public Extra          VBMExtra;
+        public Input          VBMInput;
+        public FormatSpecific VBMSpecific;
 
-        static Functions fn  = new Functions();
-        static int[] offsets = {
+        private string[] InputValues = { "A", "B", "s", "S", ">", "<", "^", "v", "R", 
+                                         "L", "(reset)", "", "(left)", "(right)", "(down)", "(up)" };       
+        private int[]    Offsets = {
             0x00, // 4-byte signature: 56 42 4D 1A "VBM\x1A"
             0x04, // 4-byte little-endian unsigned int: version number, must be 1
             0x08, // 4-byte little-endian integer: movie "uid" - identifies the movie-savestate relationship,
@@ -80,246 +96,139 @@ namespace MovieSplicer.Data
                   //    or SRAM inside file, set to 0 if unused
             0x3C  // 4-byte little-endian unsigned int: offset to the controller data inside file
         };
-        
-        /// <summary>
-        /// Create a fully instantiated VBM object from the passed file
-        /// </summary>        
+
         public VisualBoyAdvance(string VBMFile)
         {
             Filename = VBMFile;
+            FillByteArrayFromFile(VBMFile, ref FileContents);
 
-            FileStream fs = File.OpenRead(VBMFile);
-            BinaryReader br = new BinaryReader(fs);
-            
-            fileContents = br.ReadBytes((int)fs.Length);
+            SaveStateOffset      = Read32(ref FileContents, Offsets[17]);
+            ControllerDataOffset = Read32(ref FileContents, Offsets[18]);
 
-            br.Close(); br = null; fs.Dispose();
+            VBMHeader = new Header();
+            VBMHeader.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
+            VBMHeader.Version       = Read32(ref FileContents, Offsets[1]);
+            VBMHeader.UID           = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
+            VBMHeader.FrameCount    = Read32(ref FileContents, Offsets[3]);
+            VBMHeader.RerecordCount = Read32(ref FileContents, Offsets[4]);
 
-            Header   = new VBMHeader(ref fileContents);
-            Options  = new VBMOptions(ref fileContents);
-            RomInfo  = new VBMRomInfo(ref fileContents);
-            Metadata = new VBMMetadata(ref fileContents);
+            VBMOptions = new Options(true);
+            VBMOptions.MovieStartFlag[0] = (1 & (FileContents[Offsets[5]] >> 0)) == 1 ? true : false;
+            VBMOptions.MovieStartFlag[1] = (1 & (FileContents[Offsets[5]] >> 1)) == 1 ? true : false;
+            VBMOptions.MovieStartFlag[2] = (!VBMOptions.MovieStartFlag[0] && !VBMOptions.MovieStartFlag[1]) ? true : false;
 
-            saveStateOffset      = fn.Read32(fn.readBytes(ref fileContents, offsets[17], 4));
-            controllerDataOffset = fn.Read32(fn.readBytes(ref fileContents, offsets[18], 4));
+            VBMInput = new Input(4, false);
+            VBMInput.Controllers[0] = ((FileContents[Offsets[6]] >> 0) == 1) ? true : false;
+            VBMInput.Controllers[1] = ((FileContents[Offsets[6]] >> 1) == 1) ? true : false;
+            VBMInput.Controllers[2] = ((FileContents[Offsets[6]] >> 2) == 1) ? true : false;
+            VBMInput.Controllers[3] = ((FileContents[Offsets[6]] >> 3) == 1) ? true : false;
 
-            parseControllerData(ref fileContents);
+            VBMExtra = new Extra();
+            VBMExtra.Author      = ReadChars(ref FileContents, HEADER_SIZE, 64);
+            VBMExtra.Description = ReadChars(ref FileContents, HEADER_SIZE + 64, 128);
+            VBMExtra.ROM = ReadChars(ref FileContents, Offsets[12], 12);
+            VBMExtra.CRC = Convert.ToString((int)Offsets[14]);
+
+            VBMSpecific = new FormatSpecific(Offsets[7], Offsets[8]);
+
+            getFrameInput(ref FileContents);
         }
 
-    #region "Structure"
-
-        /// <summary>
-        /// Parse basic VBM header values
-        /// </summary>
-        public class VBMHeader
+        private void getFrameInput(ref byte[] byteArray)
         {
-            public string Signature;
-            public uint   Version;
-            public string UID;
-            public uint   FrameCount;
-            public uint   RerecordCount;
+            VBMInput.FrameData = new TASMovieInput[VBMHeader.FrameCount];            
+            int position = 0;
+            int i = 0;
 
-            public VBMHeader(ref byte[] byteArray)
+            while (position < VBMHeader.FrameCount)
             {
-                Signature     = fn.ReadHEX(fn.readBytes(ref byteArray, offsets[0], 4));
-                Version       = fn.Read32(fn.readBytes(ref byteArray, offsets[1], 4));
-                UID           = fn.ConvertUNIXTime((fn.Read32(fn.readBytes(ref byteArray, offsets[2], 4))));
-                FrameCount    = fn.Read32(fn.readBytes(ref byteArray, offsets[3], 4));
-                RerecordCount = fn.Read32(fn.readBytes(ref byteArray, offsets[4], 4));
-            }
-        }
-
-        /// <summary>
-        /// Parse the VBM Options flags out to boolean arrays.
-        /// 
-        /// NOTE::This is the most effective way to do this, though not the most readable
-        /// TODO::These routines can all be read through for loops
-        /// </summary>
-        public class VBMOptions
-        {
-            public bool[] MovieStart  = { false, false, false };
-            public bool[] Controllers = { false, false, false, false };
-            public bool[] SystemType  = { false, false, false, false };
-            public bool[] BIOSFlags   = { false, false, false, false, false, false };
-
-            public VBMOptions(ref byte[] byteArray)
-            {
-                MovieStart[0]  = ((byteArray[offsets[5]] >> 0) == 1) ? true : false;
-                MovieStart[1]  = ((byteArray[offsets[5]] >> 1) == 1) ? true : false;
-                
-                Controllers[0] = ((byteArray[offsets[6]] >> 0) == 1) ? true : false;
-                Controllers[1] = ((byteArray[offsets[6]] >> 1) == 1) ? true : false;
-                Controllers[2] = ((byteArray[offsets[6]] >> 2) == 1) ? true : false;
-                Controllers[3] = ((byteArray[offsets[6]] >> 3) == 1) ? true : false;
-                
-                SystemType[0]  = ((byteArray[offsets[7]] >> 0) == 1) ? true : false;
-                SystemType[1]  = ((byteArray[offsets[7]] >> 1) == 1) ? true : false;
-                SystemType[2]  = ((byteArray[offsets[7]] >> 2) == 1) ? true : false;
-                
-                BIOSFlags[0]   = ((byteArray[offsets[8]] >> 0) == 1) ? true : false;
-                BIOSFlags[1]   = ((byteArray[offsets[8]] >> 1) == 1) ? true : false;
-                BIOSFlags[2]   = ((byteArray[offsets[8]] >> 2) == 1) ? true : false;
-                BIOSFlags[3]   = ((byteArray[offsets[8]] >> 3) == 1) ? true : false;
-                BIOSFlags[4]   = ((byteArray[offsets[8]] >> 4) == 1) ? true : false;
-                BIOSFlags[5]   = ((byteArray[offsets[8]] >> 5) == 1) ? true : false;
-
-                // if no other start flag is set, start from poweron
-                if (MovieStart[0] == false && MovieStart[1] == false)
-                    MovieStart[2] = true;
-
-                // if no other system is set, system type is GB
-                if (SystemType[0] == false && SystemType[1] == false && SystemType[2] == false)
-                    SystemType[3] = true;
-            }
-        }
-
-        /// <summary>
-        /// Parse the VBM ROM Info section
-        /// 
-        /// TODO::CRC/Checksum not really working
-        /// </summary>
-        public class VBMRomInfo
-        {             
-            public string Name; 
-            public int    CRC;
-            public int    Checksum;
-            public int    GameCode;
-
-            public VBMRomInfo(ref byte[] byteArray)
-            {
-                Name     = fn.ReadChars(fn.readBytes(ref byteArray, offsets[12], 12));
-                CRC      = (int)(fn.readBytes(ref byteArray, offsets[14], 1)[0]);
-                Checksum = fn.Read16(fn.readBytes(ref byteArray, offsets[15], 2));
-            }
-        }
-
-        /// <summary>
-        /// Parse VBM Extended Author information
-        /// </summary>
-        public class VBMMetadata
-        {
-            public string Author;
-            public string Description;
-
-            public VBMMetadata(ref byte[] byteArray)
-            {
-                byte[] author = fn.readBytes(ref byteArray, HEADER_SIZE, 64);
-                byte[] description = fn.readBytes(ref byteArray, HEADER_SIZE + 64, 128);
-
-                Author = fn.ReadChars(fn.readBytes(ref author, 0, fn.seekNullPosition(author, 0)));
-                Description = fn.ReadChars(fn.readBytes(ref description, 0, fn.seekNullPosition(description, 0)));
-            }
-        }
-
-        private void parseControllerData(ref byte[] byteArray)
-        {
-            ControllerData = new ArrayList();
-
-            for (int i = 0; i < byteArray.Length - (int)controllerDataOffset; i++)
-            {
-                string[] frameData = new string[4];
+                VBMInput.FrameData[position] = new TASMovieInput();
                 for (int j = 0; j < 4; j++)
                 {
-                    if (Options.Controllers[j])
-                        frameData[j] = parseInputToString(fn.readBytes(ref byteArray, (int)controllerDataOffset + i + j, 2));
+                    if (VBMInput.Controllers[j])
+                    {
+                        byte[] frame = ReadBytes(ref byteArray, ControllerDataOffset + i + j, 2);
+                        VBMInput.FrameData[position].Controller[j] = parseControllerData(frame);
+                        i++;
+                    }                    
                 }
-                ControllerData.Add(frameData);
-                i++;
-            }
-         }
+                position++; i++;
+            }                        
+        }
 
         /// <summary>
         /// Parse the 2-byte controller state value to a string
         /// </summary>        
-        private string parseInputToString(byte[] bytes)
+        private string parseControllerData(byte[] bytes)
         {
-            string   input = "";
-            
-            int value = bytes[0] | bytes[1];
+            string input = "";
 
-            string[] inputValues = { "A", "B", "s", "S", ">", "<", "^", "v", "R", "L", "(reset)", "", "(left)", "(right)", "(down)", "(up)" };
-            
+            int value = bytes[0] | bytes[1];            
+
             for (int i = 0; i < 16; i++)
-                if((1 & (value >> i)) == 1)
-                    input += inputValues[i];
+                if ((1 & (value >> i)) == 1)
+                    input += InputValues[i];
 
-            
             return input;
         }
 
-    #endregion
-
-    #region "Methods"
-
-        public void Save(string filename, ref ArrayList input)
+        /// <summary>
+        /// Convert the string input to a 2-byte controller state value 
+        /// </summary>      
+        private byte[] parseControllerData(string frameInput)
         {
-            ArrayList outputFile = new ArrayList();
+            byte[] input = { 0x00, 0x00 };
+            
+            if (frameInput == null || frameInput == "") return input;
 
-            fn.bytesToArray(ref outputFile, this.fileContents, 0, (int)controllerDataOffset);
-
-            string[] currentFrameInput = new string[3];
-
-            for (int i = 0; i < input.Count; i++)
+            for (int i = 0; i < 8; i++)
             {
-                currentFrameInput = (string[])input[i];
+                if (frameInput.Contains(InputValues[i])) input[0] |= (byte)(1 << i);
+                // input at InputValues[10] not used
+                if (frameInput.Contains(InputValues[i + 8]) && i != 3) input[1] |= (byte)(1 << i);            
+            }                            
 
-                for (int j = 0; j < currentFrameInput.Length; j++)
+            return input;
+        }
+
+        /// <summary>
+        /// Save the contenst of the frame data back out to a VBM file
+        /// 
+        /// TODO::This isn't the most elegant solution, but there's a major performance hit
+        /// if I try to repeatedly resize the array from within the loop.
+        /// </summary>        
+        public void Save(string filename, ref TASMovieInput[] input)
+        {
+            byte[] head = ReadBytes(ref FileContents, 0, ControllerDataOffset);
+            int size = 0;
+            int controllers = VBMInput.ControllerCount;
+
+            // get the size of the file byte[] (minus the header)
+            for (int i = 0; i < input.Length; i++)
+                for (int j = 0; j < controllers; j++)                                   
+                        size += 2;
+
+            // create the output array and copy in the contents
+            byte[] outputFile = new byte[head.Length + size];
+            head.CopyTo(outputFile, 0);
+
+            // add the controller data
+            int position = 0;
+            for (int i = 0; i < input.Length ; i++)
+            {
+                for (int j = 0; j < controllers; j++)
                 {
                     // check if the controller we're about to process is used
-                    if (this.Options.Controllers[j])
+                    if (VBMInput.Controllers[j])
                     {
-                        byte[] parsed = parseControllerInput(currentFrameInput[j]);
-                        outputFile.Add(parsed[0]); outputFile.Add(parsed[1]);
-                    }
+                        byte[] parsed = parseControllerData(input[i].Controller[j]);
+                        outputFile[head.Length + position++] = parsed[0];
+                        outputFile[head.Length + position++] = parsed[1];                        
+                    }                    
                 }
             }
-            
-            if (filename == "") filename = this.Filename;
 
-            FileStream fs = File.Open(filename, FileMode.Create);
-            BinaryWriter writer = new BinaryWriter(fs);
-
-            // convert to 4-byte little-endian
-            byte[] newFrameCount = fn.Write32(input.Count);
-
-            // position in the target stream to insert the new values
-            outputFile[0x0C] = newFrameCount[0];
-            outputFile[0x0D] = newFrameCount[1];
-            outputFile[0x0E] = newFrameCount[2];
-            outputFile[0x0F] = newFrameCount[3];
-
-            foreach (byte b in outputFile) writer.Write(b);
-
-            writer.Close(); writer = null; fs.Dispose();           
+            WriteByteArrayToFile(ref outputFile, filename, input.Length, Offsets[3]);            
         }
-
-        private byte[] parseControllerInput(string frameInput)
-        {                                      
-            byte[] input = { 0x00, 0x00 };
-
-            // frameInput will be null if a blank, inserted frame is being processed
-            if (frameInput == null) return input;
-
-            if (frameInput.Contains("A")) input[0] |= (1 << 0);
-            if (frameInput.Contains("B")) input[0] |= (1 << 1);
-            if (frameInput.Contains("s")) input[0] |= (1 << 2);
-            if (frameInput.Contains("S")) input[0] |= (1 << 3);
-            if (frameInput.Contains(">")) input[0] |= (1 << 4);
-            if (frameInput.Contains("<")) input[0] |= (1 << 5);
-            if (frameInput.Contains("^")) input[0] |= (1 << 6);
-            if (frameInput.Contains("v")) input[0] |= (1 << 7);
-            if (frameInput.Contains("R")) input[1] |= (1 << 0);
-            if (frameInput.Contains("L")) input[1] |= (1 << 1);
-            if (frameInput.Contains("(reset)")) input[1] |= (1 << 2);
-            if (frameInput.Contains("(left)"))  input[1] |= (1 << 4);
-            if (frameInput.Contains("(right)")) input[1] |= (1 << 5);
-            if (frameInput.Contains("(down)"))  input[1] |= (1 << 6);
-            if (frameInput.Contains("(up)"))    input[1] |= (1 << 7);
-                    
-            return input;
-        }
-
-    #endregion
-
     }
 }

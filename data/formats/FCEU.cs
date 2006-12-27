@@ -1,26 +1,19 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using System.IO;
-/***************************************************************************************************
- * Read and parse an FCE Ultra FCM file
- * 
- * Process for parsing the controller data (read) modified from the Nesmock source  
- * Process for parsing the controller data (write) modified from FCEU source
- **************************************************************************************************/
-namespace MovieSplicer.Data
-{ 
-    public class FCEU
-    {
-        private byte[] fileContents;
-        
-        public string            Filename;        
-        public FCMHeader         Header;
-        public FCMControllerData ControllerData;
 
-        static Functions fn = new Functions();
-        static int[] offsets = {
+namespace MovieSplicer.Data.Formats
+{
+    public class FCEU : TASMovie
+    {
+        public Header  FCMHeader;
+        public Options FCMOptions;
+        public Extra   FCMExtra;
+        public Input   FCMInput;
+
+        private int      ControllerDataLength;
+        private string[] InputValues = { "A", "B", "s", "S", "^", "v", "<", ">" };
+        private int[] Offsets = {
             0x00, // 4-byte signature: 46 43 4D 1A "FCM\x1A"
             0x04, // 4-byte little-endian unsigned int: version number, must be 2
             0x08, // 1-byte flags:
@@ -44,223 +37,172 @@ namespace MovieSplicer.Data
             0x30, // 4-byte little-endian unsigned int: version of the emulator used
             0x34, // name of the ROM used - UTF8 encoded nul-terminated string.
         };
-    
-        /// <summary>
-        /// Create a new FCM object from the passed file.
-        /// </summary>        
+
         public FCEU(string FCMFile)
         {
             Filename = FCMFile;
-            
-            FileStream   fs = File.OpenRead(FCMFile);
-            BinaryReader br = new BinaryReader(fs);
+            FillByteArrayFromFile(FCMFile, ref FileContents);
 
-            // read the FCM file into a byte array
-            fileContents = br.ReadBytes((int)fs.Length);
+            byte options = FileContents[Offsets[2]];
+            SaveStateOffset = Read32(ref FileContents, Offsets[9]);
+            ControllerDataOffset = Read32(ref FileContents, Offsets[10]);
+            ControllerDataLength = Read32(ref FileContents, Offsets[8]);
 
-            br.Close(); br = null; fs.Dispose();
+            FCMHeader = new Header();
+            FCMHeader.Signature = ReadHEX(ref FileContents, Offsets[0], 4);
+            FCMHeader.Version = Read32(ref FileContents, Offsets[1]);
+            FCMHeader.FrameCount = Read32(ref FileContents, Offsets[6]);
+            FCMHeader.RerecordCount = Read32(ref FileContents, Offsets[7]);
+            FCMHeader.EmulatorID = Read32(ref FileContents, Offsets[12]).ToString();
 
-            Header         = new FCMHeader(ref fileContents);
-            ControllerData = new FCMControllerData(ref fileContents,
-                (int)Header.ControllerDataOffset,
-                (int)Header.ControllerDataLength);
+            FCMExtra = new Extra();
+            FCMExtra.CRC = ReadHEX(ref FileContents, Offsets[11], 16);
+            FCMExtra.ROM = ReadCharsNullTerminated(ref FileContents, Offsets[13]);
+
+            int startPos = Offsets[13] + FCMExtra.ROM.Length + 1;
+            FCMExtra.Author = ReadChars(ref FileContents, startPos, SaveStateOffset - startPos);
+
+            FCMOptions = new Options(true);
+            FCMOptions.MovieStartFlag[0] = ((options >> 1) == 1) ? true : false;
+            FCMOptions.MovieStartFlag[1] = ((options >> 1) == 0) ? true : false;
+            FCMOptions.MovieTimingFlag[0] = ((options >> 2) == 0) ? true : false;
+            FCMOptions.MovieTimingFlag[1] = ((options >> 2) == 1) ? true : false;
+
+            FCMInput = new Input(4, false);
+            getFrameInput(ref FileContents);
         }
 
-    #region "Structure"
-
-        /// <summary>
-        /// FCM Header Data        
-        /// </summary>
-        public class FCMHeader
-        {                                
-            public string Signature;
-            public uint   Version;
-            public byte   OptionFlags;
-            public uint   FrameCount;
-            public uint   ReRecordCount;
-            public uint   EmulatorVersion;
-            public uint   ControllerDataLength;
-            public uint   ControllerDataOffset;
-            public uint   SaveStateOffset;            
-            public string Author;
-            public string ROMName = "";
-            public string ROMCRC  = "";                                    
-            public bool   StartFromReset = false;
-            public bool   StartFromSave  = false;
-            public bool   NTSC           = false;
-            public bool   PAL            = false;            
-
-            public FCMHeader(ref byte[] byteArray)
-            {
-                Signature            = fn.ReadHEX(fn.readBytes(ref byteArray, offsets[0], 4));
-                Version              = fn.Read32(fn.readBytes(ref byteArray, offsets[1], 4));
-                OptionFlags          = fn.readBytes(ref byteArray, offsets[2], 1)[0];
-                FrameCount           = fn.Read32(fn.readBytes(ref byteArray, offsets[6], 4));
-                ReRecordCount        = fn.Read32(fn.readBytes(ref byteArray, offsets[7], 4));
-                ControllerDataLength = fn.Read32(fn.readBytes(ref byteArray, offsets[8], 4));
-                SaveStateOffset      = fn.Read32(fn.readBytes(ref byteArray, offsets[9], 4));
-                ControllerDataOffset = fn.Read32(fn.readBytes(ref byteArray, offsets[10], 4));                     
-              
-                for (int i = 0; i < 16; i++)
-                    ROMCRC += byteArray[offsets[11] + i].ToString("X");
-
-                EmulatorVersion = fn.Read32(fn.readBytes(ref byteArray, offsets[12], 4));
-
-                int length      = fn.seekNullPosition(byteArray, offsets[13]);
-                ROMName         = fn.ReadChars(fn.readBytes(ref byteArray, offsets[13], length));
-              
-                int startPos    = offsets[13] + ROMName.Length + 1;
-                Author          = fn.ReadChars(fn.readBytes(ref byteArray, startPos, (int)SaveStateOffset - startPos));
-
-                if ((OptionFlags >> 1) == 1) StartFromReset = true;
-                if ((OptionFlags >> 1) == 0) StartFromSave  = true;
-                if ((OptionFlags >> 2) == 1) PAL            = true;
-                if ((OptionFlags >> 2) == 0) NTSC           = true;
-            }                        
-        }
-
-        /// <summary>
-        /// FCM Controller Data
-        /// 
-        /// TODO::Optimize (see SMV controller section)
-        /// </summary>
-        public class FCMControllerData
+        private void getFrameInput(ref byte[] byteArray)
         {
-            public bool[]    Controller = { false, false, false, false };
-            public ArrayList ControllerInput;
-           
-            public FCMControllerData(ref byte[] byteArray, int controllerDataOffset, int controllerDataLength)
-            {
-                ControllerInput  = new ArrayList();                                
-                                               
-                int   position   = controllerDataOffset;
-                int   frameCount = 0;
-                int[] joop       = {0,0,0,0};                
+            FCMInput.FrameData = new TASMovieInput[FCMHeader.FrameCount];
 
-                while (controllerDataLength > 0)
+            int position = ControllerDataOffset;
+            int frameCount = 0;
+            int[] joop = { 0, 0, 0, 0 };
+
+            while (ControllerDataLength > 0)
+            {
+                int updateType = byteArray[position] >> 7;
+                int NDelta = (byteArray[position] >> 5) & 3;
+                int delta = 0;
+                int data = byteArray[position] & 0x1F;
+
+                ++position; --ControllerDataLength;
+
+                switch (NDelta)
                 {
-                    int updateType = byteArray[position] >> 7;
-                    int NDelta     = (byteArray[position] >> 5 ) & 3;
-                    int delta      = 0;
-                    int data       = byteArray[position] & 0x1F;
-                    
-                    ++position; --controllerDataLength;
-
-                    switch (NDelta)
-                    {
-                        case 0:
-                            break;
-                        case 1:
-                            delta |= byteArray[position++];
-                            break;
-                        case 2:
-                            delta |= byteArray[position++];
-                            delta |= byteArray[position++] << 8;
-                            break;
-                        case 3:
-                            delta |= byteArray[position++];
-                            delta |= byteArray[position++] << 8;
-                            delta |= byteArray[position++] << 16;
-                            break;
-                    }
-                                        
-                    // populate parsed data once (since it doesn't change until delta == 0,
-                    // there's no need to process each time the loop iterates)
-                    string[] parsedControllerData = parsedControllerData = parseControllerData(joop);
-
-                    while(delta > 0)
-                    {
-                        // Save the controlled data                                                                                                                                  
-                        ControllerInput.Add(parsedControllerData);
-                        ++frameCount; --delta;
-                    }
-
-                    if (controllerDataLength > NDelta)
-                        controllerDataLength -= NDelta;
-                    else
-                        controllerDataLength = 0;
-
-                    if (updateType == 0) // Controller data
-                    {
-                        int ctrlno = (data >> 3);
-                        joop[ctrlno] ^= (1 << (data & 7));
-                        if (ctrlno == 0) { Controller[0] = true; }
-                        if (ctrlno == 1) { Controller[1] = true; }
-                        if (ctrlno == 2) { Controller[2] = true; }
-                        if (ctrlno == 3) { Controller[3] = true; }                       
-                    }
-                    
-                    // Exerpt from Nesmock 1.6.0 source.
-                    //else // Control data
-                    //    switch (data)
-                    //    {
-                    //        case 0: break; // nothing
-                    //        case 1: Save = false; break; // reset
-                    //        case 2: Save = false; break; // power cycle
-                    //        case 7: break; // VS coin
-                    //        case 8: break; // VS dip0
-                    //        case 24: FDS = true; Cdata[frame].FDS |= 1; break; /* FDS insert, FIXME */
-                    //        case 25: FDS = true; Cdata[frame].FDS |= 2; break; /* FDS eject, FIXME */
-                    //        case 26: FDS = true; Cdata[frame].FDS |= 4; break; /* FDS swap, FIXME */
-                    //    }
-
-                }                
-            }
-            /// <summary>
-            /// Convert frame input from binary values to their string representation
-            /// </summary>
-            private string[] parseControllerData(int[] joop)
-            {
-                // return the string representation of the controller inputs
-                string[] frameData = new string[4];
-                for (int i = 0; i < 4; i++)
-                {                                              // add elses to align data by column
-                    if ((1 & (joop[i] >> 0)) == 1) frameData[i] += "A"; //else frameData[i] += " ";
-                    if ((1 & (joop[i] >> 1)) == 1) frameData[i] += "B"; //else frameData[i] += " ";
-                    if ((1 & (joop[i] >> 2)) == 1) frameData[i] += "s"; //else frameData[i] += " ";
-                    if ((1 & (joop[i] >> 3)) == 1) frameData[i] += "S"; //else frameData[i] += " ";
-                    if ((1 & (joop[i] >> 4)) == 1) frameData[i] += "^"; //else frameData[i] += " ";
-                    if ((1 & (joop[i] >> 5)) == 1) frameData[i] += "v"; //else frameData[i] += " ";
-                    if ((1 & (joop[i] >> 6)) == 1) frameData[i] += "<"; //else frameData[i] += " ";
-                    if ((1 & (joop[i] >> 7)) == 1) frameData[i] += ">";
+                    case 0:
+                        break;
+                    case 1:
+                        delta |= byteArray[position++];
+                        break;
+                    case 2:
+                        delta |= byteArray[position++];
+                        delta |= byteArray[position++] << 8;
+                        break;
+                    case 3:
+                        delta |= byteArray[position++];
+                        delta |= byteArray[position++] << 8;
+                        delta |= byteArray[position++] << 16;
+                        break;
                 }
-                return frameData;
+
+                // populate parsed data once (since it doesn't change until delta == 0,
+                // there's no need to process each time the loop iterates)
+                TASMovieInput parsedControllerData = parseControllerData(joop);
+
+                while (delta > 0)
+                {
+                    // Save the controlled data                                                                                                                                  
+                    FCMInput.FrameData[frameCount] = new TASMovieInput();
+                    FCMInput.FrameData[frameCount] = parsedControllerData;
+                    ++frameCount; --delta;
+                }
+
+                if (ControllerDataLength > NDelta)
+                    ControllerDataLength -= NDelta;
+                else
+                    ControllerDataLength = 0;
+
+                if (updateType == 0) // Controller data
+                {
+                    int ctrlno = (data >> 3);
+                    joop[ctrlno] ^= (1 << (data & 7));
+                    if (ctrlno == 0) { FCMInput.Controllers[0] = true; }
+                    if (ctrlno == 1) { FCMInput.Controllers[1] = true; }
+                    if (ctrlno == 2) { FCMInput.Controllers[2] = true; }
+                    if (ctrlno == 3) { FCMInput.Controllers[3] = true; }
+                }
+
+                // Exerpt from Nesmock 1.6.0 source.
+                //else // Control data
+                //    switch (data)
+                //    {
+                //        case 0: break; // nothing
+                //        case 1: Save = false; break; // reset
+                //        case 2: Save = false; break; // power cycle
+                //        case 7: break; // VS coin
+                //        case 8: break; // VS dip0
+                //        case 24: FDS = true; Cdata[frame].FDS |= 1; break; /* FDS insert, FIXME */
+                //        case 25: FDS = true; Cdata[frame].FDS |= 2; break; /* FDS eject, FIXME */
+                //        case 26: FDS = true; Cdata[frame].FDS |= 4; break; /* FDS swap, FIXME */
+                //    }
+
             }
         }
+        /// <summary>
+        /// Convert frame input from binary values to their string representation
+        /// </summary>
+        private TASMovieInput parseControllerData(int[] joop)
+        {
+            TASMovieInput frameData = new TASMovieInput();
 
-    #endregion
+            for (int i = 0; i < 4; i++)
+                for (int j = 0; j < 8; j++)
+                    if ((1 & (joop[i] >> j)) == 1) frameData.Controller[i] += InputValues[j];
 
-    #region "Methods"
+            return frameData;
+        }
 
         /// <summary>
-        /// Save changes to the currently buffered FCM file
-        /// 
-        /// TODO::CompressedData length seems to be off by 1byte (even after
-        /// adding the initial reset and final null command)
-        /// </summary>        
-        public void Save(string filename, ref ArrayList input)
+        /// Convert frame input from string values to their binary representation
+        /// </summary>
+        private byte parseControllerData(string frameValue)
         {
-            ArrayList CompressedData = new ArrayList();                        
-            
-            int      buffer = 0;
-            int[]    joop   = { 0, 0, 0, 0 };
-            string[] Cdata  = null ;
-            
-            CompressedData.Add(((0x81) & 0x9F) | (0 << 5)); // start from reset
+            byte joop = 0x00;
 
-            for (int i = 0; i < input.Count; i++)
+            if (frameValue != null && frameValue != "")
+                for (int i = 0; i < 8; i++)
+                    if (frameValue.Contains(InputValues[i])) joop |= (byte)(1 << i);
+
+            return joop;
+        }
+
+        /// <summary>
+        /// Save changes to the currently buffered FCM file        
+        /// </summary>        
+        public void Save(string filename, ref TASMovieInput[] input)
+        {
+            byte[] head = ReadBytes(ref FileContents, 0, ControllerDataOffset);
+            int cdataLength = GetRLELength(ref input);
+            int controllers = FCMInput.ControllerCount;
+
+            int   buffer   = 0;
+            int[] joop     = { 0, 0, 0, 0 };
+            int   position = ControllerDataOffset;
+
+            byte[] outputFile = new byte[head.Length + cdataLength + 2];
+            head.CopyTo(outputFile, 0);
+
+            outputFile[position++] = ((0x81) & 0x9F) | (0 << 5); // start from reset            
+
+            int frame = 0;
+            while (frame < input.Length)
             {
-                // load the current frame's input
-                Cdata = (string[])input[i];
-                
                 //// cycle through the controllers
-                for (int j = 0; j < 4; j++)
+                for (int j = 0; j < controllers; j++)
                 {
-                    // HACK::Copy-Pasting doesn't check source-target controller counts so
-                    // this just makes sure the index doesn't go out of bounds.
-                    if (j >= Cdata.Length) break;
-
-                    int current = parseFrameData(Cdata[j]);
+                    int current = parseControllerData(input[frame].Controller[j]);
                     if (current != joop[j])
                     {
                         // cycle through each bit to see if it's changed
@@ -268,47 +210,33 @@ namespace MovieSplicer.Data
                         {
                             // if there is a difference, write it out as a command
                             if (((current ^ joop[j]) & (1 << k)) > 0)
-                                DoEncode(j, k, ref buffer, ref CompressedData);
+                                DoEncode(j, k, ref buffer, ref outputFile, ref position);
                         }
                     }
                     joop[j] = current;
-                }             
-                buffer++;
-            }
-            DoEncode(0, 0x80, ref buffer, ref CompressedData);
-            //CompressedData.Add(((0x80) & 0x9F) | (0 << 5)); // null command
+                }
+                buffer++; frame++;
+            }                                    
 
-            // copy original file up to the beginning of the controller input
-            ArrayList outputFile = new ArrayList();
-            fn.bytesToArray(ref outputFile, this.fileContents, 0, (int)this.Header.ControllerDataOffset);
+            DoEncode(0, 0x80, ref buffer, ref outputFile, ref position);
+            //outputFile[position++] = ((0x80) & 0x9F) | (0 << 5); // null command
 
+            // write the new controllerDataLength
+            // NOTE::The RLE logic seems to be slightly off and isn't adding the last update
+            byte[] controllerDataLength = Write32(cdataLength + 1);
+            for (int i = 0; i < 4; i++)          
+                outputFile[Offsets[8] + i] = controllerDataLength[i];            
 
-            byte[] controllerDataLength = fn.Write32(CompressedData.Count); // new controller data length
-            byte[] frameCount = fn.Write32(input.Count); // new frame count
-            // write new values
-            for (int i = 0; i < 4; i++)
-            {
-                outputFile[0x0C + i] = frameCount[i];
-                outputFile[0x14 + i] = controllerDataLength[i];
-            }
-
-            if (filename == "") filename = this.Filename;
-
-            FileStream   fs     = File.Open(filename, FileMode.Create);
-            BinaryWriter writer = new BinaryWriter(fs);
-
-            foreach (byte b in outputFile)    writer.Write(b);
-            foreach (int b in CompressedData) writer.Write((byte)b);
-
-            writer.Close(); writer = null; fs.Dispose();                       
+            WriteByteArrayToFile(ref outputFile, filename, input.Length, Offsets[6]);  
         }
+
         
         /// <summary>
         /// Encode FCM controller data
         /// 
         /// NOTE::This is almost verbatum from the FCEU source
         /// </summary>
-        private void DoEncode(int joy, int button, ref int buffer, ref ArrayList CompressedData)
+        private void DoEncode(int joy, int button, ref int buffer, ref byte[] CompressedData, ref int position)
         {
             int d = 0;
 
@@ -320,38 +248,59 @@ namespace MovieSplicer.Data
                 d = 2 << 5;
             else if (buffer > 0)
                 d = 1 << 5;
-            
+
             d |= joy << 3; d |= button;
 
-            CompressedData.Add(d);            
+            CompressedData[position++] = (byte)d;            
             while (buffer > 0)
             {
-                CompressedData.Add((buffer & 0xff));                
+                CompressedData[position++] = (byte)(buffer & 0xff);
                 buffer >>= 8;
             }
         }
 
         /// <summary>
-        /// Convert frame input from string values to their binary representation
-        /// </summary>
-        private byte parseFrameData(string frameData)
+        /// Get the RLE length of the input so we can size the output array accordingly
+        /// </summary>   
+        public int GetRLELength(ref TASMovieInput[] input)
         {
-            byte joop = 0x00;
-            if (frameData != null)
-            {
-                if (frameData.Contains("A")) joop |= (1 << 0);
-                if (frameData.Contains("B")) joop |= (1 << 1);
-                if (frameData.Contains("s")) joop |= (1 << 2);
-                if (frameData.Contains("S")) joop |= (1 << 3);
-                if (frameData.Contains("^")) joop |= (1 << 4);
-                if (frameData.Contains("v")) joop |= (1 << 5);
-                if (frameData.Contains("<")) joop |= (1 << 6);
-                if (frameData.Contains(">")) joop |= (1 << 7);
+            int buffer = 0;
+            int[] joop = { 0, 0, 0, 0 };     
+            int length = 0;
+            for (int i = 0; i < input.Length; i++)
+            {                
+                //// cycle through the controllers
+                for (int j = 0; j < 4; j++)
+                {                    
+                    int current = parseControllerData(input[i].Controller[j]);
+                    if (current != joop[j])
+                    {
+                        // cycle through each bit to see if it's changed
+                        for (int k = 0; k < 8; k++)
+                        {
+                            // if there is a difference, write it out as a command
+                            if (((current ^ joop[j]) & (1 << k)) > 0)                                
+                            {
+                                length++;
+                                while (buffer > 0)
+                                {
+                                    length++;
+                                    buffer >>= 8;
+                                }
+                            }
+                        }
+                    }
+                    joop[j] = current;
+                }
+                buffer++;
             }
-            return joop;
-        }             
-
-    #endregion
+            while (buffer > 0)
+            {
+                length++;
+                buffer >>= 8;
+            }
+            return length;
+        }
 
     }
 }

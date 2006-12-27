@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
 
+using MovieSplicer.Data;
+
 namespace MovieSplicer.Components
 {
     /// <summary>
@@ -20,46 +22,47 @@ namespace MovieSplicer.Components
         private const int WM_VSCROLL = 0x115;
         private const int WM_PAINT   = 0xF;
 
-        public ArrayList VirtualListSource;
+        //public ArrayList VirtualListSource;
+        public TASMovieInput[] VirtualListSource;
 
         //private ListViewItem[] m_cache;
         //private int            m_firstItem;
 
-        /// <summary>
-        /// Horizontal scroll position has changed event
-        /// </summary>
-        public event ScrollEventHandler HorzScrollValueChanged;
+        ///// <summary>
+        ///// Horizontal scroll position has changed event
+        ///// </summary>
+        //public event ScrollEventHandler HorzScrollValueChanged;
 
-        /// <summary>
-        /// Vertical scroll position has changed event
-        /// </summary>
-        public event ScrollEventHandler VertScrollValueChanged;        
+        ///// <summary>
+        ///// Vertical scroll position has changed event
+        ///// </summary>
+        //public event ScrollEventHandler VertScrollValueChanged;        
 
-        // Based on SB_* constants
-        private static ScrollEventType[] _events =
-            new ScrollEventType[] {
-									  ScrollEventType.SmallDecrement,
-									  ScrollEventType.SmallIncrement,
-									  ScrollEventType.LargeDecrement,
-									  ScrollEventType.LargeIncrement,
-									  ScrollEventType.ThumbPosition,
-									  ScrollEventType.ThumbTrack,
-									  ScrollEventType.First,
-									  ScrollEventType.Last,
-									  ScrollEventType.EndScroll
-								  };
-        /// <summary>
-        /// Decode the type of scroll message
-        /// </summary>
-        /// <param name="wParam">Lower word of scroll notification</param>
-        /// <returns></returns>
-        private ScrollEventType GetEventType(uint wParam)
-        {
-            if (wParam < _events.Length)
-                return _events[wParam];
-            else
-                return ScrollEventType.EndScroll;
-        }
+        //// Based on SB_* constants
+        //private static ScrollEventType[] _events =
+        //    new ScrollEventType[] {
+        //                              ScrollEventType.SmallDecrement,
+        //                              ScrollEventType.SmallIncrement,
+        //                              ScrollEventType.LargeDecrement,
+        //                              ScrollEventType.LargeIncrement,
+        //                              ScrollEventType.ThumbPosition,
+        //                              ScrollEventType.ThumbTrack,
+        //                              ScrollEventType.First,
+        //                              ScrollEventType.Last,
+        //                              ScrollEventType.EndScroll
+        //                          };
+        ///// <summary>
+        ///// Decode the type of scroll message
+        ///// </summary>
+        ///// <param name="wParam">Lower word of scroll notification</param>
+        ///// <returns></returns>
+        //private ScrollEventType GetEventType(uint wParam)
+        //{
+        //    if (wParam < _events.Length)
+        //        return _events[wParam];
+        //    else
+        //        return ScrollEventType.EndScroll;
+        //}
     
         /// <summary>
         // Various message handlers for this control
@@ -76,27 +79,27 @@ namespace MovieSplicer.Components
                         this.Columns[this.Columns.Count - 1].Width = -2;
                     break;
 
-                // Was this a horizontal scroll message?
-                case WM_HSCROLL:                    
-                    if (HorzScrollValueChanged != null)
-                    {
-                        uint wParam = (uint)message.WParam.ToInt32();
-                        HorzScrollValueChanged(this,
-                            new ScrollEventArgs(
-                                GetEventType(wParam & 0xffff), (int)(wParam >> 16)));
-                    }
-                    break;
+                //// Was this a horizontal scroll message?
+                //case WM_HSCROLL:                    
+                //    if (HorzScrollValueChanged != null)
+                //    {
+                //        uint wParam = (uint)message.WParam.ToInt32();
+                //        HorzScrollValueChanged(this,
+                //            new ScrollEventArgs(
+                //                GetEventType(wParam & 0xffff), (int)(wParam >> 16)));
+                //    }
+                //    break;
                     
-                // or a vertical scroll message?
-                case WM_VSCROLL:                    
-                    if (VertScrollValueChanged != null)
-                    {
-                        uint wParam = (uint)message.WParam.ToInt32();
-                        VertScrollValueChanged(this,
-                            new ScrollEventArgs(
-                            GetEventType(wParam & 0xffff), (int)(wParam >> 16)));
-                    }
-                    break;                    
+                //// or a vertical scroll message?
+                //case WM_VSCROLL:                    
+                //    if (VertScrollValueChanged != null)
+                //    {
+                //        uint wParam = (uint)message.WParam.ToInt32();
+                //        VertScrollValueChanged(this,
+                //            new ScrollEventArgs(
+                //            GetEventType(wParam & 0xffff), (int)(wParam >> 16)));
+                //    }
+                //    break;                    
             }
 
             // pass messages on to the base control for processing
@@ -126,18 +129,15 @@ namespace MovieSplicer.Components
                 e.Item = GetListItem(e.ItemIndex);
         }
 
-        private ListViewItem GetListItem(int i)
+        private ListViewItem GetListItem(int listIndex)
         {
-            string[] input = (string[])VirtualListSource[i];
-            ListViewItem lv = new ListViewItem((i + 1).ToString());
+            ListViewItem lv = new ListViewItem((listIndex + 1).ToString());
 
-            // get each controller used and its input for the frame
-            // (based on the number of colums set)
-            for (int j = 0; j < this.Columns.Count - 1; j++)
-                lv.SubItems.Add(input[j]);
-            lv.Tag = i + 1;
-
-            if (i % 2 == 0) lv.BackColor = System.Drawing.Color.BlanchedAlmond;
+            // get each controller used and its input for the frame            
+            for (int i = 0; i < this.Columns.Count - 1; i++)
+                lv.SubItems.Add(VirtualListSource[listIndex].Controller[i]);
+               
+            if (listIndex % 2 == 0) lv.BackColor = System.Drawing.Color.BlanchedAlmond;
 
             return lv;
         }

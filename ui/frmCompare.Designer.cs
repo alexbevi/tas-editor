@@ -1,4 +1,4 @@
-namespace MovieSplicer.ui
+namespace MovieSplicer.UI
 {
     partial class frmCompare
     {

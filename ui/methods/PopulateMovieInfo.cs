@@ -4,6 +4,7 @@ using System.Text;
 using System.Windows.Forms;
 
 using MovieSplicer.Data;
+using MovieSplicer.Data.Formats;
 
 namespace MovieSplicer.UI.Methods
 {
@@ -11,178 +12,168 @@ namespace MovieSplicer.UI.Methods
     /// Populate a TreeView control with parsed data from a movie object
     /// </summary>
     class PopulateMovieInfo
-    {
+    {       
         /// <summary>
         /// Populate an SNES9x movie file's header information
         /// </summary>        
         public static void SMV(ref TreeView tv, ref SNES9x movie)
         {
             tv.Nodes.Add("Header");
-            tv.Nodes[0].Nodes.Add("Signature:      " + movie.Header.Signature);
-            tv.Nodes[0].Nodes.Add("Version:        " + movie.Header.Version.ToString());
-            tv.Nodes[0].Nodes.Add("UID:            " + movie.Header.UID);
-            tv.Nodes[0].Nodes.Add("Frame Count:    " + String.Format("{0:0,0}", movie.Header.FrameCount));
-            tv.Nodes[0].Nodes.Add("Rerecord Count: " + String.Format("{0:0,0}", movie.Header.ReRecordCount));
-            
-            string movieStart = (movie.Options.RESET) ? "From Reset" : "From Savestate";
-            string movieTiming = (movie.Options.PAL) ? "PAL" : "NTSC";
+            tv.Nodes[0].Nodes.Add("Signature:      " + movie.SMVHeader.Signature);
+            tv.Nodes[0].Nodes.Add("Version:        " + movie.SMVHeader.Version.ToString());
+            tv.Nodes[0].Nodes.Add("UID:            " + movie.SMVHeader.UID);
+            tv.Nodes[0].Nodes.Add("Frame Count:    " + String.Format("{0:0,0}", movie.SMVHeader.FrameCount));
+            tv.Nodes[0].Nodes.Add("Rerecord Count: " + String.Format("{0:0,0}", movie.SMVHeader.RerecordCount));
+           
             tv.Nodes.Add("Options");
-            tv.Nodes[1].Nodes.Add("Movie Start:  " + movieStart);
-            tv.Nodes[1].Nodes.Add("Movie Timing: " + movieTiming);
+            tv.Nodes[1].Nodes.Add("Movie Start:  " + movie.SMVOptions.MovieStart);
+            tv.Nodes[1].Nodes.Add("Movie Timing: " + movie.SMVOptions.MovieTiming);
+
             tv.Nodes[1].Nodes.Add("Sync Options");
-            tv.Nodes[1].Nodes[2].Nodes.Add("FAKEMUTE:   " + movie.Options.FAKEMUTE.ToString());
-            tv.Nodes[1].Nodes[2].Nodes.Add("LEFTRIGHT:  " + movie.Options.LEFTRIGHT.ToString());
-            tv.Nodes[1].Nodes[2].Nodes.Add("SYNCSOUND:  " + movie.Options.SYNCSOUND.ToString());
-            tv.Nodes[1].Nodes[2].Nodes.Add("VOLUMEENVX: " + movie.Options.VOLUMEENVX.ToString());
-            tv.Nodes[1].Nodes[2].Nodes.Add("WIP1TIMING: " + movie.Options.WIP1TIMING.ToString());
-          
+            tv.Nodes[1].Nodes[2].Nodes.Add("FAKEMUTE:   " + movie.SMVSpecific.FAKEMUTE.ToString());
+            tv.Nodes[1].Nodes[2].Nodes.Add("LEFTRIGHT:  " + movie.SMVSpecific.LEFTRIGHT.ToString());
+            tv.Nodes[1].Nodes[2].Nodes.Add("SYNCSOUND:  " + movie.SMVSpecific.SYNCSOUND.ToString());
+            tv.Nodes[1].Nodes[2].Nodes.Add("VOLUMEENVX: " + movie.SMVSpecific.VOLUMEENVX.ToString());
+            tv.Nodes[1].Nodes[2].Nodes.Add("WIP1TIMING: " + movie.SMVSpecific.WIP1TIMING.ToString());
+
             tv.Nodes.Add("Metadata");
-            tv.Nodes[2].Nodes.Add("Author: " + movie.Header.Metadata);
+            tv.Nodes[2].Nodes.Add("Author: " + movie.SMVExtra.Author);
 
             tv.Nodes.Add("ROM Information");
-            tv.Nodes[3].Nodes.Add("ROM Title: " + movie.ROMInfo.Name);
-            tv.Nodes[3].Nodes.Add("ROM CRC:   " + movie.ROMInfo.CRC);
+            tv.Nodes[3].Nodes.Add("ROM Title: " + movie.SMVExtra.ROM);
+            tv.Nodes[3].Nodes.Add("ROM CRC:   " + movie.SMVExtra.CRC);
 
             tv.Nodes.Add("Controllers");
-            tv.Nodes[4].Nodes.Add("Controller 1 Present: " + movie.ControllerData.Controller[0].ToString());
-            tv.Nodes[4].Nodes.Add("Controller 2 Present: " + movie.ControllerData.Controller[1].ToString());
-            tv.Nodes[4].Nodes.Add("Controller 3 Present: " + movie.ControllerData.Controller[2].ToString());
-            tv.Nodes[4].Nodes.Add("Controller 4 Present: " + movie.ControllerData.Controller[3].ToString());
+            tv.Nodes[4].Nodes.Add("Controller 1 Present: " + movie.SMVInput.Controllers[0].ToString());
+            tv.Nodes[4].Nodes.Add("Controller 2 Present: " + movie.SMVInput.Controllers[1].ToString());
+            tv.Nodes[4].Nodes.Add("Controller 3 Present: " + movie.SMVInput.Controllers[2].ToString());
+            tv.Nodes[4].Nodes.Add("Controller 4 Present: " + movie.SMVInput.Controllers[3].ToString());
+            tv.Nodes[4].Nodes.Add("Controller 5 Present: " + movie.SMVInput.Controllers[4].ToString());
 
             tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
-        }
+        }        
 
         /// <summary>
         /// Populate an FCE Ultra movie file's header information
         /// </summary>
         public static void FCM(ref TreeView tv, ref FCEU movie)
-        {
-            string movieStart  = (movie.Header.StartFromReset) ? "From Reset" : "From Save";
-            string movieTiming = "";
+        {            
+            tv.Nodes.Add("Header");
+            tv.Nodes[0].Nodes.Add("Signature:        " + movie.FCMHeader.Signature);
+            tv.Nodes[0].Nodes.Add("Version:          " + movie.FCMHeader.Version.ToString());
+            tv.Nodes[0].Nodes.Add("Frame Count:      " + String.Format("{0:0,0}", movie.FCMHeader.FrameCount));
+            tv.Nodes[0].Nodes.Add("Rerecord Count:   " + String.Format("{0:0,0}", movie.FCMHeader.RerecordCount));
+            tv.Nodes[0].Nodes.Add("Emulator Version: " + movie.FCMHeader.EmulatorID);
+            tv.Nodes[0].Nodes.Add("Movie Start:      " + movie.FCMOptions.MovieStart);
+            tv.Nodes[0].Nodes.Add("Movie Timing:     " + movie.FCMOptions.MovieTiming);
 
-            if (movie.Header.NTSC) movieTiming = "NTSC";
-            if (movie.Header.PAL)  movieTiming = "PAL";
-            
-            tv.Nodes.Add("Header");            
-            tv.Nodes[0].Nodes.Add("Signature:        "+ movie.Header.Signature);
-            tv.Nodes[0].Nodes.Add("Version:          "+ movie.Header.Version.ToString());
-            tv.Nodes[0].Nodes.Add("Frame Count:      "+ String.Format("{0:0,0}", movie.Header.FrameCount));
-            tv.Nodes[0].Nodes.Add("Rerecord Count:   "+ String.Format("{0:0,0}", movie.Header.ReRecordCount));
-            tv.Nodes[0].Nodes.Add("Emulator Version: "+ movie.Header.EmulatorVersion.ToString());
-            tv.Nodes[0].Nodes.Add("Movie Start:      "+ movieStart);
-            tv.Nodes[0].Nodes.Add("Movie Timing:     "+ movieTiming);
-            
             tv.Nodes.Add("Metadata");
-            tv.Nodes[1].Nodes.Add("Author: "+ movie.Header.Author);
-            
+            tv.Nodes[1].Nodes.Add("Author: " + movie.FCMExtra.Author);
+
             tv.Nodes.Add("ROM Information");
-            tv.Nodes[2].Nodes.Add("ROM Title: "+ movie.Header.ROMName);
-            tv.Nodes[2].Nodes.Add("ROM CRC:   "+ movie.Header.ROMCRC);
-            
+            tv.Nodes[2].Nodes.Add("ROM Title: " + movie.FCMExtra.ROM);
+            tv.Nodes[2].Nodes.Add("ROM CRC:   " + movie.FCMExtra.CRC);
+
             tv.Nodes.Add("Controllers");
-            tv.Nodes[3].Nodes.Add("Controller 1: " + movie.ControllerData.Controller[0].ToString());
-            tv.Nodes[3].Nodes.Add("Controller 2: " + movie.ControllerData.Controller[1].ToString());
-            tv.Nodes[3].Nodes.Add("Controller 3: " + movie.ControllerData.Controller[2].ToString());
-            tv.Nodes[3].Nodes.Add("Controller 4: " + movie.ControllerData.Controller[3].ToString());
+            tv.Nodes[3].Nodes.Add("Controller 1: " + movie.FCMInput.Controllers[0].ToString());
+            tv.Nodes[3].Nodes.Add("Controller 2: " + movie.FCMInput.Controllers[1].ToString());
+            tv.Nodes[3].Nodes.Add("Controller 3: " + movie.FCMInput.Controllers[2].ToString());
+            tv.Nodes[3].Nodes.Add("Controller 4: " + movie.FCMInput.Controllers[3].ToString());
 
             tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
         }
-
+       
         /// <summary>
         /// Populate a VisualBoyAdvance movie file's header information
         /// </summary>
         public static void VBM(ref TreeView tv, ref VisualBoyAdvance movie)
         {
-            tv.Nodes.Add("Header");                       
-            tv.Nodes[0].Nodes.Add("Signature:      " + movie.Header.Signature);
-            tv.Nodes[0].Nodes.Add("Version:        " + movie.Header.Version.ToString());
-            tv.Nodes[0].Nodes.Add("UID:            " + movie.Header.UID);
-            tv.Nodes[0].Nodes.Add("Frame Count:    " + String.Format("{0:0,0}", movie.Header.FrameCount));
-            tv.Nodes[0].Nodes.Add("Rerecord Count: " + String.Format("{0:0,0}", movie.Header.RerecordCount));
+            tv.Nodes.Add("Header");
+            tv.Nodes[0].Nodes.Add("Signature:      " + movie.VBMHeader.Signature);
+            tv.Nodes[0].Nodes.Add("Version:        " + movie.VBMHeader.Version.ToString());
+            tv.Nodes[0].Nodes.Add("UID:            " + movie.VBMHeader.UID);
+            tv.Nodes[0].Nodes.Add("Frame Count:    " + String.Format("{0:0,0}", movie.VBMHeader.FrameCount));
+            tv.Nodes[0].Nodes.Add("Rerecord Count: " + String.Format("{0:0,0}", movie.VBMHeader.RerecordCount));
 
             tv.Nodes.Add("Options");
-            tv.Nodes[1].Nodes.Add("Movie Start");
-            tv.Nodes[1].Nodes[0].Nodes.Add("From Reset:    " + movie.Options.MovieStart[0].ToString());
-            tv.Nodes[1].Nodes[0].Nodes.Add("From Save:     " + movie.Options.MovieStart[1].ToString());
-            tv.Nodes[1].Nodes[0].Nodes.Add("From Power-On: " + movie.Options.MovieStart[2].ToString());
+            tv.Nodes[1].Nodes.Add("Movie Start: " + movie.VBMOptions.MovieStart);
             tv.Nodes[1].Nodes.Add("System Type");
-            tv.Nodes[1].Nodes[1].Nodes.Add("Game Boy Advance: " + movie.Options.SystemType[0].ToString());
-            tv.Nodes[1].Nodes[1].Nodes.Add("Game Boy Colour:  " + movie.Options.SystemType[1].ToString());
-            tv.Nodes[1].Nodes[1].Nodes.Add("Super Game Boy:   " + movie.Options.SystemType[2].ToString());
-            tv.Nodes[1].Nodes[1].Nodes.Add("Game Boy:         " + movie.Options.SystemType[3].ToString());
+            tv.Nodes[1].Nodes[1].Nodes.Add("Game Boy Advance: " + movie.VBMSpecific.SystemType[0].ToString());
+            tv.Nodes[1].Nodes[1].Nodes.Add("Game Boy Colour:  " + movie.VBMSpecific.SystemType[1].ToString());
+            tv.Nodes[1].Nodes[1].Nodes.Add("Super Game Boy:   " + movie.VBMSpecific.SystemType[2].ToString());
+            tv.Nodes[1].Nodes[1].Nodes.Add("Game Boy:         " + movie.VBMSpecific.SystemType[3].ToString());
             tv.Nodes[1].Nodes.Add("BIOS Flags");
-            tv.Nodes[1].Nodes[2].Nodes.Add("useBiosFile:  " + movie.Options.BIOSFlags[0].ToString());
-            tv.Nodes[1].Nodes[2].Nodes.Add("skipBiosFile: " + movie.Options.BIOSFlags[1].ToString());
-            tv.Nodes[1].Nodes[2].Nodes.Add("rtcEnable:    " + movie.Options.BIOSFlags[2].ToString());            
-            tv.Nodes[1].Nodes[2].Nodes.Add("lagReduction: " + movie.Options.BIOSFlags[4].ToString());
-            tv.Nodes[1].Nodes[2].Nodes.Add("gbcHdma5Fix:  " + movie.Options.BIOSFlags[5].ToString());
+            tv.Nodes[1].Nodes[2].Nodes.Add("useBiosFile:  " + movie.VBMSpecific.BIOSFlags[0].ToString());
+            tv.Nodes[1].Nodes[2].Nodes.Add("skipBiosFile: " + movie.VBMSpecific.BIOSFlags[1].ToString());
+            tv.Nodes[1].Nodes[2].Nodes.Add("rtcEnable:    " + movie.VBMSpecific.BIOSFlags[2].ToString());
+            tv.Nodes[1].Nodes[2].Nodes.Add("lagReduction: " + movie.VBMSpecific.BIOSFlags[4].ToString());
+            tv.Nodes[1].Nodes[2].Nodes.Add("gbcHdma5Fix:  " + movie.VBMSpecific.BIOSFlags[5].ToString());
 
             tv.Nodes.Add("Metadata");
-            tv.Nodes[2].Nodes.Add("Author:      " + movie.Metadata.Author);
-            tv.Nodes[2].Nodes.Add("Description: " + movie.Metadata.Description);
+            tv.Nodes[2].Nodes.Add("Author:      " + movie.VBMExtra.Author);
+            tv.Nodes[2].Nodes.Add("Description: " + movie.VBMExtra.Description);
 
             tv.Nodes.Add("ROM Information");
-            tv.Nodes[3].Nodes.Add("ROM Name: " + movie.RomInfo.Name);
-            tv.Nodes[3].Nodes.Add("ROM CRC:  " + movie.RomInfo.CRC.ToString());
-            tv.Nodes[3].Nodes.Add("Check:    " + movie.RomInfo.Checksum.ToString());
-            
+            tv.Nodes[3].Nodes.Add("ROM Name: " + movie.VBMExtra.ROM);
+            tv.Nodes[3].Nodes.Add("ROM CRC:  " + movie.VBMExtra.CRC);
+            //tv.Nodes[3].Nodes.Add("Check:    " + movie.RomInfo.Checksum.ToString());
+
             tv.Nodes.Add("Controllers");
-            tv.Nodes[4].Nodes.Add("Controller 1 Present: " + movie.Options.Controllers[0].ToString());
-            tv.Nodes[4].Nodes.Add("Controller 2 Present: " + movie.Options.Controllers[1].ToString());
-            tv.Nodes[4].Nodes.Add("Controller 3 Present: " + movie.Options.Controllers[2].ToString());
-            tv.Nodes[4].Nodes.Add("Controller 4 Present: " + movie.Options.Controllers[3].ToString());
+            tv.Nodes[4].Nodes.Add("Controller 1 Present: " + movie.VBMInput.Controllers[0].ToString());
+            tv.Nodes[4].Nodes.Add("Controller 2 Present: " + movie.VBMInput.Controllers[1].ToString());
+            tv.Nodes[4].Nodes.Add("Controller 3 Present: " + movie.VBMInput.Controllers[2].ToString());
+            tv.Nodes[4].Nodes.Add("Controller 4 Present: " + movie.VBMInput.Controllers[3].ToString());
 
             tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
-        }
+        }       
 
         /// <summary>
         /// Populate a Famtasia movie file's header information
         /// </summary>
         public static void FMV(ref TreeView tv, ref Famtasia movie)
-        {
-            string movieStart = (movie.Header.StartFromReset) ? "From Reset" : "From Save";            
-
+        {            
             tv.Nodes.Add("Header");
-            tv.Nodes[0].Nodes.Add("Signature:      " + movie.Header.Signature);            
-            tv.Nodes[0].Nodes.Add("Movie Title:    " + movie.Header.MovieTitle);
-            tv.Nodes[0].Nodes.Add("Frame Count:    " + String.Format("{0:0,0}", movie.Header.FrameCount));
-            tv.Nodes[0].Nodes.Add("Rerecord Count: " + String.Format("{0:0,0}", movie.Header.ReRecordCount));
-            tv.Nodes[0].Nodes.Add("Emulator ID:    " + movie.Header.EmulatorID);
-            tv.Nodes[0].Nodes.Add("Movie Start:    " + movieStart);
+            tv.Nodes[0].Nodes.Add("Signature:      " + movie.FMVHeader.Signature);
+            tv.Nodes[0].Nodes.Add("Movie Title:    " + movie.FMVExtra.Description);
+            tv.Nodes[0].Nodes.Add("Frame Count:    " + String.Format("{0:0,0}", movie.FMVHeader.FrameCount));
+            tv.Nodes[0].Nodes.Add("Rerecord Count: " + String.Format("{0:0,0}", movie.FMVHeader.RerecordCount));
+            tv.Nodes[0].Nodes.Add("Emulator ID:    " + movie.FMVHeader.EmulatorID);
+            tv.Nodes[0].Nodes.Add("Movie Start:    " + movie.FMVOptions.MovieStart);
 
             tv.Nodes.Add("Controllers");
-            tv.Nodes[1].Nodes.Add("Controller 1: " + movie.Header.Controllers[0].ToString());
-            tv.Nodes[1].Nodes.Add("Controller 2: " + movie.Header.Controllers[1].ToString());
+            tv.Nodes[1].Nodes.Add("Controller 1: " + movie.FMVInput.Controllers[0].ToString());
+            tv.Nodes[1].Nodes.Add("Controller 2: " + movie.FMVInput.Controllers[1].ToString());
 
-            tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
-        }
+            tv.ExpandAll(); tv.Nodes[0].EnsureVisible();            
+        }        
 
         /// <summary>
         /// Populate a Gens movie file's header information
         /// </summary>
         public static void GMV(ref TreeView tv, ref Gens movie)
-        {                        
+        {
             tv.Nodes.Add("Header");
-            tv.Nodes[0].Nodes.Add("Signature:      " + movie.Header.Signature);
-            tv.Nodes[0].Nodes.Add("Version:        " + movie.Header.Version);
-            tv.Nodes[0].Nodes.Add("Movie Name:     " + movie.Header.MovieName);
-            tv.Nodes[0].Nodes.Add("Frame Count:    " + String.Format("{0:0,0}", movie.Header.FrameCount));
-            tv.Nodes[0].Nodes.Add("Rerecord Count: " + String.Format("{0:0,0}", movie.Header.RerecordCount));                        
-            if (movie.Header.Version > 0x09)
+            tv.Nodes[0].Nodes.Add("Signature:      " + movie.GMVHeader.Signature);
+            tv.Nodes[0].Nodes.Add("Version:        " + movie.GMVHeader.Version.ToString());
+            tv.Nodes[0].Nodes.Add("Movie Name:     " + movie.GMVExtra.Description);
+            tv.Nodes[0].Nodes.Add("Frame Count:    " + String.Format("{0:0,0}", movie.GMVHeader.FrameCount));
+            tv.Nodes[0].Nodes.Add("Rerecord Count: " + String.Format("{0:0,0}", movie.GMVHeader.RerecordCount));
+
+            if (movie.GMVHeader.Version > 0x09)
             {
-                tv.Nodes[0].Nodes.Add("FPS:            " + movie.Options.FPS);
-                string movieStart = (movie.Options.StartFromReset) ? "From Reset" : "From Save";
-                tv.Nodes[0].Nodes.Add("Movie Start:    " + movieStart);
+                tv.Nodes[0].Nodes.Add("FPS:            " + movie.GMVOptions.FPS);                
+                tv.Nodes[0].Nodes.Add("Movie Start:    " + movie.GMVOptions.MovieStart);
             }
-            
+
             tv.Nodes.Add("Controllers");
             tv.Nodes[1].Nodes.Add("Controller 1: true");
-            tv.Nodes[1].Nodes[0].Nodes.Add("Config: " + movie.Header.Player1Config + " button");
+            tv.Nodes[1].Nodes[0].Nodes.Add("Config: " + movie.GMVSpecific.Player1Config + " button");
             tv.Nodes[1].Nodes.Add("Controller 2: true");
-            tv.Nodes[1].Nodes[1].Nodes.Add("Config: " + movie.Header.Player2Config + " button");
+            tv.Nodes[1].Nodes[1].Nodes.Add("Config: " + movie.GMVSpecific.Player2Config + " button");
             tv.Nodes[1].Nodes.Add("Controller 3: false");
-            if (movie.Header.Version > 0x09)
-                if(movie.Options.ControllerCount == 3)
+            
+            if (movie.GMVHeader.Version > 0x09)
+                if (movie.GMVInput.ControllerCount == 3)
                     tv.Nodes[1].Nodes[2].Text = "Controller 3: true";
 
             tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
@@ -194,38 +185,36 @@ namespace MovieSplicer.UI.Methods
         public static void M64(ref TreeView tv, ref Mupen64 movie)
         {
             tv.Nodes.Add("Header");
-            tv.Nodes[0].Nodes.Add("Signature:      " + movie.Header.Signature);
-            tv.Nodes[0].Nodes.Add("Version:        " + movie.Header.Version.ToString());
-            tv.Nodes[0].Nodes.Add("UID:            " + movie.Header.UID);
-            tv.Nodes[0].Nodes.Add("Frame Count:    " + String.Format("{0:0,0}", movie.Header.FrameCount));
-            tv.Nodes[0].Nodes.Add("Rerecord Count: " + String.Format("{0:0,0}", movie.Header.RerecordCount));
+            tv.Nodes[0].Nodes.Add("Signature:      " + movie.M64Header.Signature);
+            tv.Nodes[0].Nodes.Add("Version:        " + movie.M64Header.Version.ToString());
+            tv.Nodes[0].Nodes.Add("UID:            " + movie.M64Header.UID);
+            tv.Nodes[0].Nodes.Add("Frame Count:    " + String.Format("{0:0,0}", movie.M64Header.FrameCount));
+            tv.Nodes[0].Nodes.Add("Rerecord Count: " + String.Format("{0:0,0}", movie.M64Header.RerecordCount));
 
             tv.Nodes.Add("Options");
-            tv.Nodes[1].Nodes.Add("FPS:         " + movie.Options.FPS);
-            string startFrom = (movie.Options.MovieStart[0] == true) ? "From Snapshot" : "From Power-on";
-            tv.Nodes[1].Nodes.Add("Movie Start: " +startFrom);
+            tv.Nodes[1].Nodes.Add("FPS:         " + movie.M64Options.FPS);            
+            tv.Nodes[1].Nodes.Add("Movie Start: " + movie.M64Options.MovieStart);
 
             tv.Nodes.Add("ROM Information");
-            tv.Nodes[2].Nodes.Add("Name:    " + movie.RomInfo.Name);
-            tv.Nodes[2].Nodes.Add("CRC:     " + movie.RomInfo.CRC);
-            tv.Nodes[2].Nodes.Add("Country: " + movie.RomInfo.Country);
+            tv.Nodes[2].Nodes.Add("Name:    " + movie.M64Extra.ROM);
+            tv.Nodes[2].Nodes.Add("CRC:     " + movie.M64Extra.CRC);
+            tv.Nodes[2].Nodes.Add("Country: " + movie.M64Extra.Country);
             
             tv.Nodes.Add("Extra Information");
-            tv.Nodes[3].Nodes.Add("Author:       " + movie.ExtraInfo.Author);
-            tv.Nodes[3].Nodes.Add("Description:  " + movie.ExtraInfo.Description);
-            tv.Nodes[3].Nodes.Add("Video Plugin: " + movie.ExtraInfo.VideoPlugin);
-            tv.Nodes[3].Nodes.Add("Audio Plugin: " + movie.ExtraInfo.AudioPlugin);
-            tv.Nodes[3].Nodes.Add("Input Plugin: " + movie.ExtraInfo.InputPlugin);
-            tv.Nodes[3].Nodes.Add("RSP Plugin:   " + movie.ExtraInfo.RSPPlugin);
+            tv.Nodes[3].Nodes.Add("Author:       " + movie.M64Extra.Author);
+            tv.Nodes[3].Nodes.Add("Description:  " + movie.M64Extra.Description);
+            tv.Nodes[3].Nodes.Add("Video Plugin: " + movie.M64Specific.VideoPlugin);
+            tv.Nodes[3].Nodes.Add("Audio Plugin: " + movie.M64Specific.AudioPlugin);
+            tv.Nodes[3].Nodes.Add("Input Plugin: " + movie.M64Specific.InputPlugin);
+            tv.Nodes[3].Nodes.Add("RSP Plugin:   " + movie.M64Specific.RSPPlugin);
 
-            tv.Nodes.Add("Controller Information");
-            tv.Nodes[4].Nodes.Add("Count:  " + movie.Options.ControllerCount.ToString());
+            tv.Nodes.Add("Controller Information");            
             for (int i = 0; i < 4; i++)
             {
                 tv.Nodes[4].Nodes.Add("Controller " + (i + 1));
-                tv.Nodes[4].Nodes[i+1].Nodes.Add("Controller Present: " + ((bool[])(movie.Options.Controllers[i]))[0]);
-                tv.Nodes[4].Nodes[i+1].Nodes.Add("Mempak Present:     " + ((bool[])(movie.Options.Controllers[i]))[1]);
-                tv.Nodes[4].Nodes[i+1].Nodes.Add("Rumblepak Present:  " + ((bool[])(movie.Options.Controllers[i]))[2]);
+                tv.Nodes[4].Nodes[i].Nodes.Add("Controller Present: " + movie.M64Specific.Controller[i].Option[0]);
+                tv.Nodes[4].Nodes[i].Nodes.Add("Mempak Present:     " + movie.M64Specific.Controller[i].Option[1]);
+                tv.Nodes[4].Nodes[i].Nodes.Add("Rumblepak Present:  " + movie.M64Specific.Controller[i].Option[2]);
             }
 
             tv.ExpandAll(); tv.Nodes[0].EnsureVisible();

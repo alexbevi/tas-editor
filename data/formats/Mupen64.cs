@@ -4,22 +4,57 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 
-namespace MovieSplicer.Data
+namespace MovieSplicer.Data.Formats
 {
-    public class Mupen64
+    public class Mupen64 : TASMovie
     {
+        /// <summary>
+        /// Contains Format Specific items
+        /// </summary>
+        public struct FormatSpecific
+        {
+            public ControllerConfig[] Controller;
+            public string             VideoPlugin;
+            public string             AudioPlugin;
+            public string             InputPlugin;
+            public string             RSPPlugin;
+
+            public FormatSpecific(byte[] controllers)
+            {
+                Controller = new ControllerConfig[4];
+                for (int i = 0; i < 4; i++)
+                {
+                    Controller[i].Option = new bool[3];
+                    if ((1 & (controllers[i] << 0)) == 1) Controller[i].Option[0] = true;
+                    if ((1 & (controllers[i] << 4)) == 1) Controller[i].Option[1] = true;
+                    if ((1 & (controllers[i] << 8)) == 1) Controller[i].Option[2] = true;                    
+                }
+
+                // directly initialized when instantiated
+                VideoPlugin = null;
+                AudioPlugin = null;
+                InputPlugin = null;
+                RSPPlugin   = null;
+            }
+        }
+
+        /// <summary>
+        /// The Option (bool array) contains configuration information about a controller                
+        /// </summary>
+        public struct ControllerConfig
+        {
+            public bool[] Option;
+        }
+
         const short HEADER_SIZE = 1024;
 
-        private byte[] fileContents;
+        public Header         M64Header;
+        public Options        M64Options;
+        public Extra          M64Extra;
+        public Input          M64Input;
+        public FormatSpecific M64Specific;
        
-        public string       Filename;
-        public M64Header    Header;
-        public M64Options   Options;
-        public M64RomInfo   RomInfo;
-        public M64ExtraInfo ExtraInfo;
-
-        static Functions fn  = new Functions();
-        static int[] offsets = {
+        static int[] Offsets = {
           0x00, // 4-byte signature: 4D 36 34 1A "M64\x1A"
           0x04, // 4-byte little-endian unsigned int: version number, should be 3
           0x08, // 4-byte little-endian integer: movie "uid" - identifies the movie-savestate relationship,
@@ -55,123 +90,45 @@ namespace MovieSplicer.Data
         };
 
         /// <summary>
-        /// Create a fully instantiated VBM object from the passed file
+        /// Create a fully instantiated M64 object from the passed file
         /// </summary>        
         public Mupen64(string M64File)
         {
             Filename = M64File;
+            FillByteArrayFromFile(M64File, ref FileContents);
 
-            FileStream fs   = File.OpenRead(M64File);
-            BinaryReader br = new BinaryReader(fs);
+            ControllerDataOffset = Read32(ref FileContents, Offsets[10]);
+
+            M64Header = new Header();
+            M64Header.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
+            M64Header.Version       = Read32(ref FileContents, Offsets[1]);
+            M64Header.UID           = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
+            M64Header.FrameCount    = Read32(ref FileContents, Offsets[3]);
+            M64Header.RerecordCount = Read32(ref FileContents, Offsets[4]);
+
+            M64Options = new Options(true);
+            M64Options.MovieStartFlag[0] = (FileContents[Offsets[7]] | FileContents[Offsets[7] + 1]) == 1 ? true : false;
+            M64Options.MovieStartFlag[1] = (FileContents[Offsets[7]] | FileContents[Offsets[7] + 1]) == 2 ? true : false;            
+            M64Options.FPS               = FileContents[Offsets[5]];
+
+            M64Extra = new Extra();
+            M64Extra.ROM         = ReadChars(ref FileContents, Offsets[13], 64);
+            M64Extra.CRC         = ReadHEXUnicode(ref FileContents, Offsets[14], 4);
+            M64Extra.Country     = ReadChars(ref FileContents, Offsets[15], 2);
+            M64Extra.Author      = ReadChars(ref FileContents, Offsets[21], 222);
+            M64Extra.Description = ReadChars(ref FileContents, Offsets[22], 256);
+
+            M64Specific = new FormatSpecific(ReadBytes(ref FileContents, Offsets[11], 4));
+            M64Specific.VideoPlugin = ReadChars(ref FileContents, Offsets[17], 64);
+            M64Specific.AudioPlugin = ReadChars(ref FileContents, Offsets[18], 64);
+            M64Specific.InputPlugin = ReadChars(ref FileContents, Offsets[19], 64);
+            M64Specific.RSPPlugin   = ReadChars(ref FileContents, Offsets[20], 64);
             
-            fileContents = br.ReadBytes((int)fs.Length);
 
-            br.Close(); br = null; fs.Dispose();
+            //M64Input = new Input(FileContents[Offsets[6]], false);            
+            M64Input = new Input();
+            //InputSampleCount = fn.Read32(fn.readBytes(ref byteArray, Offsets[6], 4));
 
-            Header    = new M64Header(ref fileContents);
-            Options   = new M64Options(ref fileContents);
-            RomInfo   = new M64RomInfo(ref fileContents);
-            ExtraInfo = new M64ExtraInfo(ref fileContents);
-        }
-
-        /// <summary>
-        /// Parse basic M64 header values
-        /// </summary>
-        public class M64Header
-        {
-            public string Signature;
-            public uint   Version;
-            public string UID;
-            public uint   FrameCount;
-            public uint   RerecordCount;
-
-            public M64Header(ref byte[] byteArray)
-            {
-                Signature     = fn.ReadHEX(fn.readBytes(ref byteArray, offsets[0], 4));
-                Version       = fn.Read32(fn.readBytes(ref byteArray, offsets[1], 4));
-                UID           = fn.ConvertUNIXTime((fn.Read32(fn.readBytes(ref byteArray, offsets[2], 4))));
-                FrameCount    = fn.Read32(fn.readBytes(ref byteArray, offsets[3], 4));
-                RerecordCount = fn.Read32(fn.readBytes(ref byteArray, offsets[4], 4));
-            }
-        }
-
-        /// <summary>
-        /// Parse basic M64 header option values
-        /// </summary>
-        public class M64Options
-        {                                      
-            public int       FPS;
-            public int       ControllerCount;
-            public uint      InputSampleCount;
-            public bool[]    MovieStart = { false, false };
-            public ArrayList Controllers;                       
-
-            public M64Options(ref byte[] byteArray)
-            {
-                FPS = byteArray[offsets[5]];
-                ControllerCount = byteArray[offsets[6]];
-                //InputSampleCount = fn.Read32(fn.readBytes(ref byteArray, offsets[6], 4));
-
-                int startFlag = byteArray[offsets[7]] | byteArray[offsets[7] + 1];
-                if (startFlag == 1) MovieStart[0] = true;
-                if (startFlag == 2) MovieStart[1] = true;
-
-                Controllers = new ArrayList();
-                byte[] controllers = fn.readBytes(ref byteArray, offsets[8], 4);
-                for (int i = 0; i < 4; i++)
-                {
-                    bool[] ControllerFlags = { false, false, false };
-
-                    if ((1 & (controllers[i] << 0)) == 1) ControllerFlags[0] = true;
-                    if ((1 & (controllers[i] << 4)) == 1) ControllerFlags[0] = true;
-                    if ((1 & (controllers[i] << 8)) == 1) ControllerFlags[0] = true;
-
-                    Controllers.Add(ControllerFlags);
-                }
-
-            }
-        }
-
-        /// <summary>
-        /// Parse basic M64 header ROM info values
-        /// </summary>
-        public class M64RomInfo
-        {
-            public string Name;
-            public string CRC;
-            public string Country;
-
-            public M64RomInfo(ref byte[] byteArray)
-            {
-                Name    = fn.ReadChars(fn.readBytes(ref byteArray, offsets[13], 32));
-                CRC     = fn.ReadHEXUnicode(fn.readBytes(ref byteArray, offsets[14], 4));
-                Country = fn.ReadChars(fn.readBytes(ref byteArray, offsets[15], 2));
-            }            
-        }
-
-        /// <summary>
-        /// Parse additional M64 header information values
-        /// </summary>
-        public class M64ExtraInfo
-        {
-            public string VideoPlugin;
-            public string AudioPlugin;
-            public string InputPlugin;
-            public string RSPPlugin;
-            public string Author;
-            public string Description;
-
-            public M64ExtraInfo(ref byte[] byteArray)
-            {
-                VideoPlugin = fn.ReadChars(fn.readBytes(ref byteArray, offsets[17], 64));
-                AudioPlugin = fn.ReadChars(fn.readBytes(ref byteArray, offsets[18], 64));
-                InputPlugin = fn.ReadChars(fn.readBytes(ref byteArray, offsets[19], 64));
-                RSPPlugin   = fn.ReadChars(fn.readBytes(ref byteArray, offsets[20], 64));
-                Author      = fn.ReadChars(fn.readBytes(ref byteArray, offsets[21], 222));
-                Description = fn.ReadChars(fn.readBytes(ref byteArray, offsets[22], 256));
-
-            }
-        }
-    
-}    
+        }                         
+    }    
 }
