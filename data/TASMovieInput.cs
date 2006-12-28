@@ -67,8 +67,10 @@ namespace MovieSplicer.Data
                     // NOTE::mod check set to 1 so if option is checked and only 1 frame needs to be updated
                     // the changes won't be skipped :)
                     if (autofireUpdate)
+                    {
                         if (i % 2 == 1)
                             temp[i].Controller[j] = (updateFlag[j]) ? null : input[position + i].Controller[j];
+                    }
                     else
                         temp[i].Controller[j] = (updateFlag[j]) ? frame.Controller[j] : input[position + i].Controller[j];
                 }
