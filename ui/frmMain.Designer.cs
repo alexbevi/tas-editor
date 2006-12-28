@@ -48,7 +48,7 @@ namespace MovieSplicer.UI
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.mnuCompareMovieInputRange = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.autoFireUpdateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuAutoFireOption = new System.Windows.Forms.ToolStripMenuItem();
             this.pasteOverwritesFromCurrentPositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statMain = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
@@ -239,22 +239,23 @@ namespace MovieSplicer.UI
             // optionsToolStripMenuItem
             // 
             this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.autoFireUpdateToolStripMenuItem,
+            this.mnuAutoFireOption,
             this.pasteOverwritesFromCurrentPositionToolStripMenuItem});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
             this.optionsToolStripMenuItem.Text = "&Options";
             // 
-            // autoFireUpdateToolStripMenuItem
+            // mnuAutoFireOption
             // 
-            this.autoFireUpdateToolStripMenuItem.CheckOnClick = true;
-            this.autoFireUpdateToolStripMenuItem.Name = "autoFireUpdateToolStripMenuItem";
-            this.autoFireUpdateToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
-            this.autoFireUpdateToolStripMenuItem.Text = "&Auto-Fire Update";
+            this.mnuAutoFireOption.CheckOnClick = true;
+            this.mnuAutoFireOption.Name = "mnuAutoFireOption";
+            this.mnuAutoFireOption.Size = new System.Drawing.Size(178, 22);
+            this.mnuAutoFireOption.Text = "&Auto-Fire Update";
             // 
             // pasteOverwritesFromCurrentPositionToolStripMenuItem
             // 
             this.pasteOverwritesFromCurrentPositionToolStripMenuItem.CheckOnClick = true;
+            this.pasteOverwritesFromCurrentPositionToolStripMenuItem.Enabled = false;
             this.pasteOverwritesFromCurrentPositionToolStripMenuItem.Name = "pasteOverwritesFromCurrentPositionToolStripMenuItem";
             this.pasteOverwritesFromCurrentPositionToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
             this.pasteOverwritesFromCurrentPositionToolStripMenuItem.Text = "Overwrite on Paste";
@@ -573,13 +574,13 @@ namespace MovieSplicer.UI
             // 
             // btnFindInput
             // 
-            this.btnFindInput.Enabled = false;
             this.btnFindInput.Location = new System.Drawing.Point(6, 298);
             this.btnFindInput.Name = "btnFindInput";
             this.btnFindInput.Size = new System.Drawing.Size(98, 23);
             this.btnFindInput.TabIndex = 27;
             this.btnFindInput.Text = "&Find Input";
             this.btnFindInput.UseVisualStyleBackColor = true;
+            this.btnFindInput.Click += new System.EventHandler(this.btnFindInput_Click);
             // 
             // lvInput
             // 
@@ -621,7 +622,7 @@ namespace MovieSplicer.UI
             this.MaximizeBox = false;
             this.Name = "frmMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "TAS Movie Editor v0.x.x";
+            this.Text = "TAS Movie Editor v0.9";
             this.mnuMain.ResumeLayout(false);
             this.mnuMain.PerformLayout();
             this.statMain.ResumeLayout(false);
@@ -688,7 +689,7 @@ namespace MovieSplicer.UI
         private System.Windows.Forms.GroupBox groupBox12;
         private System.Windows.Forms.Button btnFindInput;
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem autoFireUpdateToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem mnuAutoFireOption;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ToolStripStatusLabel sbarFrameCount;
         private System.Windows.Forms.CheckBox chkFrameDataC1;

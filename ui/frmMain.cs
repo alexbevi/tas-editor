@@ -108,19 +108,19 @@ namespace MovieSplicer.UI
             tvInfo.Nodes.Clear();
             Methods.PopulateMovieInfo.GMV(ref tvInfo, ref GMV);
 
+            lvInput.Columns.Add("Controller 1", 75);
+            lvInput.Columns.Add("Controller 2", 75);
+
             txtFrameDataC1.Enabled = true;
             txtFrameDataC2.Enabled = true;
 
             if (GMV.GMVHeader.Version > 0x09)
             {
-                for (int i = 1; i <= GMV.GMVInput.ControllerCount; i++)
-                    lvInput.Columns.Add("Controller " + i, 75);
-                txtFrameDataC3.Enabled = true;
-            }
-            else
-            {
-                lvInput.Columns.Add("Controller 1", 75);
-                lvInput.Columns.Add("Controller 2", 75);
+                if (GMV.GMVInput.ControllerCount == 3)
+                {
+                    lvInput.Columns.Add("Controller 3", 75);
+                    txtFrameDataC3.Enabled = true;
+                }
             }
         }                  
 
@@ -242,6 +242,24 @@ namespace MovieSplicer.UI
                 lvInput.Items[targetFrame].Selected = true;
                 lvInput.Focus();
                 lvInput.EnsureVisible(targetFrame);
+            }
+        }
+
+        /// <summary>
+        /// Locate the selected substring in the current TASMovieInput[] object
+        /// </summary>        
+        private void btnFindInput_Click(object sender, EventArgs e)
+        {
+            if (FrameData == null || txtJumpToFrame.Text.Length == 0) return;
+
+            int start = (lvInput.SelectedIndices.Count > 0) ? lvInput.SelectedIndices[0] : 0;
+            int position = TASMovieInput.Search(ref FrameData, txtJumpToFrame.Text, start);
+
+            if (position > 0)
+            {
+                lvInput.Items[position].Selected = true;
+                lvInput.Focus();
+                lvInput.EnsureVisible(position);
             }
         }
 
@@ -566,17 +584,14 @@ namespace MovieSplicer.UI
                     DialogResult confirmUpdate = MessageBox.Show("Are you sure you want to update the " + totalFrames + " frames with the same input?", "Confirm Multiple Frame Update", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
                     if (confirmUpdate != DialogResult.OK) return;
                 }
+                bool autoFireUpdateFlag = mnuAutoFireOption.Checked;
 
-                TASMovieInput[] test = new TASMovieInput[FrameData.Length];
-                for (int z = 0; z < test.Length; z++) test[z] = (TASMovieInput)FrameData[z];
-                for (int i = frameIndex; i < frameIndex + totalFrames; i++)
-                    for (int j = 0; j < updateFlag.Length; j++)
-                        if (updateFlag[j]) test[i].Controller[j] = updated.Controller[j];
-
-                //TASMovieInput.Insert(ref FrameData, updated, updateFlag, frameIndex, totalFrames);                
+                TASMovieInput.Insert(ref FrameData, updated, updateFlag, autoFireUpdateFlag, frameIndex, totalFrames);                
                 updateControlsAfterEdit();
             }
-        }        
+        }
+
+        
 
         /// <summary>
         /// Show the splicing form
@@ -711,6 +726,8 @@ namespace MovieSplicer.UI
         }
 
     #endregion                          
+
+        
      
     }
 }

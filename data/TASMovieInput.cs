@@ -48,12 +48,39 @@ namespace MovieSplicer.Data
         /// <summary>
         /// Insert the passed in TASMovieInput at the desired position
         /// updateFlag is a collection of bool values to indicate which controller(s) to update
+        /// 
+        /// NOTE::The logic is a little weird, but if I tried looping through the number of updates,
+        /// checking against the flag, unexpected results occured (ie. updating 1 frame updated every
+        /// similar frame)
+        /// 
+        /// NOTE::Autofire update just adds the selected input to alternating frames
         /// </summary>        
-        public static void Insert(ref TASMovieInput[] input, TASMovieInput frame, bool[] updateFlag, int position, int length)
-        {                                    
-            for (int i = position; i < position + length; i++)
+        public static void Insert(ref TASMovieInput[] input, TASMovieInput frame, bool[] updateFlag, bool autofireUpdate, int position, int length)
+        {
+            TASMovieInput[] temp = new TASMovieInput[length];
+            for (int i = 0; i < length; i++)
+            {                                
+                temp[i] = new TASMovieInput();
                 for (int j = 0; j < updateFlag.Length; j++)
-                    if (updateFlag[j]) input[i].Controller[j] = frame.Controller[j];                                    
+                {
+                    // if autofire is checked, insert a blank frame on alternating frames
+                    // NOTE::mod check set to 1 so if option is checked and only 1 frame needs to be updated
+                    // the changes won't be skipped :)
+                    if (autofireUpdate)
+                        if (i % 2 == 1)
+                            temp[i].Controller[j] = (updateFlag[j]) ? null : input[position + i].Controller[j];
+                    else
+                        temp[i].Controller[j] = (updateFlag[j]) ? frame.Controller[j] : input[position + i].Controller[j];
+                }
+            }
+
+            for (int i = 0; i < length; i++)
+                input[position + i] = temp[i];
+
+            // OLD .. DOESN'T WORK 100%
+            //for (int i = position; i < position + length; i++)
+            //    for (int j = 0; j < updateFlag.Length; j++)
+            //        if (updateFlag[j]) input[i] = frame;
         }
 
         /// <summary>
@@ -114,6 +141,16 @@ namespace MovieSplicer.Data
                 spliced[sourceEnd + position++] = target[j];
 
             return spliced;
+        }
+
+        public static int Search(ref TASMovieInput[] input, string pattern, int startPosition)
+        {
+            for (int i = startPosition; i < input.Length; i++)            
+                for(int j = 0; j < input[i].Controller.Length; j++)
+                    if(input[i].Controller[j] != null)
+                        if (input[i].Controller[j].Contains(pattern)) return i;
+            
+            return 0;
         }
     }
 }

@@ -269,7 +269,7 @@ namespace MovieSplicer.Data.Formats
             int length = 0;
             for (int i = 0; i < input.Length; i++)
             {                
-                //// cycle through the controllers
+                // cycle through the controllers
                 for (int j = 0; j < 4; j++)
                 {                    
                     int current = parseControllerData(input[i].Controller[j]);
@@ -294,6 +294,8 @@ namespace MovieSplicer.Data.Formats
                 }
                 buffer++;
             }
+            // handle additional buffered values that may have escaped the initial loop
+            // TODO::Functional, but inefficent
             while (buffer > 0)
             {
                 length++;
