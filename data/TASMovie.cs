@@ -11,15 +11,22 @@ namespace MovieSplicer.Data
     {
         // contains the file contents as an array of bytes
         protected byte[] FileContents;
+
         protected int    SaveStateOffset;
         protected int    ControllerDataOffset;
+        
+        public string     Filename;
+        public TASHeader  Header;
+        public TASOptions Options;
+        public TASExtra   Extra;
+        public TASInput   Input;
 
-        public string Filename;        
+        //------------------------------------------------------------------------------------------------
 
         /// <summary>
         /// Common Header items
         /// </summary>
-        public struct Header
+        public struct TASHeader
         {
             public string Signature;
             public int    Version;
@@ -27,12 +34,12 @@ namespace MovieSplicer.Data
             public int    FrameCount;
             public int    RerecordCount;
             public string EmulatorID;           
-        }                       
-
+        }
+        
         /// <summary>
         /// Common Option items
         /// </summary>
-        public struct Options
+        public struct TASOptions
         {
             public int    FPS;
             /// <summary>
@@ -63,7 +70,7 @@ namespace MovieSplicer.Data
                 }
             }
 
-            public Options(bool defaultFlags)
+            public TASOptions(bool defaultFlags)
             {
                 FPS = 0;
                 MovieStartFlag  = (defaultFlags) ? new bool[3] : null;
@@ -74,7 +81,7 @@ namespace MovieSplicer.Data
         /// <summary>
         /// Extra Information that exists in most movie formats
         /// </summary>
-        public struct Extra
+        public struct TASExtra
         {
             public string Author;
             public string Description;
@@ -86,7 +93,7 @@ namespace MovieSplicer.Data
         /// <summary>
         /// Information about the controller configuration and frame input
         /// </summary>
-        public struct Input
+        public struct TASInput
         {            
             public bool[]          Controllers;
             public TASMovieInput[] FrameData;
@@ -109,7 +116,7 @@ namespace MovieSplicer.Data
             /// Create a bool[] for the number of controllers specified by maxControllers
             /// enableControllers sets the starting values
             /// </summary>            
-            public Input(int maxControllers, bool enableControllers)
+            public TASInput(int maxControllers, bool enableControllers)
             {                                
                 Controllers = new bool[maxControllers];
                 for (int i = 0; i < maxControllers; i++)
@@ -119,6 +126,11 @@ namespace MovieSplicer.Data
                 FrameData = null;
             }
         }
+
+        /// <summary>
+        /// overriden base method for saving back out to file
+        /// </summary>        
+        public virtual void Save(string filename, ref TASMovieInput[] input) { }
 
         //------------------------------------------------------------------------------------------------
 
@@ -162,6 +174,7 @@ namespace MovieSplicer.Data
 
             writer.Close(); writer = null; fs.Dispose();
         }
+        
         /// <summary>
         /// Convert a 2-byte little endian integer
         /// </summary>
@@ -238,6 +251,9 @@ namespace MovieSplicer.Data
             return (new string(c));
         }
 
+        /// <summary>
+        /// Get the null terminator position in a byte array
+        /// </summary>        
         protected string ReadCharsNullTerminated(ref byte[] byteArray, int position)
         {
             const byte NULL_TERMINATOR = 0x00;
@@ -247,9 +263,7 @@ namespace MovieSplicer.Data
         }
 
         /// <summary>
-        /// Convert a UTC file timestamp to a local string representation
-        /// 
-        /// DEBUG::I'm not sure that this is actually working properly
+        /// Convert a UTC file timestamp to a local string representation        
         /// </summary>
         protected string ConvertUNIXTime(int timeStamp)
         {

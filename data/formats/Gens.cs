@@ -17,10 +17,10 @@ namespace MovieSplicer.Data.Formats
 
         const byte HEADER_SIZE = 64;
 
-        public Header         GMVHeader;
-        public Options        GMVOptions;
-        public Input          GMVInput;
-        public Extra          GMVExtra;
+        //public Header         GMVHeader;
+        //public Options        GMVOptions;
+        //public Input          GMVInput;
+        //public Extra          GMVExtra;
         public FormatSpecific GMVSpecific;
         
         private string[] InputValues = { "^", "v", "<", ">", "A", "B", "C", "S", "X", "Y", "Z", "M" };
@@ -43,28 +43,49 @@ namespace MovieSplicer.Data.Formats
             Filename = GMVFile;
             FillByteArrayFromFile(GMVFile, ref FileContents);
 
-            GMVHeader = new Header();
-            GMVHeader.Signature     = ReadChars(ref FileContents, Offsets[0], 16);
-            GMVHeader.Version       = FileContents[Offsets[1]] - 55;
-            GMVHeader.FrameCount    = Convert.ToInt32((FileContents.Length - HEADER_SIZE) / 3);
-            GMVHeader.RerecordCount = Read32(ref FileContents, Offsets[2]);
+            //GMVHeader = new Header();
+            //GMVHeader.Signature     = ReadChars(ref FileContents, Offsets[0], 16);
+            //GMVHeader.Version       = FileContents[Offsets[1]] - 55;
+            //GMVHeader.FrameCount    = Convert.ToInt32((FileContents.Length - HEADER_SIZE) / 3);
+            //GMVHeader.RerecordCount = Read32(ref FileContents, Offsets[2]);
+
+            Header = new TASHeader();
+            Header.Signature = ReadChars(ref FileContents, Offsets[0], 16);
+            Header.Version = FileContents[Offsets[1]] - 55;
+            Header.FrameCount = Convert.ToInt32((FileContents.Length - HEADER_SIZE) / 3);
+            Header.RerecordCount = Read32(ref FileContents, Offsets[2]);
 
             // options don't exist in TEST9 or older movies
-            if (GMVHeader.Version > 9)
+            //if (GMVHeader.Version > 9)
+            //{
+            //    GMVOptions = new Options(true);
+            //    GMVOptions.FPS               = (1 & (FileContents[Offsets[5]] >> 7)) == 1 ? 50 : 60;
+            //    GMVOptions.MovieStartFlag[0] = (1 & (FileContents[Offsets[5]] >> 6)) == 0 ? true : false;
+            //    GMVOptions.MovieStartFlag[1] = (1 & (FileContents[Offsets[5]] >> 6)) == 1 ? true : false;
+            //    GMVInput                     = (1 & (FileContents[Offsets[5]] >> 5)) == 1 ? new Input(3, true) : new Input(2, true);
+            //}
+            //else
+            //    GMVInput = new Input(2, true);
+
+            if (Header.Version > 9)
             {
-                GMVOptions = new Options(true);
-                GMVOptions.FPS               = (1 & (FileContents[Offsets[5]] >> 7)) == 1 ? 50 : 60;
-                GMVOptions.MovieStartFlag[0] = (1 & (FileContents[Offsets[5]] >> 6)) == 0 ? true : false;
-                GMVOptions.MovieStartFlag[1] = (1 & (FileContents[Offsets[5]] >> 6)) == 1 ? true : false;
-                GMVInput                     = (1 & (FileContents[Offsets[5]] >> 5)) == 1 ? new Input(3, true) : new Input(2, true);
+                Options = new TASOptions(true);
+                Options.FPS = (1 & (FileContents[Offsets[5]] >> 7)) == 1 ? 50 : 60;
+                Options.MovieStartFlag[0] = (1 & (FileContents[Offsets[5]] >> 6)) == 0 ? true : false;
+                Options.MovieStartFlag[1] = (1 & (FileContents[Offsets[5]] >> 6)) == 1 ? true : false;
+                Input = (1 & (FileContents[Offsets[5]] >> 5)) == 1 ? new TASInput(3, true) : new TASInput(2, true);
             }
             else
-                GMVInput = new Input(2, true);
+                Input = new TASInput(2, true);
                 
 
-            GMVExtra = new Extra();
-            try   { GMVExtra.Description = ReadCharsNullTerminated(ref FileContents, Offsets[6]); }
-            catch { GMVExtra.Description = ReadChars(ref FileContents, Offsets[6], Offsets[7] - Offsets[6]); }
+            //GMVExtra = new Extra();
+            //try   { GMVExtra.Description = ReadCharsNullTerminated(ref FileContents, Offsets[6]); }
+            //catch { GMVExtra.Description = ReadChars(ref FileContents, Offsets[6], Offsets[7] - Offsets[6]); }
+
+            Extra = new TASExtra();
+            try { Extra.Description = ReadCharsNullTerminated(ref FileContents, Offsets[6]); }
+            catch { Extra.Description = ReadChars(ref FileContents, Offsets[6], Offsets[7] - Offsets[6]); }
 
             GMVSpecific = new FormatSpecific();
             GMVSpecific.Player1Config = ReadChars(ref FileContents, Offsets[3], 1);
@@ -80,25 +101,25 @@ namespace MovieSplicer.Data.Formats
         /// <param name="byteArray"></param>
         private void getFrameInput(ref byte[] byteArray)
         {
-            GMVInput.FrameData = new TASMovieInput[GMVHeader.FrameCount];
+            Input.FrameData = new TASMovieInput[Header.FrameCount];
             int frame = 0;
 
             // there are 3 bytes per frame of input
-            for (int i = 0; i < GMVHeader.FrameCount * 3; i++)
+            for (int i = 0; i < Header.FrameCount * 3; i++)
             {
-                GMVInput.FrameData[frame] = new TASMovieInput();
+                Input.FrameData[frame] = new TASMovieInput();
 
                 // there are only 3 bytes to deal with, so no need to 
                 // run the array through a loop to be populated
-                GMVInput.FrameData[frame].Controller[0] = parseControllerData(byteArray[Offsets[7] + i]);
-                GMVInput.FrameData[frame].Controller[1] = parseControllerData(byteArray[Offsets[7] + i + 1]);
+                Input.FrameData[frame].Controller[0] = parseControllerData(byteArray[Offsets[7] + i]);
+                Input.FrameData[frame].Controller[1] = parseControllerData(byteArray[Offsets[7] + i + 1]);
 
-                if (GMVInput.ControllerCount == 3)
-                    GMVInput.FrameData[frame].Controller[2] = parseControllerData(byteArray[Offsets[7] + i + 2]);
+                if (Input.ControllerCount == 3)
+                    Input.FrameData[frame].Controller[2] = parseControllerData(byteArray[Offsets[7] + i + 2]);
                 else
                     parseExtraControllerData(byteArray[Offsets[7] + i + 2],
-                        ref GMVInput.FrameData[frame].Controller[0],
-                        ref GMVInput.FrameData[frame].Controller[1]);
+                        ref Input.FrameData[frame].Controller[0],
+                        ref Input.FrameData[frame].Controller[1]);
                 
                 // increase the iterator (since we've dealt with values > i)
                 i += 2; frame++;
@@ -163,7 +184,7 @@ namespace MovieSplicer.Data.Formats
         /// <summary>
         /// Save a new GMV file (if a string null is passed, prompt for overwrite of the source file)
         /// </summary>        
-        public void Save(string filename, ref TASMovieInput[] input)
+        public override void Save(string filename, ref TASMovieInput[] input)
         {         
             byte[] head = ReadBytes(ref FileContents, 0, HEADER_SIZE);
 
@@ -173,7 +194,7 @@ namespace MovieSplicer.Data.Formats
 
             // add the controller data
             int position = 0;
-            int controllers = GMVInput.ControllerCount;
+            int controllers = Input.ControllerCount;
             for (int i = 0; i < input.Length; i++)
             {
                 outputFile[head.Length + position++] = parseControllerData(input[i].Controller[0]);

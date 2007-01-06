@@ -34,10 +34,10 @@ namespace MovieSplicer.Data.Formats
         const byte HEADER_SIZE = 64;
         const byte INFO_SIZE   = 192;
 
-        public Header         VBMHeader;
-        public Options        VBMOptions;
-        public Extra          VBMExtra;
-        public Input          VBMInput;
+        //public Header         VBMHeader;
+        //public Options        VBMOptions;
+        //public Extra          VBMExtra;
+        //public Input          VBMInput;
         public FormatSpecific VBMSpecific;
 
         private string[] InputValues = { "A", "B", "s", "S", ">", "<", "^", "v", "R", 
@@ -105,29 +105,53 @@ namespace MovieSplicer.Data.Formats
             SaveStateOffset      = Read32(ref FileContents, Offsets[17]);
             ControllerDataOffset = Read32(ref FileContents, Offsets[18]);
 
-            VBMHeader = new Header();
-            VBMHeader.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
-            VBMHeader.Version       = Read32(ref FileContents, Offsets[1]);
-            VBMHeader.UID           = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
-            VBMHeader.FrameCount    = Read32(ref FileContents, Offsets[3]);
-            VBMHeader.RerecordCount = Read32(ref FileContents, Offsets[4]);
+            //VBMHeader = new Header();
+            //VBMHeader.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
+            //VBMHeader.Version       = Read32(ref FileContents, Offsets[1]);
+            //VBMHeader.UID           = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
+            //VBMHeader.FrameCount    = Read32(ref FileContents, Offsets[3]);
+            //VBMHeader.RerecordCount = Read32(ref FileContents, Offsets[4]);
 
-            VBMOptions = new Options(true);
-            VBMOptions.MovieStartFlag[0] = (1 & (FileContents[Offsets[5]] >> 0)) == 1 ? true : false;
-            VBMOptions.MovieStartFlag[1] = (1 & (FileContents[Offsets[5]] >> 1)) == 1 ? true : false;
-            VBMOptions.MovieStartFlag[2] = (!VBMOptions.MovieStartFlag[0] && !VBMOptions.MovieStartFlag[1]) ? true : false;
+            Header = new TASHeader();
+            Header.Signature = ReadHEX(ref FileContents, Offsets[0], 4);
+            Header.Version = Read32(ref FileContents, Offsets[1]);
+            Header.UID = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
+            Header.FrameCount = Read32(ref FileContents, Offsets[3]);
+            Header.RerecordCount = Read32(ref FileContents, Offsets[4]);
 
-            VBMInput = new Input(4, false);
-            VBMInput.Controllers[0] = ((FileContents[Offsets[6]] >> 0) == 1) ? true : false;
-            VBMInput.Controllers[1] = ((FileContents[Offsets[6]] >> 1) == 1) ? true : false;
-            VBMInput.Controllers[2] = ((FileContents[Offsets[6]] >> 2) == 1) ? true : false;
-            VBMInput.Controllers[3] = ((FileContents[Offsets[6]] >> 3) == 1) ? true : false;
+            //VBMOptions = new Options(true);
+            //VBMOptions.MovieStartFlag[0] = (1 & (FileContents[Offsets[5]] >> 0)) == 1 ? true : false;
+            //VBMOptions.MovieStartFlag[1] = (1 & (FileContents[Offsets[5]] >> 1)) == 1 ? true : false;
+            //VBMOptions.MovieStartFlag[2] = (!VBMOptions.MovieStartFlag[0] && !VBMOptions.MovieStartFlag[1]) ? true : false;
 
-            VBMExtra = new Extra();
-            VBMExtra.Author      = ReadChars(ref FileContents, HEADER_SIZE, 64);
-            VBMExtra.Description = ReadChars(ref FileContents, HEADER_SIZE + 64, 128);
-            VBMExtra.ROM = ReadChars(ref FileContents, Offsets[12], 12);
-            VBMExtra.CRC = Convert.ToString((int)Offsets[14]);
+            Options = new TASOptions(true);
+            Options.MovieStartFlag[0] = (1 & (FileContents[Offsets[5]] >> 0)) == 1 ? true : false;
+            Options.MovieStartFlag[1] = (1 & (FileContents[Offsets[5]] >> 1)) == 1 ? true : false;
+            Options.MovieStartFlag[2] = (!Options.MovieStartFlag[0] && !Options.MovieStartFlag[1]) ? true : false;
+
+            //VBMInput = new Input(4, false);
+            //VBMInput.Controllers[0] = ((FileContents[Offsets[6]] >> 0) == 1) ? true : false;
+            //VBMInput.Controllers[1] = ((FileContents[Offsets[6]] >> 1) == 1) ? true : false;
+            //VBMInput.Controllers[2] = ((FileContents[Offsets[6]] >> 2) == 1) ? true : false;
+            //VBMInput.Controllers[3] = ((FileContents[Offsets[6]] >> 3) == 1) ? true : false;
+
+            Input = new TASInput(4, false);
+            Input.Controllers[0] = ((FileContents[Offsets[6]] >> 0) == 1) ? true : false;
+            Input.Controllers[1] = ((FileContents[Offsets[6]] >> 1) == 1) ? true : false;
+            Input.Controllers[2] = ((FileContents[Offsets[6]] >> 2) == 1) ? true : false;
+            Input.Controllers[3] = ((FileContents[Offsets[6]] >> 3) == 1) ? true : false;
+
+            //VBMExtra = new Extra();
+            //VBMExtra.Author      = ReadChars(ref FileContents, HEADER_SIZE, 64);
+            //VBMExtra.Description = ReadChars(ref FileContents, HEADER_SIZE + 64, 128);
+            //VBMExtra.ROM = ReadChars(ref FileContents, Offsets[12], 12);
+            //VBMExtra.CRC = Convert.ToString((int)Offsets[14]);
+
+            Extra = new TASExtra();
+            Extra.Author = ReadChars(ref FileContents, HEADER_SIZE, 64);
+            Extra.Description = ReadChars(ref FileContents, HEADER_SIZE + 64, 128);
+            Extra.ROM = ReadChars(ref FileContents, Offsets[12], 12);
+            Extra.CRC = Convert.ToString((int)Offsets[14]);
 
             VBMSpecific = new FormatSpecific(Offsets[7], Offsets[8]);
 
@@ -136,19 +160,19 @@ namespace MovieSplicer.Data.Formats
 
         private void getFrameInput(ref byte[] byteArray)
         {
-            VBMInput.FrameData = new TASMovieInput[VBMHeader.FrameCount];            
+            Input.FrameData = new TASMovieInput[Header.FrameCount];            
             int position = 0;
             int i = 0;
 
-            while (position < VBMHeader.FrameCount)
+            while (position < Header.FrameCount)
             {
-                VBMInput.FrameData[position] = new TASMovieInput();
+                Input.FrameData[position] = new TASMovieInput();
                 for (int j = 0; j < 4; j++)
                 {
-                    if (VBMInput.Controllers[j])
+                    if (Input.Controllers[j])
                     {
                         byte[] frame = ReadBytes(ref byteArray, ControllerDataOffset + i + j, 2);
-                        VBMInput.FrameData[position].Controller[j] = parseControllerData(frame);
+                        Input.FrameData[position].Controller[j] = parseControllerData(frame);
                         i++;
                     }                    
                 }
@@ -197,11 +221,11 @@ namespace MovieSplicer.Data.Formats
         /// TODO::This isn't the most elegant solution, but there's a major performance hit
         /// if I try to repeatedly resize the array from within the loop.
         /// </summary>        
-        public void Save(string filename, ref TASMovieInput[] input)
+        public override void Save(string filename, ref TASMovieInput[] input)
         {
             byte[] head = ReadBytes(ref FileContents, 0, ControllerDataOffset);
             int size = 0;
-            int controllers = VBMInput.ControllerCount;
+            int controllers = Input.ControllerCount;
 
             // get the size of the file byte[] (minus the header)
             for (int i = 0; i < input.Length; i++)
@@ -219,7 +243,7 @@ namespace MovieSplicer.Data.Formats
                 for (int j = 0; j < controllers; j++)
                 {
                     // check if the controller we're about to process is used
-                    if (VBMInput.Controllers[j])
+                    if (Input.Controllers[j])
                     {
                         byte[] parsed = parseControllerData(input[i].Controller[j]);
                         outputFile[head.Length + position++] = parsed[0];

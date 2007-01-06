@@ -6,10 +6,10 @@ namespace MovieSplicer.Data.Formats
 {
     public class FCEU : TASMovie
     {
-        public Header  FCMHeader;
-        public Options FCMOptions;
-        public Extra   FCMExtra;
-        public Input   FCMInput;
+        //public Header  FCMHeader;
+        //public Options FCMOptions;
+        //public Extra   FCMExtra;
+        //public Input   FCMInput;
 
         private int      ControllerDataLength;
         private string[] InputValues = { "A", "B", "s", "S", "^", "v", "<", ">" };
@@ -48,33 +48,49 @@ namespace MovieSplicer.Data.Formats
             ControllerDataOffset = Read32(ref FileContents, Offsets[10]);
             ControllerDataLength = Read32(ref FileContents, Offsets[8]);
 
-            FCMHeader = new Header();
-            FCMHeader.Signature = ReadHEX(ref FileContents, Offsets[0], 4);
-            FCMHeader.Version = Read32(ref FileContents, Offsets[1]);
-            FCMHeader.FrameCount = Read32(ref FileContents, Offsets[6]);
-            FCMHeader.RerecordCount = Read32(ref FileContents, Offsets[7]);
-            FCMHeader.EmulatorID = Read32(ref FileContents, Offsets[12]).ToString();
+            //FCMHeader = new Header();
+            //FCMHeader.Signature = ReadHEX(ref FileContents, Offsets[0], 4);
+            //FCMHeader.Version = Read32(ref FileContents, Offsets[1]);
+            //FCMHeader.FrameCount = Read32(ref FileContents, Offsets[6]);
+            //FCMHeader.RerecordCount = Read32(ref FileContents, Offsets[7]);
+            //FCMHeader.EmulatorID = Read32(ref FileContents, Offsets[12]).ToString();
+            
+            Header.Signature = ReadHEX(ref FileContents, Offsets[0], 4);
+            Header.Version = Read32(ref FileContents, Offsets[1]);
+            Header.FrameCount = Read32(ref FileContents, Offsets[6]);
+            Header.RerecordCount = Read32(ref FileContents, Offsets[7]);
+            Header.EmulatorID = Read32(ref FileContents, Offsets[12]).ToString();
 
-            FCMExtra = new Extra();
-            FCMExtra.CRC = ReadHEX(ref FileContents, Offsets[11], 16);
-            FCMExtra.ROM = ReadCharsNullTerminated(ref FileContents, Offsets[13]);
+            //FCMExtra = new Extra();
+            //FCMExtra.CRC = ReadHEX(ref FileContents, Offsets[11], 16);
+            //FCMExtra.ROM = ReadCharsNullTerminated(ref FileContents, Offsets[13]);
 
-            int startPos = Offsets[13] + FCMExtra.ROM.Length + 1;
-            FCMExtra.Author = ReadChars(ref FileContents, startPos, SaveStateOffset - startPos);
+            Extra = new TASExtra();
+            Extra.CRC = ReadHEX(ref FileContents, Offsets[11], 16);
+            Extra.ROM = ReadCharsNullTerminated(ref FileContents, Offsets[13]);
 
-            FCMOptions = new Options(true);
-            FCMOptions.MovieStartFlag[0] = ((options >> 1) == 1) ? true : false;
-            FCMOptions.MovieStartFlag[1] = ((options >> 1) == 0) ? true : false;
-            FCMOptions.MovieTimingFlag[0] = ((options >> 2) == 0) ? true : false;
-            FCMOptions.MovieTimingFlag[1] = ((options >> 2) == 1) ? true : false;
+            int startPos = Offsets[13] + Extra.ROM.Length + 1;
+            Extra.Author = ReadChars(ref FileContents, startPos, SaveStateOffset - startPos);
 
-            FCMInput = new Input(4, false);
+            //FCMOptions = new Options(true);
+            //FCMOptions.MovieStartFlag[0] = ((options >> 1) == 1) ? true : false;
+            //FCMOptions.MovieStartFlag[1] = ((options >> 1) == 0) ? true : false;
+            //FCMOptions.MovieTimingFlag[0] = ((options >> 2) == 0) ? true : false;
+            //FCMOptions.MovieTimingFlag[1] = ((options >> 2) == 1) ? true : false;
+
+            Options = new TASOptions(true);
+            Options.MovieStartFlag[0] = ((options >> 1) == 1) ? true : false;
+            Options.MovieStartFlag[1] = ((options >> 1) == 0) ? true : false;
+            Options.MovieTimingFlag[0] = ((options >> 2) == 0) ? true : false;
+            Options.MovieTimingFlag[1] = ((options >> 2) == 1) ? true : false;
+
+            Input = new TASInput(4, false);
             getFrameInput(ref FileContents);
         }
 
         private void getFrameInput(ref byte[] byteArray)
         {
-            FCMInput.FrameData = new TASMovieInput[FCMHeader.FrameCount];
+            Input.FrameData = new TASMovieInput[Header.FrameCount];
 
             int position = ControllerDataOffset;
             int frameCount = 0;
@@ -114,8 +130,8 @@ namespace MovieSplicer.Data.Formats
                 while (delta > 0)
                 {
                     // Save the controlled data                                                                                                                                  
-                    FCMInput.FrameData[frameCount] = new TASMovieInput();
-                    FCMInput.FrameData[frameCount] = parsedControllerData;
+                    Input.FrameData[frameCount] = new TASMovieInput();
+                    Input.FrameData[frameCount] = parsedControllerData;
                     ++frameCount; --delta;
                 }
 
@@ -128,10 +144,10 @@ namespace MovieSplicer.Data.Formats
                 {
                     int ctrlno = (data >> 3);
                     joop[ctrlno] ^= (1 << (data & 7));
-                    if (ctrlno == 0) { FCMInput.Controllers[0] = true; }
-                    if (ctrlno == 1) { FCMInput.Controllers[1] = true; }
-                    if (ctrlno == 2) { FCMInput.Controllers[2] = true; }
-                    if (ctrlno == 3) { FCMInput.Controllers[3] = true; }
+                    if (ctrlno == 0) { Input.Controllers[0] = true; }
+                    if (ctrlno == 1) { Input.Controllers[1] = true; }
+                    if (ctrlno == 2) { Input.Controllers[2] = true; }
+                    if (ctrlno == 3) { Input.Controllers[3] = true; }
                 }
 
                 // Exerpt from Nesmock 1.6.0 source.
@@ -181,11 +197,11 @@ namespace MovieSplicer.Data.Formats
         /// <summary>
         /// Save changes to the currently buffered FCM file        
         /// </summary>        
-        public void Save(string filename, ref TASMovieInput[] input)
+        public override void Save(string filename, ref TASMovieInput[] input)
         {
             byte[] head = ReadBytes(ref FileContents, 0, ControllerDataOffset);
             int cdataLength = GetRLELength(ref input);
-            int controllers = FCMInput.ControllerCount;
+            int controllers = Input.ControllerCount;
 
             int   buffer   = 0;
             int[] joop     = { 0, 0, 0, 0 };

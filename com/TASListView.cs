@@ -21,10 +21,22 @@ namespace MovieSplicer.Components
         private const int WM_HSCROLL = 0x114;
         private const int WM_VSCROLL = 0x115;
         private const int WM_PAINT   = 0xF;
-
-        //public ArrayList VirtualListSource;
+     
         public TASMovieInput[] VirtualListSource;
 
+        //------------------------------------------------------------------------------------------------
+        
+        /// <summary>
+        /// Create a new TASListView object with an event handler on RetriveVirtualItem
+        /// </summary>
+        public TASListView()
+        {
+            this.DoubleBuffered = true;
+            this.RetrieveVirtualItem += new RetrieveVirtualItemEventHandler(GetVirtualItem);
+            //this.CacheVirtualItems +=new CacheVirtualItemsEventHandler(CacheVirtualItemsList);
+        }
+
+        // Cache items
         //private ListViewItem[] m_cache;
         //private int            m_firstItem;
 
@@ -105,15 +117,24 @@ namespace MovieSplicer.Components
             // pass messages on to the base control for processing
             base.WndProc(ref message);
         }
+        
+        //------------------------------------------------------------------------------------------------
 
         /// <summary>
-        /// Create a new TASListView object with an event handler on RetriveVirtualItem
+        /// Set the number of controller columns to display
         /// </summary>
-        public TASListView()
+        /// <param name="columns"></param>
+        public void SetColumns(int columns)
         {
-            this.RetrieveVirtualItem += new RetrieveVirtualItemEventHandler(GetVirtualItem);
-            //this.CacheVirtualItems +=new CacheVirtualItemsEventHandler(CacheVirtualItemsList);
-        }        
+            this.Columns.Clear();
+            this.Columns.Add("Frame");
+
+            if (columns == 0) return;
+
+            for (int i = 0; i < columns; i++)
+                this.Columns.Add("Controller " + (i + 1), 75);
+        }
+
 
         //public void ClearVirtualCache()
         //{

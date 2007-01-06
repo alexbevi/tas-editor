@@ -15,7 +15,7 @@ namespace MovieSplicer.UI
             InitializeComponent();
         }
 
-        private void lvInput_SelectedIndexChanged(object sender, EventArgs e)
+        private void btnLoadSource_Click(object sender, EventArgs e)
         {
 
         }

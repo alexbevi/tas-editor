@@ -29,283 +29,171 @@ namespace MovieSplicer.UI
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmSplice));
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.chkStartOfMovie = new System.Windows.Forms.CheckBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.txtSourceFrameCount = new System.Windows.Forms.TextBox();
-            this.btnLoadSource = new System.Windows.Forms.Button();
-            this.chkEndOfMovie = new System.Windows.Forms.CheckBox();
-            this.txtCopyToFrame = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.txtCopyFromFrame = new System.Windows.Forms.TextBox();
+            this.lvSplice = new System.Windows.Forms.ListView();
+            this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
+            this.columnHeader5 = new System.Windows.Forms.ColumnHeader();
+            this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
+            this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
+            this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
             this.label1 = new System.Windows.Forms.Label();
-            this.txtSourceFileName = new System.Windows.Forms.TextBox();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.txtTargetFrameResumePostion = new System.Windows.Forms.TextBox();
-            this.label6 = new System.Windows.Forms.Label();
+            this.txtStart = new System.Windows.Forms.TextBox();
+            this.txtEnd = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.btnUpdate = new System.Windows.Forms.Button();
             this.btnSplice = new System.Windows.Forms.Button();
-            this.btnLoadTarget = new System.Windows.Forms.Button();
-            this.txtTargetFrameCount = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.txtTargetFrameInsertPosition = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.txtTargetFileName = new System.Windows.Forms.TextBox();
-            this.groupBox1.SuspendLayout();
-            this.groupBox2.SuspendLayout();
+            this.btnRemove = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // groupBox1
+            // lvSplice
             // 
-            this.groupBox1.Controls.Add(this.chkStartOfMovie);
-            this.groupBox1.Controls.Add(this.label5);
-            this.groupBox1.Controls.Add(this.txtSourceFrameCount);
-            this.groupBox1.Controls.Add(this.btnLoadSource);
-            this.groupBox1.Controls.Add(this.chkEndOfMovie);
-            this.groupBox1.Controls.Add(this.txtCopyToFrame);
-            this.groupBox1.Controls.Add(this.label2);
-            this.groupBox1.Controls.Add(this.txtCopyFromFrame);
-            this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Controls.Add(this.txtSourceFileName);
-            this.groupBox1.Location = new System.Drawing.Point(12, 12);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(276, 128);
-            this.groupBox1.TabIndex = 0;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Source Movie";
+            this.lvSplice.AllowDrop = true;
+            this.lvSplice.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader1,
+            this.columnHeader5,
+            this.columnHeader2,
+            this.columnHeader3,
+            this.columnHeader4});
+            this.lvSplice.FullRowSelect = true;
+            this.lvSplice.GridLines = true;
+            this.lvSplice.HideSelection = false;
+            this.lvSplice.Location = new System.Drawing.Point(12, 12);
+            this.lvSplice.MultiSelect = false;
+            this.lvSplice.Name = "lvSplice";
+            this.lvSplice.Size = new System.Drawing.Size(511, 132);
+            this.lvSplice.TabIndex = 0;
+            this.lvSplice.UseCompatibleStateImageBehavior = false;
+            this.lvSplice.View = System.Windows.Forms.View.Details;
+            this.lvSplice.DragEnter += new System.Windows.Forms.DragEventHandler(this.lvSplice_DragEnter);
+            this.lvSplice.DragDrop += new System.Windows.Forms.DragEventHandler(this.lvSplice_DragDrop);
+            this.lvSplice.Click += new System.EventHandler(this.lvSplice_Click);
             // 
-            // chkStartOfMovie
+            // columnHeader1
             // 
-            this.chkStartOfMovie.AutoSize = true;
-            this.chkStartOfMovie.Location = new System.Drawing.Point(181, 76);
-            this.chkStartOfMovie.Name = "chkStartOfMovie";
-            this.chkStartOfMovie.Size = new System.Drawing.Size(92, 17);
-            this.chkStartOfMovie.TabIndex = 1;
-            this.chkStartOfMovie.Text = "Start of Movie";
-            this.chkStartOfMovie.UseVisualStyleBackColor = true;
-            this.chkStartOfMovie.CheckedChanged += new System.EventHandler(this.chkStartOfMovie_CheckedChanged);
+            this.columnHeader1.Text = "Type";
+            this.columnHeader1.Width = 52;
             // 
-            // label5
+            // columnHeader5
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(6, 48);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(67, 13);
-            this.label5.TabIndex = 7;
-            this.label5.Text = "Frame Count";
+            this.columnHeader5.Text = "Filename";
+            this.columnHeader5.Width = 206;
             // 
-            // txtSourceFrameCount
+            // columnHeader2
             // 
-            this.txtSourceFrameCount.Location = new System.Drawing.Point(74, 45);
-            this.txtSourceFrameCount.Name = "txtSourceFrameCount";
-            this.txtSourceFrameCount.ReadOnly = true;
-            this.txtSourceFrameCount.Size = new System.Drawing.Size(100, 20);
-            this.txtSourceFrameCount.TabIndex = 9;
-            this.txtSourceFrameCount.TabStop = false;
+            this.columnHeader2.Text = "Frames";
+            this.columnHeader2.Width = 85;
             // 
-            // btnLoadSource
+            // columnHeader3
             // 
-            this.btnLoadSource.Location = new System.Drawing.Point(195, 43);
-            this.btnLoadSource.Name = "btnLoadSource";
-            this.btnLoadSource.Size = new System.Drawing.Size(75, 23);
-            this.btnLoadSource.TabIndex = 0;
-            this.btnLoadSource.Text = "Load";
-            this.btnLoadSource.UseVisualStyleBackColor = true;
-            this.btnLoadSource.Click += new System.EventHandler(this.btnLoadSource_Click);
+            this.columnHeader3.Text = "Start";
+            this.columnHeader3.Width = 81;
             // 
-            // chkEndOfMovie
+            // columnHeader4
             // 
-            this.chkEndOfMovie.AutoSize = true;
-            this.chkEndOfMovie.Location = new System.Drawing.Point(181, 103);
-            this.chkEndOfMovie.Name = "chkEndOfMovie";
-            this.chkEndOfMovie.Size = new System.Drawing.Size(89, 17);
-            this.chkEndOfMovie.TabIndex = 2;
-            this.chkEndOfMovie.Text = "End of Movie";
-            this.chkEndOfMovie.UseVisualStyleBackColor = true;
-            this.chkEndOfMovie.CheckedChanged += new System.EventHandler(this.chkEndOfMovie_CheckedChanged);
-            // 
-            // txtCopyToFrame
-            // 
-            this.txtCopyToFrame.Location = new System.Drawing.Point(74, 100);
-            this.txtCopyToFrame.Name = "txtCopyToFrame";
-            this.txtCopyToFrame.Size = new System.Drawing.Size(100, 20);
-            this.txtCopyToFrame.TabIndex = 4;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 103);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(52, 13);
-            this.label2.TabIndex = 1;
-            this.label2.Text = "To Frame";
-            // 
-            // txtCopyFromFrame
-            // 
-            this.txtCopyFromFrame.Location = new System.Drawing.Point(74, 74);
-            this.txtCopyFromFrame.Name = "txtCopyFromFrame";
-            this.txtCopyFromFrame.Size = new System.Drawing.Size(100, 20);
-            this.txtCopyFromFrame.TabIndex = 3;
+            this.columnHeader4.Text = "End";
+            this.columnHeader4.Width = 83;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 77);
+            this.label1.Location = new System.Drawing.Point(89, 154);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(62, 13);
+            this.label1.Size = new System.Drawing.Size(29, 13);
             this.label1.TabIndex = 1;
-            this.label1.Text = "From Frame";
+            this.label1.Text = "Start";
             // 
-            // txtSourceFileName
+            // txtStart
             // 
-            this.txtSourceFileName.Location = new System.Drawing.Point(6, 19);
-            this.txtSourceFileName.Name = "txtSourceFileName";
-            this.txtSourceFileName.ReadOnly = true;
-            this.txtSourceFileName.Size = new System.Drawing.Size(264, 20);
-            this.txtSourceFileName.TabIndex = 8;
-            this.txtSourceFileName.TabStop = false;
+            this.txtStart.Location = new System.Drawing.Point(124, 151);
+            this.txtStart.Name = "txtStart";
+            this.txtStart.Size = new System.Drawing.Size(100, 20);
+            this.txtStart.TabIndex = 2;
             // 
-            // groupBox2
+            // txtEnd
             // 
-            this.groupBox2.Controls.Add(this.txtTargetFrameResumePostion);
-            this.groupBox2.Controls.Add(this.label6);
-            this.groupBox2.Controls.Add(this.btnSplice);
-            this.groupBox2.Controls.Add(this.btnLoadTarget);
-            this.groupBox2.Controls.Add(this.txtTargetFrameCount);
-            this.groupBox2.Controls.Add(this.label3);
-            this.groupBox2.Controls.Add(this.txtTargetFrameInsertPosition);
-            this.groupBox2.Controls.Add(this.label4);
-            this.groupBox2.Controls.Add(this.txtTargetFileName);
-            this.groupBox2.Location = new System.Drawing.Point(12, 146);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(276, 125);
-            this.groupBox2.TabIndex = 0;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Target Movie";
+            this.txtEnd.Location = new System.Drawing.Point(262, 151);
+            this.txtEnd.Name = "txtEnd";
+            this.txtEnd.Size = new System.Drawing.Size(100, 20);
+            this.txtEnd.TabIndex = 4;
             // 
-            // txtTargetFrameResumePostion
+            // label2
             // 
-            this.txtTargetFrameResumePostion.Location = new System.Drawing.Point(74, 97);
-            this.txtTargetFrameResumePostion.Name = "txtTargetFrameResumePostion";
-            this.txtTargetFrameResumePostion.Size = new System.Drawing.Size(100, 20);
-            this.txtTargetFrameResumePostion.TabIndex = 7;
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(230, 154);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(26, 13);
+            this.label2.TabIndex = 3;
+            this.label2.Text = "End";
             // 
-            // label6
+            // btnUpdate
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(6, 100);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(58, 13);
-            this.label6.TabIndex = 7;
-            this.label6.Text = "Resume at";
+            this.btnUpdate.Location = new System.Drawing.Point(368, 149);
+            this.btnUpdate.Name = "btnUpdate";
+            this.btnUpdate.Size = new System.Drawing.Size(65, 23);
+            this.btnUpdate.TabIndex = 5;
+            this.btnUpdate.Text = "Update";
+            this.btnUpdate.UseVisualStyleBackColor = true;
+            this.btnUpdate.Click += new System.EventHandler(this.btnUpdate_Click);
             // 
             // btnSplice
             // 
-            this.btnSplice.Location = new System.Drawing.Point(195, 94);
+            this.btnSplice.Location = new System.Drawing.Point(461, 149);
             this.btnSplice.Name = "btnSplice";
-            this.btnSplice.Size = new System.Drawing.Size(75, 23);
-            this.btnSplice.TabIndex = 6;
-            this.btnSplice.Text = "&Splice";
+            this.btnSplice.Size = new System.Drawing.Size(62, 23);
+            this.btnSplice.TabIndex = 8;
+            this.btnSplice.Text = "Splice";
             this.btnSplice.UseVisualStyleBackColor = true;
             this.btnSplice.Click += new System.EventHandler(this.btnSplice_Click);
             // 
-            // btnLoadTarget
+            // btnRemove
             // 
-            this.btnLoadTarget.Location = new System.Drawing.Point(195, 67);
-            this.btnLoadTarget.Name = "btnLoadTarget";
-            this.btnLoadTarget.Size = new System.Drawing.Size(75, 23);
-            this.btnLoadTarget.TabIndex = 5;
-            this.btnLoadTarget.Text = "Load";
-            this.btnLoadTarget.UseVisualStyleBackColor = true;
-            this.btnLoadTarget.Click += new System.EventHandler(this.btnLoadTarget_Click);
+            this.btnRemove.Location = new System.Drawing.Point(12, 150);
+            this.btnRemove.Name = "btnRemove";
+            this.btnRemove.Size = new System.Drawing.Size(62, 23);
+            this.btnRemove.TabIndex = 11;
+            this.btnRemove.Text = "Remove";
+            this.btnRemove.UseVisualStyleBackColor = true;
+            this.btnRemove.Click += new System.EventHandler(this.btnRemove_Click);
             // 
-            // txtTargetFrameCount
-            // 
-            this.txtTargetFrameCount.Location = new System.Drawing.Point(74, 45);
-            this.txtTargetFrameCount.Name = "txtTargetFrameCount";
-            this.txtTargetFrameCount.ReadOnly = true;
-            this.txtTargetFrameCount.Size = new System.Drawing.Size(100, 20);
-            this.txtTargetFrameCount.TabIndex = 11;
-            this.txtTargetFrameCount.TabStop = false;
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(6, 48);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(67, 13);
-            this.label3.TabIndex = 3;
-            this.label3.Text = "Frame Count";
-            // 
-            // txtTargetFrameInsertPosition
-            // 
-            this.txtTargetFrameInsertPosition.Location = new System.Drawing.Point(74, 71);
-            this.txtTargetFrameInsertPosition.Name = "txtTargetFrameInsertPosition";
-            this.txtTargetFrameInsertPosition.Size = new System.Drawing.Size(100, 20);
-            this.txtTargetFrameInsertPosition.TabIndex = 6;
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(6, 74);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(45, 13);
-            this.label4.TabIndex = 1;
-            this.label4.Text = "Insert at";
-            // 
-            // txtTargetFileName
-            // 
-            this.txtTargetFileName.Location = new System.Drawing.Point(6, 19);
-            this.txtTargetFileName.Name = "txtTargetFileName";
-            this.txtTargetFileName.ReadOnly = true;
-            this.txtTargetFileName.Size = new System.Drawing.Size(264, 20);
-            this.txtTargetFileName.TabIndex = 10;
-            // 
-            // frmSplice
+            // frmSplice2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(296, 279);
-            this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.groupBox1);
+            this.ClientSize = new System.Drawing.Size(534, 181);
+            this.Controls.Add(this.btnRemove);
+            this.Controls.Add(this.btnSplice);
+            this.Controls.Add(this.btnUpdate);
+            this.Controls.Add(this.txtEnd);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.txtStart);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.lvSplice);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "frmSplice";
+            this.Name = "frmSplice2";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Create Spliced Movie File";
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
+            this.Text = "Splice";
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.TextBox txtCopyFromFrame;
+        private System.Windows.Forms.ListView lvSplice;
+        private System.Windows.Forms.ColumnHeader columnHeader1;
+        private System.Windows.Forms.ColumnHeader columnHeader2;
+        private System.Windows.Forms.ColumnHeader columnHeader3;
+        private System.Windows.Forms.ColumnHeader columnHeader4;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox txtSourceFileName;
-        private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.TextBox txtTargetFileName;
-        private System.Windows.Forms.CheckBox chkEndOfMovie;
-        private System.Windows.Forms.TextBox txtCopyToFrame;
+        private System.Windows.Forms.TextBox txtStart;
+        private System.Windows.Forms.TextBox txtEnd;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Button btnLoadTarget;
-        private System.Windows.Forms.TextBox txtTargetFrameCount;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Button btnUpdate;
         private System.Windows.Forms.Button btnSplice;
-        private System.Windows.Forms.TextBox txtTargetFrameInsertPosition;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Button btnLoadSource;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.TextBox txtSourceFrameCount;
-        private System.Windows.Forms.TextBox txtTargetFrameResumePostion;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.CheckBox chkStartOfMovie;
-
+        private System.Windows.Forms.ColumnHeader columnHeader5;
+        private System.Windows.Forms.Button btnRemove;
     }
 }

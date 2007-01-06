@@ -33,10 +33,10 @@ namespace MovieSplicer.Data.Formats
         const byte EXTRAROMINFO_SIZE = 30;
         const byte METADATA_LENGTH   = 30;  
 
-        public Header         SMVHeader;
-        public Options        SMVOptions;
-        public Extra          SMVExtra;
-        public Input          SMVInput;
+        //public Header         SMVHeader;
+        //public Options        SMVOptions;
+        //public Extra          SMVExtra;
+        //public Input          SMVInput;
         public FormatSpecific SMVSpecific;
 
         private string[] InputValues = { ">", "<", "v", "^", "S", "s", "Y", "B", "R", "L", "X", "A" };
@@ -87,53 +87,79 @@ namespace MovieSplicer.Data.Formats
             ControllerDataOffset = Read32(ref FileContents, Offsets[10]);
             SaveStateOffset = Read32(ref FileContents, Offsets[9]);
 
-            SMVHeader = new Header();
-            SMVHeader.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
-            SMVHeader.Version       = Read32(ref FileContents, Offsets[1]);
-            SMVHeader.UID           = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
-            SMVHeader.FrameCount    = Read32(ref FileContents, Offsets[4]);
-            SMVHeader.RerecordCount = Read32(ref FileContents, Offsets[3]);
+            //SMVHeader = new Header();
+            //SMVHeader.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
+            //SMVHeader.Version       = Read32(ref FileContents, Offsets[1]);
+            //SMVHeader.UID           = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
+            //SMVHeader.FrameCount    = Read32(ref FileContents, Offsets[4]);
+            //SMVHeader.RerecordCount = Read32(ref FileContents, Offsets[3]);
+
+            Header = new TASHeader();
+            Header.Signature = ReadHEX(ref FileContents, Offsets[0], 4);
+            Header.Version = Read32(ref FileContents, Offsets[1]);
+            Header.UID = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
+            Header.FrameCount = Read32(ref FileContents, Offsets[4]);
+            Header.RerecordCount = Read32(ref FileContents, Offsets[3]);
             
-            SMVOptions = new Options(true);
-            SMVOptions.MovieStartFlag[0]  = (1 & (FileContents[Offsets[6]] >> 0)) == 1 ? true : false;
-            SMVOptions.MovieStartFlag[1]  = (1 & (FileContents[Offsets[6]] >> 0)) == 0 ? true : false;
-            SMVOptions.MovieTimingFlag[0] = (1 & (FileContents[Offsets[6]] >> 1)) == 0 ? true : false;
-            SMVOptions.MovieTimingFlag[1] = (1 & (FileContents[Offsets[6]] >> 1)) == 1 ? true : false;
+            //SMVOptions = new Options(true);
+            //SMVOptions.MovieStartFlag[0]  = (1 & (FileContents[Offsets[6]] >> 0)) == 1 ? true : false;
+            //SMVOptions.MovieStartFlag[1]  = (1 & (FileContents[Offsets[6]] >> 0)) == 0 ? true : false;
+            //SMVOptions.MovieTimingFlag[0] = (1 & (FileContents[Offsets[6]] >> 1)) == 0 ? true : false;
+            //SMVOptions.MovieTimingFlag[1] = (1 & (FileContents[Offsets[6]] >> 1)) == 1 ? true : false;
+
+            Options = new TASOptions(true);
+            Options.MovieStartFlag[0] = (1 & (FileContents[Offsets[6]] >> 0)) == 1 ? true : false;
+            Options.MovieStartFlag[1] = (1 & (FileContents[Offsets[6]] >> 0)) == 0 ? true : false;
+            Options.MovieTimingFlag[0] = (1 & (FileContents[Offsets[6]] >> 1)) == 0 ? true : false;
+            Options.MovieTimingFlag[1] = (1 & (FileContents[Offsets[6]] >> 1)) == 1 ? true : false;
 
             SMVSpecific = new FormatSpecific(FileContents[Offsets[8]]);
 
-            SMVExtra = new Extra();
+            //SMVExtra = new Extra();
+            //if (SMVSpecific.HASROMINFO)
+            //{
+            //    SMVExtra.ROM = ReadChars(ref FileContents, 0x07 + SaveStateOffset - EXTRAROMINFO_SIZE, 23);
+            //    SMVExtra.CRC = ReadHEXUnicode(ref FileContents, 0x03 + SaveStateOffset - EXTRAROMINFO_SIZE, 4); 
+            //}
+            //SMVExtra.Author = ReadChars16(ref FileContents, SaveStateOffset - METADATA_LENGTH, METADATA_LENGTH);
+
+            Extra = new TASExtra();
             if (SMVSpecific.HASROMINFO)
             {
-                SMVExtra.ROM = ReadChars(ref FileContents, 0x07 + SaveStateOffset - EXTRAROMINFO_SIZE, 23);
-                SMVExtra.CRC = ReadHEXUnicode(ref FileContents, 0x03 + SaveStateOffset - EXTRAROMINFO_SIZE, 4); 
+                Extra.ROM = ReadChars(ref FileContents, 0x07 + SaveStateOffset - EXTRAROMINFO_SIZE, 23);
+                Extra.CRC = ReadHEXUnicode(ref FileContents, 0x03 + SaveStateOffset - EXTRAROMINFO_SIZE, 4);
             }
-            SMVExtra.Author = ReadChars16(ref FileContents, SaveStateOffset - METADATA_LENGTH, METADATA_LENGTH);
+            Extra.Author = ReadChars16(ref FileContents, SaveStateOffset - METADATA_LENGTH, METADATA_LENGTH);
 
-            SMVInput = new Input(5, false);
-            for (int c = 0; c < 5; c++)            
-                SMVInput.Controllers[c] = ((1 & (FileContents[Offsets[5]] >> c)) == 1) ? true : false;
+
+            //SMVInput = new Input(5, false);
+            //for (int c = 0; c < 5; c++)            
+            //    SMVInput.Controllers[c] = ((1 & (FileContents[Offsets[5]] >> c)) == 1) ? true : false;
+
+            Input = new TASInput(5, false);
+            for (int c = 0; c < 5; c++)
+                Input.Controllers[c] = ((1 & (FileContents[Offsets[5]] >> c)) == 1) ? true : false;
 
             getFrameInput(ref FileContents);                                     
         }
 
         private void getFrameInput(ref byte[] byteArray)
         {
-            SMVInput.FrameData = new TASMovieInput[SMVHeader.FrameCount];
+            Input.FrameData = new TASMovieInput[Header.FrameCount];
 
             // parse frame data
-            for (int i = 0; i < SMVHeader.FrameCount; i++)
+            for (int i = 0; i < Header.FrameCount; i++)
             {
-                SMVInput.FrameData[i] = new TASMovieInput();
+                Input.FrameData[i] = new TASMovieInput();
 
                 // cycle through the controller data for the current frame
-                for (int j = 0; j < SMVInput.ControllerCount; j++)
+                for (int j = 0; j < Input.ControllerCount; j++)
                 {
                     byte[] frame = ReadBytes(ref byteArray, 
                         ControllerDataOffset + (i * BYTES_PER_FRAME) + (j * BYTES_PER_FRAME), 
                         BYTES_PER_FRAME);
 
-                    SMVInput.FrameData[i].Controller[j] = parseControllerData(frame);
+                    Input.FrameData[i].Controller[j] = parseControllerData(frame);
                 }                  
             }
         }
@@ -180,11 +206,11 @@ namespace MovieSplicer.Data.Formats
         /// <summary>
         /// Save an SMV file back out to disk
         /// </summary>
-        public void Save(string filename, ref TASMovieInput[] input)
+        public override void Save(string filename, ref TASMovieInput[] input)
         {            
             byte[] head = ReadBytes(ref FileContents, 0, ControllerDataOffset);
             int size = 0;
-            int controllers = SMVInput.ControllerCount;
+            int controllers = Input.ControllerCount;
 
             // get the size of the file byte[] (minus the header)
             for (int i = 0; i < input.Length; i++)
@@ -202,7 +228,7 @@ namespace MovieSplicer.Data.Formats
                 for (int j = 0; j < controllers; j++)
                 {
                     // check if the controller we're about to process is used
-                    if (SMVInput.Controllers[j])
+                    if (Input.Controllers[j])
                     {
                         byte[] parsed = parseControllerData(input[i].Controller[j]);
                         outputFile[head.Length + position++] = parsed[0];

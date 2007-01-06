@@ -66,9 +66,9 @@ namespace MovieSplicer.UI
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(182, 28);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(60, 13);
+            this.label2.Size = new System.Drawing.Size(69, 13);
             this.label2.TabIndex = 1;
-            this.label2.Text = "Version 0.9";
+            this.label2.Text = "Version 0.9.1";
             // 
             // label3
             // 
@@ -124,7 +124,7 @@ namespace MovieSplicer.UI
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(109, 13);
             this.label6.TabIndex = 7;
-            this.label6.Text = "2006/12/28 @ 02:20";
+            this.label6.Text = "2007/01/06 @ 17:20";
             // 
             // label7
             // 

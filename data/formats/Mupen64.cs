@@ -14,10 +14,10 @@ namespace MovieSplicer.Data.Formats
         public struct FormatSpecific
         {
             public ControllerConfig[] Controller;
-            public string             VideoPlugin;
-            public string             AudioPlugin;
-            public string             InputPlugin;
-            public string             RSPPlugin;
+            public string VideoPlugin;
+            public string AudioPlugin;
+            public string InputPlugin;
+            public string RSPPlugin;
 
             public FormatSpecific(byte[] controllers)
             {
@@ -27,14 +27,14 @@ namespace MovieSplicer.Data.Formats
                     Controller[i].Option = new bool[3];
                     if ((1 & (controllers[i] << 0)) == 1) Controller[i].Option[0] = true;
                     if ((1 & (controllers[i] << 4)) == 1) Controller[i].Option[1] = true;
-                    if ((1 & (controllers[i] << 8)) == 1) Controller[i].Option[2] = true;                    
+                    if ((1 & (controllers[i] << 8)) == 1) Controller[i].Option[2] = true;
                 }
 
                 // directly initialized when instantiated
                 VideoPlugin = null;
                 AudioPlugin = null;
                 InputPlugin = null;
-                RSPPlugin   = null;
+                RSPPlugin = null;
             }
         }
 
@@ -47,13 +47,9 @@ namespace MovieSplicer.Data.Formats
         }
 
         const short HEADER_SIZE = 1024;
-
-        public Header         M64Header;
-        public Options        M64Options;
-        public Extra          M64Extra;
-        public Input          M64Input;
-        public FormatSpecific M64Specific;
        
+        public FormatSpecific M64Specific;
+
         static int[] Offsets = {
           0x00, // 4-byte signature: 4D 36 34 1A "M64\x1A"
           0x04, // 4-byte little-endian unsigned int: version number, should be 3
@@ -99,36 +95,35 @@ namespace MovieSplicer.Data.Formats
 
             ControllerDataOffset = Read32(ref FileContents, Offsets[10]);
 
-            M64Header = new Header();
-            M64Header.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
-            M64Header.Version       = Read32(ref FileContents, Offsets[1]);
-            M64Header.UID           = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
-            M64Header.FrameCount    = Read32(ref FileContents, Offsets[3]);
-            M64Header.RerecordCount = Read32(ref FileContents, Offsets[4]);
+            Header = new TASHeader();
+            Header.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
+            Header.Version       = Read32(ref FileContents, Offsets[1]);
+            Header.UID           = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
+            Header.FrameCount    = Read32(ref FileContents, Offsets[3]);
+            Header.RerecordCount = Read32(ref FileContents, Offsets[4]);
 
-            M64Options = new Options(true);
-            M64Options.MovieStartFlag[0] = (FileContents[Offsets[7]] | FileContents[Offsets[7] + 1]) == 1 ? true : false;
-            M64Options.MovieStartFlag[1] = (FileContents[Offsets[7]] | FileContents[Offsets[7] + 1]) == 2 ? true : false;            
-            M64Options.FPS               = FileContents[Offsets[5]];
+            Options = new TASOptions(true);
+            Options.MovieStartFlag[0] = (FileContents[Offsets[9]] | FileContents[Offsets[9] + 1]) == 2 ? true : false;
+            Options.MovieStartFlag[1] = (FileContents[Offsets[9]] | FileContents[Offsets[9] + 1]) == 1 ? true : false;
+            Options.FPS = FileContents[Offsets[5]];
 
-            M64Extra = new Extra();
-            M64Extra.ROM         = ReadChars(ref FileContents, Offsets[13], 64);
-            M64Extra.CRC         = ReadHEXUnicode(ref FileContents, Offsets[14], 4);
-            M64Extra.Country     = ReadChars(ref FileContents, Offsets[15], 2);
-            M64Extra.Author      = ReadChars(ref FileContents, Offsets[21], 222);
-            M64Extra.Description = ReadChars(ref FileContents, Offsets[22], 256);
+            Extra = new TASExtra();
+            Extra.ROM         = ReadChars(ref FileContents, Offsets[13], 64);
+            Extra.CRC         = ReadHEXUnicode(ref FileContents, Offsets[14], 4);
+            Extra.Country     = ReadChars(ref FileContents, Offsets[15], 2);
+            Extra.Author      = ReadChars(ref FileContents, Offsets[21], 222);
+            Extra.Description = ReadChars(ref FileContents, Offsets[22], 256);
 
             M64Specific = new FormatSpecific(ReadBytes(ref FileContents, Offsets[11], 4));
             M64Specific.VideoPlugin = ReadChars(ref FileContents, Offsets[17], 64);
             M64Specific.AudioPlugin = ReadChars(ref FileContents, Offsets[18], 64);
             M64Specific.InputPlugin = ReadChars(ref FileContents, Offsets[19], 64);
             M64Specific.RSPPlugin   = ReadChars(ref FileContents, Offsets[20], 64);
-            
+
 
             //M64Input = new Input(FileContents[Offsets[6]], false);            
-            M64Input = new Input();
+            Input = new TASInput();
             //InputSampleCount = fn.Read32(fn.readBytes(ref byteArray, Offsets[6], 4));
-
         }                         
     }    
 }

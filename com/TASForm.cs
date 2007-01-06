@@ -6,21 +6,25 @@ using System.IO;
 using System.Globalization;
 
 using MovieSplicer.Data;
+using MovieSplicer.Data.Formats;
 
 namespace MovieSplicer.Components
 {
     public class TASForm : Form
     {
-        public const string TAS_FILTER = ALL_FILTER + "|" + SMV_FILTER + "|" + FCM_FILTER + "|" + 
-                                         GMV_FILTER + "|" + FMV_FILTER + "|" + VBM_FILTER + "|" + 
-                                         M64_FILTER;
+        public const string TAS_FILTER = ALL_FILTER + "|" + FCM_FILTER + "|" + FMV_FILTER + "|" + 
+                                         GMV_FILTER + "|" + M64_FILTER + "|" + SMV_FILTER + "|" + 
+                                         VBM_FILTER;
         public const string ALL_FILTER = "All Supported Movie Formats (*.*) | *.smv;*.fcm;*.gmv;*.fmv;*.vbm;*.m64";
-        public const string SMV_FILTER = "SNES9x Movie (*.smv)|*.smv";
-        public const string FCM_FILTER = "FCE Ultra Movie (*.fcm)|*.fcm";
-        public const string GMV_FILTER = "Gens Movie (*.gmv)|*.gmv";
-        public const string FMV_FILTER = "Famtasia Movie (*.fmv)|*.fmv";
-        public const string VBM_FILTER = "VisualBoyAdvance Movie (*.vbm)|*.vbm";
-        public const string M64_FILTER = "Mupen64 Movie (*.m64)|*.m64";
+        public const string FCM_FILTER = "FCM - FCE Ultra Movie|*.fcm";
+        public const string FMV_FILTER = "FMV - Famtasia Movie|*.fmv";
+        public const string GMV_FILTER = "GMV - Gens Movie|*.gmv";
+        public const string M64_FILTER = "M64 - Mupen64 Movie|*.m64";
+        public const string SMV_FILTER = "SMV - SNES9x Movie|*.smv";
+        public const string VBM_FILTER = "VBM - VisualBoyAdvance Movie|*.vbm";
+
+        protected OpenFileDialog openDlg;
+        protected SaveFileDialog saveDlg;
 
         /// <summary>
         /// The supported movie formats list
@@ -46,6 +50,8 @@ namespace MovieSplicer.Components
             Range = 2,
             ToEnd = 3
         }
+        
+        //--- Functions ----------------------------------------------------------------------------------
 
         /// <summary>
         /// Check if a string value is numeric
@@ -112,6 +118,29 @@ namespace MovieSplicer.Components
                 default:
                     return MovieType.None;
             }
+        }
+
+        /// <summary>
+        /// Return a format specific object
+        /// </summary>        
+        public TASMovie LoadMovie(string filename, MovieType fileType)
+        {            
+            switch (fileType)
+            {
+                case MovieType.SMV:
+                    return new SNES9x(filename);
+                case MovieType.FCM:
+                    return new FCEU(filename);
+                case MovieType.GMV:
+                    return new Gens(filename);
+                case MovieType.FMV:
+                    return new Famtasia(filename);
+                case MovieType.VBM:
+                    return new VisualBoyAdvance(filename);
+                case MovieType.M64:
+                    return new Mupen64(filename);                                
+            }
+            return null;
         }
     }
 }

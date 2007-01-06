@@ -8,7 +8,9 @@ namespace MovieSplicer.Data
     public class TASMovieInput
     {
         public string[] Controller = new string[5];
-        
+
+        //--- Methods ------------------------------------------------------------------------------------
+
         /// <summary>
         /// Insert a given number of blank frames (new TASMovieInput()) at the
         /// desired position
@@ -34,7 +36,7 @@ namespace MovieSplicer.Data
         public static void Insert(ref TASMovieInput[] input, TASMovieInput frame, int position, int length)
         {
             TASMovieInput[] temp = new TASMovieInput[input.Length + length];
-
+            
             for (int i = 0; i < position; i++)
                 temp[i] = input[i];
             for (int j = 0; j < length; j++)
@@ -70,6 +72,8 @@ namespace MovieSplicer.Data
                     {
                         if (i % 2 == 1)
                             temp[i].Controller[j] = (updateFlag[j]) ? null : input[position + i].Controller[j];
+                        else
+                            temp[i].Controller[j] = (updateFlag[j]) ? frame.Controller[j] : input[position + i].Controller[j];
                     }
                     else
                         temp[i].Controller[j] = (updateFlag[j]) ? frame.Controller[j] : input[position + i].Controller[j];
@@ -132,6 +136,9 @@ namespace MovieSplicer.Data
             input = temp;
         }
 
+        /// <summary>
+        /// Splice two TASMovieInput collections together
+        /// </summary>        
         public static TASMovieInput[] Splice(ref TASMovieInput[] source, ref TASMovieInput[] target, int sourceStart, int sourceEnd, int targetStart, int targetEnd)
         {            
             TASMovieInput[] spliced = new TASMovieInput[(sourceEnd - sourceStart) + (targetEnd - targetStart)];
@@ -145,6 +152,10 @@ namespace MovieSplicer.Data
             return spliced;
         }
 
+        /// <summary>
+        /// Cycle through the input collection returning an index of the first available match
+        /// from the given offset
+        /// </summary>                
         public static int Search(ref TASMovieInput[] input, string pattern, int startPosition)
         {
             for (int i = startPosition; i < input.Length; i++)            
