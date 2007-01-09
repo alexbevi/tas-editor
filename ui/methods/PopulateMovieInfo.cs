@@ -16,8 +16,11 @@ namespace MovieSplicer.UI.Methods
         /// <summary>
         /// Populate an SNES9x movie file's header information
         /// </summary>        
-        public static void SMV(ref TreeView tv, ref SNES9x movie)
+        public static void SMV(ref TreeView tv, ref TASMovie smv)
         {
+            SNES9x movie = (SNES9x)smv;
+            tv.Nodes.Clear();
+
             tv.Nodes.Add("Header");
             tv.Nodes[0].Nodes.Add("Signature:      " + movie.Header.Signature);
             tv.Nodes[0].Nodes.Add("Version:        " + movie.Header.Version.ToString());
@@ -50,14 +53,17 @@ namespace MovieSplicer.UI.Methods
             tv.Nodes[4].Nodes.Add("Controller 4 Present: " + movie.Input.Controllers[3].ToString());
             tv.Nodes[4].Nodes.Add("Controller 5 Present: " + movie.Input.Controllers[4].ToString());
 
-            tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
+            movie = null; tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
         }        
 
         /// <summary>
         /// Populate an FCE Ultra movie file's header information
         /// </summary>
-        public static void FCM(ref TreeView tv, ref FCEU movie)
+        public static void FCM(ref TreeView tv, ref TASMovie fcm)
         {
+            FCEU movie = (FCEU)fcm;
+            tv.Nodes.Clear();
+
             tv.Nodes.Add("Header");
             tv.Nodes[0].Nodes.Add("Signature:        " + movie.Header.Signature);
             tv.Nodes[0].Nodes.Add("Version:          " + movie.Header.Version.ToString());
@@ -80,14 +86,17 @@ namespace MovieSplicer.UI.Methods
             tv.Nodes[3].Nodes.Add("Controller 3: " + movie.Input.Controllers[2].ToString());
             tv.Nodes[3].Nodes.Add("Controller 4: " + movie.Input.Controllers[3].ToString());
 
-            tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
+            movie = null; tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
         }
        
         /// <summary>
         /// Populate a VisualBoyAdvance movie file's header information
         /// </summary>
-        public static void VBM(ref TreeView tv, ref VisualBoyAdvance movie)
+        public static void VBM(ref TreeView tv, ref TASMovie vbm)
         {
+            VisualBoyAdvance movie = (VisualBoyAdvance)vbm;
+            tv.Nodes.Clear();
+
             tv.Nodes.Add("Header");
             tv.Nodes[0].Nodes.Add("Signature:      " + movie.Header.Signature);
             tv.Nodes[0].Nodes.Add("Version:        " + movie.Header.Version.ToString());
@@ -124,14 +133,17 @@ namespace MovieSplicer.UI.Methods
             tv.Nodes[4].Nodes.Add("Controller 3 Present: " + movie.Input.Controllers[2].ToString());
             tv.Nodes[4].Nodes.Add("Controller 4 Present: " + movie.Input.Controllers[3].ToString());
 
-            tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
+            movie = null; tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
         }       
 
         /// <summary>
         /// Populate a Famtasia movie file's header information
         /// </summary>
-        public static void FMV(ref TreeView tv, ref Famtasia movie)
+        public static void FMV(ref TreeView tv, ref TASMovie fmv)
         {
+            Famtasia movie = (Famtasia)fmv;
+            tv.Nodes.Clear();
+
             tv.Nodes.Add("Header");
             tv.Nodes[0].Nodes.Add("Signature:      " + movie.Header.Signature);
             tv.Nodes[0].Nodes.Add("Movie Title:    " + movie.Extra.Description);
@@ -144,14 +156,17 @@ namespace MovieSplicer.UI.Methods
             tv.Nodes[1].Nodes.Add("Controller 1: " + movie.Input.Controllers[0].ToString());
             tv.Nodes[1].Nodes.Add("Controller 2: " + movie.Input.Controllers[1].ToString());
 
-            tv.ExpandAll(); tv.Nodes[0].EnsureVisible();            
+            movie = null; tv.ExpandAll(); tv.Nodes[0].EnsureVisible();            
         }        
 
         /// <summary>
         /// Populate a Gens movie file's header information
         /// </summary>
-        public static void GMV(ref TreeView tv, ref Gens movie)
+        public static void GMV(ref TreeView tv, ref TASMovie gmv)
         {
+            Gens movie = (Gens)gmv;
+            tv.Nodes.Clear();
+
             tv.Nodes.Add("Header");
             tv.Nodes[0].Nodes.Add("Signature:      " + movie.Header.Signature);
             tv.Nodes[0].Nodes.Add("Version:        " + movie.Header.Version.ToString());
@@ -176,14 +191,17 @@ namespace MovieSplicer.UI.Methods
                 if (movie.Input.ControllerCount == 3)
                     tv.Nodes[1].Nodes[2].Text = "Controller 3: true";
 
-            tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
+            movie = null; tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
         }
 
         /// <summary>
         /// Populate a Mupen64 movie file's header information
         /// </summary>
-        public static void M64(ref TreeView tv, ref Mupen64 movie)
+        public static void M64(ref TreeView tv, ref TASMovie m64)
         {
+            Mupen64 movie = (Mupen64)m64;
+            tv.Nodes.Clear();
+
             tv.Nodes.Add("Header");
             tv.Nodes[0].Nodes.Add("Signature:      " + movie.Header.Signature);
             tv.Nodes[0].Nodes.Add("Version:        " + movie.Header.Version.ToString());
@@ -217,7 +235,7 @@ namespace MovieSplicer.UI.Methods
                 tv.Nodes[4].Nodes[i].Nodes.Add("Rumblepak Present:  " + movie.M64Specific.Controller[i].Option[2]);
             }
 
-            tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
+            movie = null; tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
         }
 
     }

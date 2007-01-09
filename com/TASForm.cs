@@ -12,6 +12,9 @@ namespace MovieSplicer.Components
 {
     public class TASForm : Form
     {
+        public const string APP_TITLE  = "TAS Movie Editor";
+        public const string VERSION    = "0.9.2";
+
         public const string TAS_FILTER = ALL_FILTER + "|" + FCM_FILTER + "|" + FMV_FILTER + "|" + 
                                          GMV_FILTER + "|" + M64_FILTER + "|" + SMV_FILTER + "|" + 
                                          VBM_FILTER;

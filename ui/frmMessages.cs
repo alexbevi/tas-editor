@@ -8,16 +8,16 @@ using System.Windows.Forms;
 
 namespace MovieSplicer.UI
 {
-    public partial class frmAbout : Form
+    public partial class frmMessages : Form
     {
-        public frmAbout()
+        public frmMessages()
         {
             InitializeComponent();
-        }       
+        }
 
-        private void lnkEmail_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        public void AddMsg(string message)
         {
-            System.Diagnostics.Process.Start("mailto:alexbevi@gmail.com");
+            lstMessages.Items.Add(DateTime.Now.ToString() + ": " + message);
         }
     }
 }

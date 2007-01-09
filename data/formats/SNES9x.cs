@@ -85,44 +85,23 @@ namespace MovieSplicer.Data.Formats
             FillByteArrayFromFile(SMVFile, ref FileContents);
 
             ControllerDataOffset = Read32(ref FileContents, Offsets[10]);
-            SaveStateOffset = Read32(ref FileContents, Offsets[9]);
-
-            //SMVHeader = new Header();
-            //SMVHeader.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
-            //SMVHeader.Version       = Read32(ref FileContents, Offsets[1]);
-            //SMVHeader.UID           = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
-            //SMVHeader.FrameCount    = Read32(ref FileContents, Offsets[4]);
-            //SMVHeader.RerecordCount = Read32(ref FileContents, Offsets[3]);
-
+            SaveStateOffset      = Read32(ref FileContents, Offsets[9]);
+           
             Header = new TASHeader();
-            Header.Signature = ReadHEX(ref FileContents, Offsets[0], 4);
-            Header.Version = Read32(ref FileContents, Offsets[1]);
-            Header.UID = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
-            Header.FrameCount = Read32(ref FileContents, Offsets[4]);
+            Header.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
+            Header.Version       = Read32(ref FileContents, Offsets[1]);
+            Header.UID           = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
+            Header.FrameCount    = Read32(ref FileContents, Offsets[4]);
             Header.RerecordCount = Read32(ref FileContents, Offsets[3]);
-            
-            //SMVOptions = new Options(true);
-            //SMVOptions.MovieStartFlag[0]  = (1 & (FileContents[Offsets[6]] >> 0)) == 1 ? true : false;
-            //SMVOptions.MovieStartFlag[1]  = (1 & (FileContents[Offsets[6]] >> 0)) == 0 ? true : false;
-            //SMVOptions.MovieTimingFlag[0] = (1 & (FileContents[Offsets[6]] >> 1)) == 0 ? true : false;
-            //SMVOptions.MovieTimingFlag[1] = (1 & (FileContents[Offsets[6]] >> 1)) == 1 ? true : false;
-
+                      
             Options = new TASOptions(true);
-            Options.MovieStartFlag[0] = (1 & (FileContents[Offsets[6]] >> 0)) == 1 ? true : false;
-            Options.MovieStartFlag[1] = (1 & (FileContents[Offsets[6]] >> 0)) == 0 ? true : false;
+            Options.MovieStartFlag[0]  = (1 & (FileContents[Offsets[6]] >> 0)) == 1 ? true : false;
+            Options.MovieStartFlag[1]  = (1 & (FileContents[Offsets[6]] >> 0)) == 0 ? true : false;
             Options.MovieTimingFlag[0] = (1 & (FileContents[Offsets[6]] >> 1)) == 0 ? true : false;
             Options.MovieTimingFlag[1] = (1 & (FileContents[Offsets[6]] >> 1)) == 1 ? true : false;
 
             SMVSpecific = new FormatSpecific(FileContents[Offsets[8]]);
-
-            //SMVExtra = new Extra();
-            //if (SMVSpecific.HASROMINFO)
-            //{
-            //    SMVExtra.ROM = ReadChars(ref FileContents, 0x07 + SaveStateOffset - EXTRAROMINFO_SIZE, 23);
-            //    SMVExtra.CRC = ReadHEXUnicode(ref FileContents, 0x03 + SaveStateOffset - EXTRAROMINFO_SIZE, 4); 
-            //}
-            //SMVExtra.Author = ReadChars16(ref FileContents, SaveStateOffset - METADATA_LENGTH, METADATA_LENGTH);
-
+            
             Extra = new TASExtra();
             if (SMVSpecific.HASROMINFO)
             {
@@ -130,12 +109,7 @@ namespace MovieSplicer.Data.Formats
                 Extra.CRC = ReadHEXUnicode(ref FileContents, 0x03 + SaveStateOffset - EXTRAROMINFO_SIZE, 4);
             }
             Extra.Author = ReadChars16(ref FileContents, SaveStateOffset - METADATA_LENGTH, METADATA_LENGTH);
-
-
-            //SMVInput = new Input(5, false);
-            //for (int c = 0; c < 5; c++)            
-            //    SMVInput.Controllers[c] = ((1 & (FileContents[Offsets[5]] >> c)) == 1) ? true : false;
-
+           
             Input = new TASInput(5, false);
             for (int c = 0; c < 5; c++)
                 Input.Controllers[c] = ((1 & (FileContents[Offsets[5]] >> c)) == 1) ? true : false;

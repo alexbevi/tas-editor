@@ -1,3 +1,5 @@
+using MovieSplicer.Components;
+
 namespace MovieSplicer.UI
 {
     partial class frmAbout
@@ -35,7 +37,6 @@ namespace MovieSplicer.UI
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.btnClose = new System.Windows.Forms.Button();
             this.lnkEmail = new System.Windows.Forms.LinkLabel();
             this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
@@ -59,7 +60,7 @@ namespace MovieSplicer.UI
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(90, 13);
             this.label1.TabIndex = 1;
-            this.label1.Text = "TAS Movie Editor";
+            this.label1.Text = TASForm.APP_TITLE;
             // 
             // label2
             // 
@@ -68,16 +69,16 @@ namespace MovieSplicer.UI
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(69, 13);
             this.label2.TabIndex = 1;
-            this.label2.Text = "Version 0.9.1";
+            this.label2.Text = "Version " + TASForm.VERSION;
             // 
             // label3
             // 
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(182, 120);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(125, 13);
+            this.label3.Size = new System.Drawing.Size(140, 13);
             this.label3.TabIndex = 2;
-            this.label3.Text = "(c) 2006 Alex Bevilacqua";
+            this.label3.Text = "(c) 2006-07 Alex Bevilacqua";
             // 
             // label4
             // 
@@ -95,16 +96,6 @@ namespace MovieSplicer.UI
             this.label5.Size = new System.Drawing.Size(298, 79);
             this.label5.TabIndex = 3;
             this.label5.Text = resources.GetString("label5.Text");
-            // 
-            // btnClose
-            // 
-            this.btnClose.Location = new System.Drawing.Point(6, 253);
-            this.btnClose.Name = "btnClose";
-            this.btnClose.Size = new System.Drawing.Size(304, 23);
-            this.btnClose.TabIndex = 5;
-            this.btnClose.Text = "&Close";
-            this.btnClose.UseVisualStyleBackColor = true;
-            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
             // 
             // lnkEmail
             // 
@@ -124,7 +115,7 @@ namespace MovieSplicer.UI
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(109, 13);
             this.label6.TabIndex = 7;
-            this.label6.Text = "2007/01/06 @ 17:20";
+            this.label6.Text = "2007/01/08 @ 21:55";
             // 
             // label7
             // 
@@ -139,11 +130,10 @@ namespace MovieSplicer.UI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(313, 282);
+            this.ClientSize = new System.Drawing.Size(321, 247);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.lnkEmail);
-            this.Controls.Add(this.btnClose);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
@@ -172,7 +162,6 @@ namespace MovieSplicer.UI
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.LinkLabel lnkEmail;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label7;
