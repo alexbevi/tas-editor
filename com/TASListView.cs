@@ -14,7 +14,7 @@ namespace MovieSplicer.Components
     /// 
     /// TODO::There's an issue with item caching. When enabled, the caches (if multiple listviews
     /// are defined and accessed) collide (overwrite each other), so access goes beyond the range
-    /// of the chache's source pointer (this definition sucks, but it sorta makes sense to me so :P)
+    /// of the cache's source pointer (this definition sucks, but it sorta makes sense to me so :P)
     /// </summary>
     public class TASListView: ListView
     {

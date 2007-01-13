@@ -19,7 +19,7 @@ namespace MovieSplicer.UI.Methods
         public static void SMV(ref TreeView tv, ref TASMovie smv)
         {
             SNES9x movie = (SNES9x)smv;
-            tv.Nodes.Clear();
+            tv.Nodes.Clear();            
 
             tv.Nodes.Add("Header");
             tv.Nodes[0].Nodes.Add("Signature:      " + movie.Header.Signature);
@@ -52,7 +52,7 @@ namespace MovieSplicer.UI.Methods
             tv.Nodes[4].Nodes.Add("Controller 3 Present: " + movie.Input.Controllers[2].ToString());
             tv.Nodes[4].Nodes.Add("Controller 4 Present: " + movie.Input.Controllers[3].ToString());
             tv.Nodes[4].Nodes.Add("Controller 5 Present: " + movie.Input.Controllers[4].ToString());
-
+            
             movie = null; tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
         }        
 

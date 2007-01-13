@@ -118,7 +118,25 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="icon_snes" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\inc\icon-snes.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="icon_fcm" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\inc\icon-fcm.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_fmv" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\inc\icon-fmv.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_gmv" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\inc\icon-gmv.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_m64" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\inc\icon-m64.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_smv" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\inc\icon-smv.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_vbm" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\inc\icon-vbm.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="icon_zmv" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\inc\icon-zmv.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

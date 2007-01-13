@@ -28,6 +28,7 @@ namespace MovieSplicer.UI
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMessages));
             this.lstMessages = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
@@ -46,6 +47,7 @@ namespace MovieSplicer.UI
             this.ClientSize = new System.Drawing.Size(566, 226);
             this.Controls.Add(this.lstMessages);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "frmMessages";

@@ -13,7 +13,7 @@ namespace MovieSplicer.Components
     public class TASForm : Form
     {
         public const string APP_TITLE  = "TAS Movie Editor";
-        public const string VERSION    = "0.9.2";
+        public const string VERSION    = "0.x.x";
 
         public const string TAS_FILTER = ALL_FILTER + "|" + FCM_FILTER + "|" + FMV_FILTER + "|" + 
                                          GMV_FILTER + "|" + M64_FILTER + "|" + SMV_FILTER + "|" + 
@@ -44,8 +44,7 @@ namespace MovieSplicer.Components
         }
 
         /// <summary>
-        /// Lists the different kinds of splicing options that can be
-        /// applied to a movie
+        /// Lists the different kinds of splicing options that can be applied to a movie
         /// </summary>
         public enum SpliceOptions
         {
@@ -53,8 +52,8 @@ namespace MovieSplicer.Components
             Range = 2,
             ToEnd = 3
         }
-        
-        //--- Functions ----------------------------------------------------------------------------------
+
+    #region Methods
 
         /// <summary>
         /// Check if a string value is numeric
@@ -145,5 +144,8 @@ namespace MovieSplicer.Components
             }
             return null;
         }
+
+    #endregion
+
     }
 }

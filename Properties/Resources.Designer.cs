@@ -60,9 +60,51 @@ namespace MovieSplicer.Properties {
             }
         }
         
-        internal static System.Drawing.Icon icon_snes {
+        internal static System.Drawing.Icon icon_fcm {
             get {
-                object obj = ResourceManager.GetObject("icon_snes", resourceCulture);
+                object obj = ResourceManager.GetObject("icon_fcm", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon icon_fmv {
+            get {
+                object obj = ResourceManager.GetObject("icon_fmv", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon icon_gmv {
+            get {
+                object obj = ResourceManager.GetObject("icon_gmv", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon icon_m64 {
+            get {
+                object obj = ResourceManager.GetObject("icon_m64", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon icon_smv {
+            get {
+                object obj = ResourceManager.GetObject("icon_smv", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon icon_vbm {
+            get {
+                object obj = ResourceManager.GetObject("icon_vbm", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Icon icon_zmv {
+            get {
+                object obj = ResourceManager.GetObject("icon_zmv", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }

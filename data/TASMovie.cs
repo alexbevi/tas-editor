@@ -6,14 +6,18 @@ using System.IO;
 
 namespace MovieSplicer.Data
 {      
-
+    /// <summary>
+    /// Base class for all emulator movie formats
+    /// 
+    /// Anything that is not covered by the default structures is represented
+    /// in each derived class as an xxxSpecific struct (where xxx is the format,
+    /// ie. FCM, SMV ... etc)
+    /// </summary>
     public class TASMovie
-    {
-        // contains the file contents as an array of bytes
-        protected byte[] FileContents;
-
-        protected int    SaveStateOffset;
-        protected int    ControllerDataOffset;
+    {        
+        protected byte[]  FileContents;
+        protected int     SaveStateOffset;
+        protected int     ControllerDataOffset;
         
         public string     Filename;
         public TASHeader  Header;
@@ -21,7 +25,7 @@ namespace MovieSplicer.Data
         public TASExtra   Extra;
         public TASInput   Input;
 
-        //------------------------------------------------------------------------------------------------
+    #region Structures
 
         /// <summary>
         /// Common Header items
@@ -132,7 +136,9 @@ namespace MovieSplicer.Data
         /// </summary>        
         public virtual void Save(string filename, ref TASMovieInput[] input) { }
 
-        //------------------------------------------------------------------------------------------------
+    #endregion
+
+    #region Methods
 
         /// <summary>
         /// Populate a byte[] with the contents of an external file
@@ -303,5 +309,8 @@ namespace MovieSplicer.Data
 
         //    byteArray = null; byteArray = temp; temp = null;
         //}
+
+    #endregion
+
     }
 }
