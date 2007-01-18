@@ -1,3 +1,23 @@
+/******************************************************************************** 
+ * TAS Movie Editor                                                             *
+ *                                                                              *
+ * Copyright notice for this file:                                              *
+ *  Copyright (C) 2006-7 Maximus                                                *
+ *                                                                              *
+ * This program is free software; you can redistribute it and/or modify         *
+ * it under the terms of the GNU General Public License as published by         *
+ * the Free Software Foundation; either version 2 of the License, or            *
+ * (at your option) any later version.                                          *
+ *                                                                              *
+ * This program is distributed in the hope that it will be useful,              *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of               *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *
+ * GNU General Public License for more details.                                 *
+ *                                                                              *
+ * You should have received a copy of the GNU General Public License            *
+ * along with this program; if not, write to the Free Software                  *
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA    *
+ *******************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -5,12 +25,7 @@ using System.Text;
 namespace MovieSplicer.Data.Formats
 {
     public class FCEU : TASMovie
-    {
-        //public Header  FCMHeader;
-        //public Options FCMOptions;
-        //public Extra   FCMExtra;
-        //public Input   FCMInput;
-
+    {        
         private int      ControllerDataLength;
         private string[] InputValues = { "A", "B", "s", "S", "^", "v", "<", ">" };
         private int[] Offsets = {
@@ -38,49 +53,35 @@ namespace MovieSplicer.Data.Formats
             0x34, // name of the ROM used - UTF8 encoded nul-terminated string.
         };
 
+        /// <summary>
+        /// Populate an FCEU object from the source movie
+        /// </summary>        
         public FCEU(string FCMFile)
         {
             Filename = FCMFile;
             FillByteArrayFromFile(FCMFile, ref FileContents);
 
-            byte options = FileContents[Offsets[2]];
-            SaveStateOffset = Read32(ref FileContents, Offsets[9]);
+            byte options         = FileContents[Offsets[2]];
+            SaveStateOffset      = Read32(ref FileContents, Offsets[9]);
             ControllerDataOffset = Read32(ref FileContents, Offsets[10]);
             ControllerDataLength = Read32(ref FileContents, Offsets[8]);
-
-            //FCMHeader = new Header();
-            //FCMHeader.Signature = ReadHEX(ref FileContents, Offsets[0], 4);
-            //FCMHeader.Version = Read32(ref FileContents, Offsets[1]);
-            //FCMHeader.FrameCount = Read32(ref FileContents, Offsets[6]);
-            //FCMHeader.RerecordCount = Read32(ref FileContents, Offsets[7]);
-            //FCMHeader.EmulatorID = Read32(ref FileContents, Offsets[12]).ToString();
             
-            Header.Signature = ReadHEX(ref FileContents, Offsets[0], 4);
-            Header.Version = Read32(ref FileContents, Offsets[1]);
-            Header.FrameCount = Read32(ref FileContents, Offsets[6]);
+            Header.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
+            Header.Version       = Read32(ref FileContents, Offsets[1]);
+            Header.FrameCount    = Read32(ref FileContents, Offsets[6]);
             Header.RerecordCount = Read32(ref FileContents, Offsets[7]);
-            Header.EmulatorID = Read32(ref FileContents, Offsets[12]).ToString();
-
-            //FCMExtra = new Extra();
-            //FCMExtra.CRC = ReadHEX(ref FileContents, Offsets[11], 16);
-            //FCMExtra.ROM = ReadCharsNullTerminated(ref FileContents, Offsets[13]);
+            Header.EmulatorID    = Read32(ref FileContents, Offsets[12]).ToString();            
 
             Extra = new TASExtra();
             Extra.CRC = ReadHEX(ref FileContents, Offsets[11], 16);
             Extra.ROM = ReadCharsNullTerminated(ref FileContents, Offsets[13]);
 
             int startPos = Offsets[13] + Extra.ROM.Length + 1;
-            Extra.Author = ReadChars(ref FileContents, startPos, SaveStateOffset - startPos);
-
-            //FCMOptions = new Options(true);
-            //FCMOptions.MovieStartFlag[0] = ((options >> 1) == 1) ? true : false;
-            //FCMOptions.MovieStartFlag[1] = ((options >> 1) == 0) ? true : false;
-            //FCMOptions.MovieTimingFlag[0] = ((options >> 2) == 0) ? true : false;
-            //FCMOptions.MovieTimingFlag[1] = ((options >> 2) == 1) ? true : false;
+            Extra.Author = ReadChars(ref FileContents, startPos, SaveStateOffset - startPos);           
 
             Options = new TASOptions(true);
-            Options.MovieStartFlag[0] = ((options >> 1) == 1) ? true : false;
-            Options.MovieStartFlag[1] = ((options >> 1) == 0) ? true : false;
+            Options.MovieStartFlag[0]  = ((options >> 1) == 1) ? true : false;
+            Options.MovieStartFlag[1]  = ((options >> 1) == 0) ? true : false;
             Options.MovieTimingFlag[0] = ((options >> 2) == 0) ? true : false;
             Options.MovieTimingFlag[1] = ((options >> 2) == 1) ? true : false;
 
@@ -88,20 +89,23 @@ namespace MovieSplicer.Data.Formats
             getFrameInput(ref FileContents);
         }
 
+        /// <summary>
+        /// Process the input values in the file to a TASMovieInput collection
+        /// </summary>        
         private void getFrameInput(ref byte[] byteArray)
         {
             Input.FrameData = new TASMovieInput[Header.FrameCount];
 
-            int position = ControllerDataOffset;
-            int frameCount = 0;
-            int[] joop = { 0, 0, 0, 0 };
+            int   position   = ControllerDataOffset;
+            int   frameCount = 0;
+            int[] joop       = { 0, 0, 0, 0 };
 
             while (ControllerDataLength > 0)
             {
                 int updateType = byteArray[position] >> 7;
-                int NDelta = (byteArray[position] >> 5) & 3;
-                int delta = 0;
-                int data = byteArray[position] & 0x1F;
+                int NDelta     = (byteArray[position] >> 5) & 3;
+                int delta      = 0;
+                int data       = byteArray[position] & 0x1F;
 
                 ++position; --ControllerDataLength;
 
@@ -199,9 +203,9 @@ namespace MovieSplicer.Data.Formats
         /// </summary>        
         public override void Save(string filename, ref TASMovieInput[] input)
         {
-            byte[] head = ReadBytes(ref FileContents, 0, ControllerDataOffset);
-            int cdataLength = GetRLELength(ref input);
-            int controllers = Input.ControllerCount;
+            byte[] head        = ReadBytes(ref FileContents, 0, ControllerDataOffset);
+            int    cdataLength = GetRLELength(ref input);
+            int    controllers = Input.ControllerCount;
 
             int   buffer   = 0;
             int[] joop     = { 0, 0, 0, 0 };

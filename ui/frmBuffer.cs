@@ -1,3 +1,23 @@
+/******************************************************************************** 
+ * TAS Movie Editor                                                             *
+ *                                                                              *
+ * Copyright notice for this file:                                              *
+ *  Copyright (C) 2006-7 Maximus                                                *
+ *                                                                              *
+ * This program is free software; you can redistribute it and/or modify         *
+ * it under the terms of the GNU General Public License as published by         *
+ * the Free Software Foundation; either version 2 of the License, or            *
+ * (at your option) any later version.                                          *
+ *                                                                              *
+ * This program is distributed in the hope that it will be useful,              *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of               *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *
+ * GNU General Public License for more details.                                 *
+ *                                                                              *
+ * You should have received a copy of the GNU General Public License            *
+ * along with this program; if not, write to the Free Software                  *
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA    *
+ *******************************************************************************/
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,18 +30,12 @@ using System.Windows.Forms;
 using MovieSplicer.Data;
 using MovieSplicer.UI.Methods;
 using MovieSplicer.Components;
-/***************************************************************************************************
- * Show the Copy Buffer form
- * 
- * Contains options for Loading/Saving a buffer's contents as well as clearing the currently
- * buffered information.
- **************************************************************************************************/
+
 namespace MovieSplicer.UI
-{
+{    
     public partial class frmBuffer : TASForm
     {
-        TASMovieInput[] bufferedInput;
-        MovieType       bufferedType;
+        TASMovieInputCollection bufferedInput;        
         
         public frmBuffer()
         {
@@ -32,49 +46,47 @@ namespace MovieSplicer.UI
         /// Create the frmBuffer form object and populate the listview based on the 
         /// arrayList of string[] content
         /// </summary>
-        public frmBuffer(ref TASMovieInput[] buffer, MovieType type, int columns)
+        public frmBuffer(ref TASMovieInputCollection buffer)
         {
             InitializeComponent();
 
-            if (buffer != null)
+            if (buffer.Input != null)
             {
-                bufferedInput = buffer;
-                bufferedType  = type;
-
-                bindControllerDataToListview(columns);
+                bufferedInput = buffer;               
+                bindControllerDataToListview();
             }
         }
 
-        private void bindControllerDataToListview(int columns)
+        /// <summary>
+        /// Destroy the form object, but pass the buffer back
+        /// </summary>        
+        public void Dispose(ref TASMovieInputCollection buffer)
         {
-            sbarMovieType.Text = Enum.GetName(typeof(MovieType), bufferedType);
-
-            // set controller columns            
-            for (int j = 0; j < columns; j++)
-                lvInputBuffer.Columns.Add("Controller " + (j + 1), 75);
-
-            // HACK::set the first column's width once all columns are set. 
-            // This prevents a weird sizing error that occurs periodically
-            lvInputBuffer.Columns[0].Width = 75;
-
-            lvInputBuffer.VirtualListSize   = bufferedInput.Length;
-            lvInputBuffer.VirtualListSource = bufferedInput;
+            buffer = bufferedInput;
+            this.Dispose();
         }
+
 
         /// <summary>
-        /// Clear the Buffer (listview and related objects)
-        /// </summary>        
-        private void btnClear_Click(object sender, EventArgs e)
+        /// Initialize the controller data list from the buffer
+        /// </summary>
+        private void bindControllerDataToListview()
         {
-            // if this object hasn't been created yet, return
-            if (bufferedInput == null) return;          
-            clearBuffer();            
-        }
+            sbarMovieType.Text = Enum.GetName(typeof(MovieType), bufferedInput.Format);
+           
+            lvInputBuffer.VirtualListSize   = bufferedInput.Input.Length;
+            lvInputBuffer.VirtualListSource = bufferedInput.Input;
+            lvInputBuffer.SetColumns(bufferedInput.Controllers);
+        }        
 
+
+        /// <summary>
+        /// Perform the clear actions to reset the form 
+        /// </summary>
         private void clearBuffer()
         {
-            bufferedInput = null;
-            bufferedType  = MovieType.None;            
+            bufferedInput.Input  = null;
+            bufferedInput.Format = MovieType.None;            
 
             lvInputBuffer.VirtualListSize = 0;
             lvInputBuffer.Clear(); lvInputBuffer.Columns.Add("Frame");
@@ -82,14 +94,15 @@ namespace MovieSplicer.UI
             sbarMovieType.Text = "None";            
         }
 
+
         /// <summary>
-        /// Destroy the form object, but pass the buffer and movie type back
+        /// Clear the Buffer (listview and related objects)
         /// </summary>        
-        public void Dispose(ref TASMovieInput[] buffer, ref MovieType type)
+        private void btnClear_Click(object sender, EventArgs e)
         {
-            buffer = bufferedInput;
-            type   = bufferedType;
-            this.Dispose();            
+            // if this object hasn't been created yet, return
+            if (bufferedInput.Input == null) return;
+            clearBuffer();
         }
 
         /// <summary>
@@ -100,10 +113,9 @@ namespace MovieSplicer.UI
             SaveFileDialog dlg = new SaveFileDialog();
             dlg.Filter = "TAS Movie Editor Copy Buffer (*.tmb)|*.tmb";
             dlg.ShowDialog();
-            if (dlg.FileName.Length > 0)
-            {
-                Methods.MovieBufferIO.Save(dlg.FileName, sbarMovieType.Text, ref bufferedInput, lvInputBuffer.Columns.Count - 1);
-            }
+            if (dlg.FileName.Length > 0)            
+                Methods.MovieBufferIO.Save(dlg.FileName, ref bufferedInput);
+            
         }
 
         /// <summary>
@@ -116,21 +128,16 @@ namespace MovieSplicer.UI
             dlg.ShowDialog();
             if (dlg.FileName.Length > 0)
             {
-                TASMovieInput[] buffer    = new TASMovieInput[0];
-                MovieBufferIO   bufferIO  = new MovieBufferIO();
-                
-                string bufferType  = null;
-                int    columns     = bufferIO.Load(dlg.FileName, ref bufferType, ref buffer);
-                sbarMovieType.Text = bufferType;               
+                TASMovieInputCollection buffer = new TASMovieInputCollection(true);                                
+                MovieBufferIO.Load(dlg.FileName, ref buffer);
 
-                if (buffer.Length > 0)
+                sbarMovieType.Text = Enum.GetName(typeof(MovieType), buffer.Format);
+
+                if (buffer.Input.Length > 0)
                 {
                     lvInputBuffer.Clear(); lvInputBuffer.Columns.Add("Frame");
-
-                    bufferedInput = buffer;
-                    bufferedType  = (MovieType)Enum.Parse(typeof(MovieType), bufferType);                    
-                    
-                    bindControllerDataToListview(columns);
+                    bufferedInput = buffer;                                        
+                    bindControllerDataToListview();
                 }              
                 else 
                     clearBuffer(); 

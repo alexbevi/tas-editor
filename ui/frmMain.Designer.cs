@@ -55,8 +55,8 @@ namespace MovieSplicer.UI
             this.mnuAutoFireOption = new System.Windows.Forms.ToolStripMenuItem();
             this.pasteOverwritesFromCurrentPositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuEditingPrompt = new System.Windows.Forms.ToolStripMenuItem();
-            this.mnuAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuHelp = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.statMain = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.sbarFrameCount = new System.Windows.Forms.ToolStripStatusLabel();
@@ -77,6 +77,7 @@ namespace MovieSplicer.UI
             this.grpFrameData = new System.Windows.Forms.GroupBox();
             this.lvInput = new MovieSplicer.Components.TASListView();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
+            this.mnuMain.SuspendLayout();
             this.cmnu_lvInput.SuspendLayout();
             this.grpMovieInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbFormat)).BeginInit();
@@ -86,14 +87,12 @@ namespace MovieSplicer.UI
             // mnuMain
             // 
             this.mnuMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-                this.mnuFile,
-                this.mnuEdit,
-                this.mnuTools,
-                this.mnuOptions,
-                this.mnuHelp,
-                this.mnuAbout            
-            });
-                
+            this.mnuFile,
+            this.mnuEdit,
+            this.mnuTools,
+            this.mnuOptions,
+            this.mnuAbout,
+            this.mnuHelp});
             this.mnuMain.Location = new System.Drawing.Point(0, 0);
             this.mnuMain.Name = "mnuMain";
             this.mnuMain.Size = new System.Drawing.Size(842, 24);
@@ -230,7 +229,7 @@ namespace MovieSplicer.UI
             this.mnuTools.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuSplice,
             this.mnuCompareMovieInputRange});
-            this.mnuTools.Name = "toolsToolStripMenuItem";
+            this.mnuTools.Name = "mnuTools";
             this.mnuTools.Size = new System.Drawing.Size(44, 20);
             this.mnuTools.Text = "&Tools";
             // 
@@ -258,7 +257,7 @@ namespace MovieSplicer.UI
             this.mnuAutoFireOption,
             this.pasteOverwritesFromCurrentPositionToolStripMenuItem,
             this.mnuEditingPrompt});
-            this.mnuOptions.Name = "optionsToolStripMenuItem";
+            this.mnuOptions.Name = "mnuOptions";
             this.mnuOptions.Size = new System.Drawing.Size(56, 20);
             this.mnuOptions.Text = "&Options";
             // 
@@ -297,6 +296,13 @@ namespace MovieSplicer.UI
             this.mnuEditingPrompt.Size = new System.Drawing.Size(208, 22);
             this.mnuEditingPrompt.Text = "Confirm Editing Actions";
             // 
+            // mnuHelp
+            // 
+            this.mnuHelp.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.mnuHelp.Name = "mnuHelp";
+            this.mnuHelp.Size = new System.Drawing.Size(40, 20);
+            this.mnuHelp.Text = "&Help";
+            // 
             // mnuAbout
             // 
             this.mnuAbout.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
@@ -305,23 +311,16 @@ namespace MovieSplicer.UI
             this.mnuAbout.Text = "&About";
             this.mnuAbout.Click += new System.EventHandler(this.mnuAbout_Click);
             // 
-            // mnuHelp
-            // 
-            this.mnuHelp.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.mnuHelp.Name = "mnuHelp";
-            this.mnuHelp.Size = new System.Drawing.Size(40, 20);
-            this.mnuHelp.Text = "&Help";
-            // 
             // statMain
             // 
             this.statMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-                toolStripStatusLabel1,
-                sbarFrameCount,                      
-                toolStripStatusLabel3,
-                sbarCopyBufferSize,
-                toolStripStatusLabel4,
-                sbarCopyBufferType
-                });
+                this.toolStripStatusLabel1,
+                this.sbarFrameCount,
+                this.toolStripStatusLabel3,
+                this.sbarCopyBufferSize,
+                this.toolStripStatusLabel4,
+                this.sbarCopyBufferType});
+                
             this.statMain.Location = new System.Drawing.Point(0, 379);
             this.statMain.Name = "statMain";
             this.statMain.Size = new System.Drawing.Size(842, 22);
@@ -512,6 +511,8 @@ namespace MovieSplicer.UI
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.SizeChanged += new System.EventHandler(this.frmMain_SizeChanged);
+            this.mnuMain.ResumeLayout(false);
+            this.mnuMain.PerformLayout();
             this.cmnu_lvInput.ResumeLayout(false);
             this.grpMovieInfo.ResumeLayout(false);
             this.grpMovieInfo.PerformLayout();

@@ -1,3 +1,23 @@
+/******************************************************************************** 
+ * TAS Movie Editor                                                             *
+ *                                                                              *
+ * Copyright notice for this file:                                              *
+ *  Copyright (C) 2006-7 Maximus                                                *
+ *                                                                              *
+ * This program is free software; you can redistribute it and/or modify         *
+ * it under the terms of the GNU General Public License as published by         *
+ * the Free Software Foundation; either version 2 of the License, or            *
+ * (at your option) any later version.                                          *
+ *                                                                              *
+ * This program is distributed in the hope that it will be useful,              *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of               *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *
+ * GNU General Public License for more details.                                 *
+ *                                                                              *
+ * You should have received a copy of the GNU General Public License            *
+ * along with this program; if not, write to the Free Software                  *
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA    *
+ *******************************************************************************/
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,6 +35,8 @@ namespace MovieSplicer.Components
     /// TODO::There's an issue with item caching. When enabled, the caches (if multiple listviews
     /// are defined and accessed) collide (overwrite each other), so access goes beyond the range
     /// of the cache's source pointer (this definition sucks, but it sorta makes sense to me so :P)
+    /// 
+    /// TODO::Not sure if the above issue still exists. Look into it as caching is sexy :)
     /// </summary>
     public class TASListView: ListView
     {
@@ -23,8 +45,10 @@ namespace MovieSplicer.Components
         private const int WM_PAINT   = 0xF;
      
         public TASMovieInput[] VirtualListSource;
-
-        //------------------------------------------------------------------------------------------------
+        
+        // Cache items
+        //private ListViewItem[] m_cache;
+        //private int            m_firstItem;        
         
         /// <summary>
         /// Create a new TASListView object with an event handler on RetriveVirtualItem
@@ -36,9 +60,27 @@ namespace MovieSplicer.Components
             //this.CacheVirtualItems +=new CacheVirtualItemsEventHandler(CacheVirtualItemsList);
         }
 
-        // Cache items
-        //private ListViewItem[] m_cache;
-        //private int            m_firstItem;
+        /// <summary>
+        // Various message handlers for this control
+        /// </summary>
+        protected override void WndProc(ref Message message)
+        {
+            switch (message.Msg)
+            {
+                // if the control is in details view mode and columns
+                // have been added, then intercept the WM_PAINT message
+                // and reset the last column width to fill the list view
+                case WM_PAINT:
+                    if (this.View == View.Details && this.Columns.Count > 0)
+                        this.Columns[this.Columns.Count - 1].Width = -2;
+                    break;
+            }
+
+            // pass messages on to the base control for processing
+            base.WndProc(ref message);
+        }
+
+    #region Unused ScrollHandler code ... meant for (eventually) synching two lists to scroll together
 
         ///// <summary>
         ///// Horizontal scroll position has changed event
@@ -63,6 +105,7 @@ namespace MovieSplicer.Components
         //                              ScrollEventType.Last,
         //                              ScrollEventType.EndScroll
         //                          };
+        
         ///// <summary>
         ///// Decode the type of scroll message
         ///// </summary>
@@ -75,53 +118,50 @@ namespace MovieSplicer.Components
         //    else
         //        return ScrollEventType.EndScroll;
         //}
-    
+
         /// <summary>
         // Various message handlers for this control
         /// </summary>
-        protected override void WndProc(ref Message message)
-        {                       
-            switch (message.Msg)
-            {
-                // if the control is in details view mode and columns
-                // have been added, then intercept the WM_PAINT message
-                // and reset the last column width to fill the list view
-                case WM_PAINT:
-                    if (this.View == View.Details && this.Columns.Count > 0)
-                        this.Columns[this.Columns.Count - 1].Width = -2;
-                    break;
+        //protected override void WndProc(ref Message message)
+        //{
+        //    switch (message.Msg)
+        //    {
+        //        // Was this a horizontal scroll message?
+        //        case WM_HSCROLL:
+        //            if (HorzScrollValueChanged != null)
+        //            {
+        //                uint wParam = (uint)message.WParam.ToInt32();
+        //                HorzScrollValueChanged(this,
+        //                    new ScrollEventArgs(
+        //                        GetEventType(wParam & 0xffff), (int)(wParam >> 16)));
+        //            }
+        //            break;
 
-                //// Was this a horizontal scroll message?
-                //case WM_HSCROLL:                    
-                //    if (HorzScrollValueChanged != null)
-                //    {
-                //        uint wParam = (uint)message.WParam.ToInt32();
-                //        HorzScrollValueChanged(this,
-                //            new ScrollEventArgs(
-                //                GetEventType(wParam & 0xffff), (int)(wParam >> 16)));
-                //    }
-                //    break;
-                    
-                //// or a vertical scroll message?
-                //case WM_VSCROLL:                    
-                //    if (VertScrollValueChanged != null)
-                //    {
-                //        uint wParam = (uint)message.WParam.ToInt32();
-                //        VertScrollValueChanged(this,
-                //            new ScrollEventArgs(
-                //            GetEventType(wParam & 0xffff), (int)(wParam >> 16)));
-                //    }
-                //    break;                    
-            }
+        //        // or a vertical scroll message?
+        //        case WM_VSCROLL:
+        //            if (VertScrollValueChanged != null)
+        //            {
+        //                uint wParam = (uint)message.WParam.ToInt32();
+        //                VertScrollValueChanged(this,
+        //                    new ScrollEventArgs(
+        //                    GetEventType(wParam & 0xffff), (int)(wParam >> 16)));
+        //            }
+        //            break;                    
+        //    }
 
-            // pass messages on to the base control for processing
-            base.WndProc(ref message);
-        }
+        //    // pass messages on to the base control for processing
+        //    base.WndProc(ref message);
+        //}
+
+    #endregion
         
-        //------------------------------------------------------------------------------------------------
+    #region Methods
 
         /// <summary>
         /// Set the number of controller columns to display
+        /// 
+        /// TODO::Now that the TASMovieInputCollection contains the controller count,
+        /// is this necessary anymore?
         /// </summary>
         /// <param name="columns"></param>
         public void SetColumns(int columns)
@@ -134,13 +174,10 @@ namespace MovieSplicer.Components
             for (int i = 0; i < columns; i++)
                 this.Columns.Add("Controller " + (i + 1), 75);
         }
-
-
-        //public void ClearVirtualCache()
-        //{
-        //    m_cache = null;
-        //}
-
+        
+        /// <summary>
+        /// Get the index of the specified item
+        /// </summary>        
         private void GetVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
         {
             // If we have the item cached, return it. Otherwise, recreate it.
@@ -150,18 +187,33 @@ namespace MovieSplicer.Components
                 e.Item = GetListItem(e.ItemIndex);
         }
 
+        /// <summary>
+        /// Get the item at a specified index
+        /// </summary>        
         private ListViewItem GetListItem(int listIndex)
         {
             ListViewItem lv = new ListViewItem((listIndex + 1).ToString());
 
             // get each controller used and its input for the frame            
             for (int i = 0; i < this.Columns.Count - 1; i++)
-                lv.SubItems.Add(VirtualListSource[listIndex].Controller[i]);
+            {
+                // DEBUG::handles movie input with null entries in the
+                // the main array
+                //if (VirtualListSource[listIndex] != null)
+                    lv.SubItems.Add(VirtualListSource[listIndex].Controller[i]);
+                //else
+                //    lv.SubItems.Add("");
+            }
                
             if (listIndex % 2 == 0) lv.BackColor = System.Drawing.Color.BlanchedAlmond;
 
             return lv;
         }
+
+        //public void ClearVirtualCache()
+        //{
+        //    m_cache = null;
+        //}
 
         //private void CacheVirtualItemsList(object sender, CacheVirtualItemsEventArgs e)
         //{
@@ -176,6 +228,8 @@ namespace MovieSplicer.Components
         //    for (int i = 0; i < m_cache.Length; i++)
         //        m_cache[i] = GetListItem(m_firstItem + i);
         //}
-       
+
+    #endregion
+
     }
 }

@@ -266,6 +266,7 @@ namespace MovieSplicer.UI
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(560, 120);
+            this.ControlBox = false;
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.grpEditing);
             this.DoubleBuffered = true;

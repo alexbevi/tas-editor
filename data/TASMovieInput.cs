@@ -1,15 +1,63 @@
+/******************************************************************************** 
+ * TAS Movie Editor                                                             *
+ *                                                                              *
+ * Copyright notice for this file:                                              *
+ *  Copyright (C) 2006-7 Maximus                                                *
+ *                                                                              *
+ * This program is free software; you can redistribute it and/or modify         *
+ * it under the terms of the GNU General Public License as published by         *
+ * the Free Software Foundation; either version 2 of the License, or            *
+ * (at your option) any later version.                                          *
+ *                                                                              *
+ * This program is distributed in the hope that it will be useful,              *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of               *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *
+ * GNU General Public License for more details.                                 *
+ *                                                                              *
+ * You should have received a copy of the GNU General Public License            *
+ * along with this program; if not, write to the Free Software                  *
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA    *
+ *******************************************************************************/
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
+using MovieSplicer.Components;
+
 namespace MovieSplicer.Data
 {
+    /// <summary>
+    /// Contains the input collection from a movie file, as well as what kind of movie and
+    /// how many controllers are in use
+    /// </summary>
+    public struct TASMovieInputCollection
+    {
+        public int               Controllers;
+        public TASForm.MovieType Format;                
+        public TASMovieInput[]   Input;
+
+        /// <summary>
+        /// Initialize the Input array with zero elements and default data
+        /// (just pass 'true' ... this is more a hack than anything else)
+        /// </summary>        
+        public TASMovieInputCollection(bool initialize)
+        {            
+            Input       = new TASMovieInput[0];
+            Format      = TASForm.MovieType.None;
+            Controllers = 0;        
+        }
+    }
+
+    /// <summary>
+    /// Contains an array to hold controller data in string form as well as 
+    /// all necessary methods for data forming
+    /// </summary>
     public class TASMovieInput
     {
         public string[] Controller = new string[5];
 
-        //--- Methods ------------------------------------------------------------------------------------
+    #region Methods
 
         /// <summary>
         /// Insert a given number of blank frames (new TASMovieInput()) at the
@@ -165,5 +213,8 @@ namespace MovieSplicer.Data
             
             return 0;
         }
+    
+    #endregion
+
     }
 }

@@ -1,3 +1,23 @@
+/******************************************************************************** 
+ * TAS Movie Editor                                                             *
+ *                                                                              *
+ * Copyright notice for this file:                                              *
+ *  Copyright (C) 2006-7 Maximus                                                *
+ *                                                                              *
+ * This program is free software; you can redistribute it and/or modify         *
+ * it under the terms of the GNU General Public License as published by         *
+ * the Free Software Foundation; either version 2 of the License, or            *
+ * (at your option) any later version.                                          *
+ *                                                                              *
+ * This program is distributed in the hope that it will be useful,              *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of               *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *
+ * GNU General Public License for more details.                                 *
+ *                                                                              *
+ * You should have received a copy of the GNU General Public License            *
+ * along with this program; if not, write to the Free Software                  *
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA    *
+ *******************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -6,6 +26,9 @@ namespace MovieSplicer.Data.Formats
 {
     public class VisualBoyAdvance : TASMovie
     {
+        const byte HEADER_SIZE = 64;
+        const byte INFO_SIZE   = 192;
+
         /// <summary>
         /// Contains Format Specific items
         /// </summary>
@@ -29,15 +52,8 @@ namespace MovieSplicer.Data.Formats
                 for (int j = 0; j < BIOSFlags.Length; j++)
                     BIOSFlags[j] = ((bios >> j) == 1) ? true : false;                
             }
-        }
-
-        const byte HEADER_SIZE = 64;
-        const byte INFO_SIZE   = 192;
-
-        //public Header         VBMHeader;
-        //public Options        VBMOptions;
-        //public Extra          VBMExtra;
-        //public Input          VBMInput;
+        }        
+        
         public FormatSpecific VBMSpecific;
 
         private string[] InputValues = { "A", "B", "s", "S", ">", "<", "^", "v", "R", 
@@ -104,48 +120,24 @@ namespace MovieSplicer.Data.Formats
 
             SaveStateOffset      = Read32(ref FileContents, Offsets[17]);
             ControllerDataOffset = Read32(ref FileContents, Offsets[18]);
-
-            //VBMHeader = new Header();
-            //VBMHeader.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
-            //VBMHeader.Version       = Read32(ref FileContents, Offsets[1]);
-            //VBMHeader.UID           = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
-            //VBMHeader.FrameCount    = Read32(ref FileContents, Offsets[3]);
-            //VBMHeader.RerecordCount = Read32(ref FileContents, Offsets[4]);
-
+            
             Header = new TASHeader();
             Header.Signature = ReadHEX(ref FileContents, Offsets[0], 4);
             Header.Version = Read32(ref FileContents, Offsets[1]);
             Header.UID = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
             Header.FrameCount = Read32(ref FileContents, Offsets[3]);
             Header.RerecordCount = Read32(ref FileContents, Offsets[4]);
-
-            //VBMOptions = new Options(true);
-            //VBMOptions.MovieStartFlag[0] = (1 & (FileContents[Offsets[5]] >> 0)) == 1 ? true : false;
-            //VBMOptions.MovieStartFlag[1] = (1 & (FileContents[Offsets[5]] >> 1)) == 1 ? true : false;
-            //VBMOptions.MovieStartFlag[2] = (!VBMOptions.MovieStartFlag[0] && !VBMOptions.MovieStartFlag[1]) ? true : false;
-
+            
             Options = new TASOptions(true);
             Options.MovieStartFlag[0] = (1 & (FileContents[Offsets[5]] >> 0)) == 1 ? true : false;
             Options.MovieStartFlag[1] = (1 & (FileContents[Offsets[5]] >> 1)) == 1 ? true : false;
-            Options.MovieStartFlag[2] = (!Options.MovieStartFlag[0] && !Options.MovieStartFlag[1]) ? true : false;
-
-            //VBMInput = new Input(4, false);
-            //VBMInput.Controllers[0] = ((FileContents[Offsets[6]] >> 0) == 1) ? true : false;
-            //VBMInput.Controllers[1] = ((FileContents[Offsets[6]] >> 1) == 1) ? true : false;
-            //VBMInput.Controllers[2] = ((FileContents[Offsets[6]] >> 2) == 1) ? true : false;
-            //VBMInput.Controllers[3] = ((FileContents[Offsets[6]] >> 3) == 1) ? true : false;
+            Options.MovieStartFlag[2] = (!Options.MovieStartFlag[0] && !Options.MovieStartFlag[1]) ? true : false;            
 
             Input = new TASInput(4, false);
             Input.Controllers[0] = ((FileContents[Offsets[6]] >> 0) == 1) ? true : false;
             Input.Controllers[1] = ((FileContents[Offsets[6]] >> 1) == 1) ? true : false;
             Input.Controllers[2] = ((FileContents[Offsets[6]] >> 2) == 1) ? true : false;
-            Input.Controllers[3] = ((FileContents[Offsets[6]] >> 3) == 1) ? true : false;
-
-            //VBMExtra = new Extra();
-            //VBMExtra.Author      = ReadChars(ref FileContents, HEADER_SIZE, 64);
-            //VBMExtra.Description = ReadChars(ref FileContents, HEADER_SIZE + 64, 128);
-            //VBMExtra.ROM = ReadChars(ref FileContents, Offsets[12], 12);
-            //VBMExtra.CRC = Convert.ToString((int)Offsets[14]);
+            Input.Controllers[3] = ((FileContents[Offsets[6]] >> 3) == 1) ? true : false;           
 
             Extra = new TASExtra();
             Extra.Author = ReadChars(ref FileContents, HEADER_SIZE, 64);

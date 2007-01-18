@@ -1,3 +1,23 @@
+/******************************************************************************** 
+ * TAS Movie Editor                                                             *
+ *                                                                              *
+ * Copyright notice for this file:                                              *
+ *  Copyright (C) 2006-7 Maximus                                                *
+ *                                                                              *
+ * This program is free software; you can redistribute it and/or modify         *
+ * it under the terms of the GNU General Public License as published by         *
+ * the Free Software Foundation; either version 2 of the License, or            *
+ * (at your option) any later version.                                          *
+ *                                                                              *
+ * This program is distributed in the hope that it will be useful,              *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of               *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *
+ * GNU General Public License for more details.                                 *
+ *                                                                              *
+ * You should have received a copy of the GNU General Public License            *
+ * along with this program; if not, write to the Free Software                  *
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA    *
+ *******************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -61,6 +81,10 @@ namespace MovieSplicer.UI
             txtFrameDataC4.Enabled = activeControllers[3];
         }
 
+        /// <summary>
+        /// Fill the editing text fields with the values from the currently selected
+        /// row in the main list
+        /// </summary>        
         public void PopulateEditFields(ListViewItem lvi)
         {
             txtFrameDataC1.Text = lvi.SubItems[1].Text;
@@ -138,7 +162,7 @@ namespace MovieSplicer.UI
             int targetFrame = Convert.ToInt32(txtJumpToFrame.Text) - 1;
 
             // check for valid range
-            if (targetFrame <= FrameData.Length && targetFrame > 0)
+            if (targetFrame <= FrameData.Length && targetFrame >= 0)
             {
                 lvInput.Items[targetFrame].Selected = true;
                 lvInput.Focus();
@@ -153,11 +177,17 @@ namespace MovieSplicer.UI
         {
             if (FrameData == null || txtJumpToFrame.Text.Length == 0) return;
 
-            int start = (lvInput.SelectedIndices.Count > 0) ? lvInput.SelectedIndices[0] : 0;
+            int start = (lvInput.SelectedIndices.Count > 0) ? lvInput.SelectedIndices[0] + 1 : 0;                        
             int position = TASMovieInput.Search(ref FrameData, txtJumpToFrame.Text, start);
 
-            if (position > 0)
+            if (position > 0 && position < FrameData.Length)
             {
+                // clear the selection collection
+                // NOTE::This is since we will be creating a new selected items collection 
+                // with only 1 item (the resulting frame), but we don't want to clear if no results are
+                // found (since it'll just jump back to the top and repeat if we do)
+                lvInput.SelectedIndices.Clear();
+
                 lvInput.Items[position].Selected = true;
                 lvInput.Focus();
                 lvInput.EnsureVisible(position);
@@ -166,6 +196,11 @@ namespace MovieSplicer.UI
                 MessageBox.Show("Input pattern not found between selected position and end of movie", "Sorry");
         }
 
+        /// <summary>
+        /// Hide the editor
+        /// 
+        /// HACK::this is so i don't get a null object dereference later :P (ain't i lazy)
+        /// </summary>        
         private void btnCancel_Click(object sender, EventArgs e)
         {
             this.Visible = false;

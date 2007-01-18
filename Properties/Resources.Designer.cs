@@ -60,6 +60,13 @@ namespace MovieSplicer.Properties {
             }
         }
         
+        internal static System.Drawing.Icon icon_app {
+            get {
+                object obj = ResourceManager.GetObject("icon_app", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         internal static System.Drawing.Icon icon_fcm {
             get {
                 object obj = ResourceManager.GetObject("icon_fcm", resourceCulture);
