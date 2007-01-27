@@ -24,6 +24,11 @@ using System.Text;
 
 namespace MovieSplicer.Data.Formats
 {
+    /// <summary>
+    /// Process an FCE Ultra movie file.
+    /// 
+    /// TODO::Control inputs aren't tracked, so a reset during input would be lost
+    /// </summary>
     public class FCEU : TASMovie
     {        
         private int      ControllerDataLength;
@@ -153,7 +158,6 @@ namespace MovieSplicer.Data.Formats
                     if (ctrlno == 2) { Input.Controllers[2] = true; }
                     if (ctrlno == 3) { Input.Controllers[3] = true; }
                 }
-
                 // Exerpt from Nesmock 1.6.0 source.
                 //else // Control data
                 //    switch (data)
@@ -204,7 +208,7 @@ namespace MovieSplicer.Data.Formats
         public override void Save(string filename, ref TASMovieInput[] input)
         {
             byte[] head        = ReadBytes(ref FileContents, 0, ControllerDataOffset);
-            int    cdataLength = GetRLELength(ref input);
+            int    cdataLength = getRLELength(ref input);
             int    controllers = Input.ControllerCount;
 
             int   buffer   = 0;
@@ -230,7 +234,7 @@ namespace MovieSplicer.Data.Formats
                         {
                             // if there is a difference, write it out as a command
                             if (((current ^ joop[j]) & (1 << k)) > 0)
-                                DoEncode(j, k, ref buffer, ref outputFile, ref position);
+                                doEncode(j, k, ref buffer, ref outputFile, ref position);
                         }
                     }
                     joop[j] = current;
@@ -238,25 +242,55 @@ namespace MovieSplicer.Data.Formats
                 buffer++; frame++;
             }                                    
 
-            DoEncode(0, 0x80, ref buffer, ref outputFile, ref position);
+            doEncode(0, 0x80, ref buffer, ref outputFile, ref position);
             //outputFile[position++] = ((0x80) & 0x9F) | (0 << 5); // null command
 
-            // write the new controllerDataLength
-            // NOTE::The RLE logic seems to be slightly off and isn't adding the last update
-            byte[] controllerDataLength = Write32(cdataLength + 1);
-            for (int i = 0; i < 4; i++)          
-                outputFile[Offsets[8] + i] = controllerDataLength[i];            
-
+            // write the new controllerDataLength            
+            Write32(ref outputFile, Offsets[8], cdataLength + 1);
+            
+            updateMetaData(ref outputFile);
             WriteByteArrayToFile(ref outputFile, filename, input.Length, Offsets[6]);  
         }
 
-        
+        /// <summary>
+        /// Update the movie's author info and shift the controllerdata/savestate offsets
+        /// accordingly
+        /// </summary>        
+        private void updateMetaData(ref byte[] byteArray)
+        {
+            int    startPos = Offsets[13] + Extra.ROM.Length + 1;
+            byte[] author   = WriteChars(Extra.Author + "\0");
+
+            while (!((startPos + author.Length) % 4 == 0))
+            {
+                byte[] padded = new byte[author.Length + 1];
+                author.CopyTo(padded, 0);
+                padded[padded.Length - 1] = 0;
+                author = padded;
+            }
+            byte[] temp = new byte[startPos + author.Length + byteArray.Length - SaveStateOffset];
+            int    newSaveStateOffset = startPos + author.Length;
+            int    newCDataOffset     = ControllerDataOffset + (newSaveStateOffset - SaveStateOffset);
+
+            for (int i = 0; i < startPos; i++)
+                temp[i] = byteArray[i];
+            for (int j = 0; j < author.Length; j++)
+                temp[j + startPos] = author[j];
+            for (int k = 0; k < byteArray.Length - SaveStateOffset; k++)
+                temp[k + newSaveStateOffset] = byteArray[k + SaveStateOffset];
+
+            Write32(ref temp, Offsets[10], newCDataOffset);
+            Write32(ref temp, Offsets[9], newSaveStateOffset);
+
+            byteArray = temp;
+        }
+
         /// <summary>
         /// Encode FCM controller data
         /// 
         /// NOTE::This is almost verbatum from the FCEU source
         /// </summary>
-        private void DoEncode(int joy, int button, ref int buffer, ref byte[] CompressedData, ref int position)
+        private void doEncode(int joy, int button, ref int buffer, ref byte[] CompressedData, ref int position)
         {
             int d = 0;
 
@@ -281,8 +315,11 @@ namespace MovieSplicer.Data.Formats
 
         /// <summary>
         /// Get the RLE length of the input so we can size the output array accordingly
+        /// 
+        /// HACK::this whole routine is a bad idea, but i need to know the final length of the array,
+        /// and dynamic allocation just doesn't seem to want to work :P
         /// </summary>   
-        public int GetRLELength(ref TASMovieInput[] input)
+        public int getRLELength(ref TASMovieInput[] input)
         {
             int buffer = 0;
             int[] joop = { 0, 0, 0, 0 };     

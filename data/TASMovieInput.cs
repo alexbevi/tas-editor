@@ -35,7 +35,7 @@ namespace MovieSplicer.Data
     {
         public int               Controllers;
         public TASForm.MovieType Format;                
-        public TASMovieInput[]   Input;
+        public TASMovieInput[]   Input;        
 
         /// <summary>
         /// Initialize the Input array with zero elements and default data
@@ -138,6 +138,39 @@ namespace MovieSplicer.Data
         }
 
         /// <summary>
+        /// Update the desired frames with the TASMovieInput
+        /// updateFlag is a collection of bool values to indicate which controller(s) to update
+        /// 
+        /// NOTE::Autofire update just adds the selected input to alternating frames
+        /// </summary>        
+        public static void Update(ref TASMovieInput[] input, TASMovieInput frame, bool[] updateFlag, bool autofireUpdate, int position, int length)
+        {
+            TASMovieInput[] temp = new TASMovieInput[length];
+            for (int i = 0; i < length; i++)
+            {
+                temp[i] = new TASMovieInput();
+                for (int j = 0; j < updateFlag.Length; j++)
+                {
+                    // if autofire is checked, insert a blank frame on alternating frames
+                    // NOTE::mod check set to 1 so if option is checked and only 1 frame needs to be updated
+                    // the changes won't be skipped :)
+                    if (autofireUpdate)
+                    {
+                        if (i % 2 == 1)
+                            temp[i].Controller[j] = (updateFlag[j]) ? null : input[position + i].Controller[j];
+                        else
+                            temp[i].Controller[j] = (updateFlag[j]) ? frame.Controller[j] : input[position + i].Controller[j];
+                    }
+                    else
+                        temp[i].Controller[j] = (updateFlag[j]) ? frame.Controller[j] : input[position + i].Controller[j];
+                }
+            }
+
+            for (int i = 0; i < length; i++)
+                input[position + i] = input[position + i] + temp[i];           
+        }
+
+        /// <summary>
         /// Remove a given number of frames at the desired position
         /// </summary>        
         public static void Remove(ref TASMovieInput[] input, int position, int length)
@@ -214,6 +247,16 @@ namespace MovieSplicer.Data
             return 0;
         }
     
+        /// <summary>
+        /// append controller data to an existing TASMovieInput object
+        /// </summary>        
+        public static TASMovieInput operator +(TASMovieInput left, TASMovieInput right)
+        {
+            TASMovieInput result = new TASMovieInput();
+            for (int i = 0; i < left.Controller.Length; i++)
+                result.Controller[i] = left.Controller[i] + right.Controller[i];
+            return result;
+        }
     #endregion
 
     }

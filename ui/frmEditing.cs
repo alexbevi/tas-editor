@@ -33,11 +33,14 @@ namespace MovieSplicer.UI
 {
     public partial class frmEditing : TASForm
     {
-        public ListView        lvInput;
-        public TASMovieInput[] FrameData;
+        public ListView        lvInput;                
+        public TASMovieInput[] FrameData;        
         public UndoBuffer[]    UndoHistory;
         public frmMessages     Msg;
 
+        public bool AutoFire;
+        public bool EditingPrompts;
+        
         public frmEditing()
         {
             InitializeComponent();         
@@ -136,15 +139,18 @@ namespace MovieSplicer.UI
                 return;
 
             // prompt for multiple frame insertion
-            //if (lvInput.SelectedIndices.Count > 1 && mnuEditingPrompt.Checked)
-            //{
-            //    DialogResult confirmUpdate = MessageBox.Show("Are you sure you want to update the " + totalFrames + " frames with the same input?", "Confirm Multiple Frame Update", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
-            //    if (confirmUpdate != DialogResult.OK) return;
-            //}
+            if (lvInput.SelectedIndices.Count > 1 && EditingPrompts)
+            {
+                DialogResult confirmUpdate = MessageBox.Show("Are you sure you want to update the " + totalFrames + " frames with the same input?", "Confirm Multiple Frame Update", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+                if (confirmUpdate != DialogResult.OK) return;
+            }
 
             UndoBuffer.Add(ref UndoHistory, ref FrameData);
-            //TASMovieInput.Insert(ref FrameData, updated, updateFlag, mnuAutoFireOption.Checked, frameIndex, totalFrames);
-            TASMovieInput.Insert(ref FrameData, updated, updateFlag, false, frameIndex, totalFrames);
+            // append or overwrite check
+            if(chkAppendInput.Checked)
+                TASMovieInput.Update(ref FrameData, updated, updateFlag, AutoFire, frameIndex, totalFrames);
+            else
+                TASMovieInput.Insert(ref FrameData, updated, updateFlag, AutoFire, frameIndex, totalFrames);
 
             lvInput.Refresh();
             Msg.AddMsg("Updated " + totalFrames + " frame(s) at frame " + framePosition);

@@ -33,11 +33,13 @@ using MovieSplicer.Data.Formats;
 namespace MovieSplicer.UI
 {
     public partial class frmSplice : TASForm
-    {
+    {        
         public struct DroppedMovie
         {
             public TASMovie  Movie;
             public MovieType MovieType;
+            public int       Start;
+            public int       End;
         }
 
         DroppedMovie[] Movies;
@@ -101,6 +103,14 @@ namespace MovieSplicer.UI
             foreach (string file in files)
                 Movies = populateMovieList(file);
 
+            addMoviesToList();               
+        }
+
+        /// <summary>
+        /// Refresh the dropped movies list
+        /// </summary>
+        private void addMoviesToList()
+        {
             // clear the control
             // DEBUG::Not efficient, find a way to just update new movies into the list
             // intead of redrawing on each drop
@@ -111,34 +121,25 @@ namespace MovieSplicer.UI
                 ListViewItem lvi = new ListViewItem(movie.MovieType.ToString());
                 lvi.SubItems.Add(FilenameFromPath(movie.Movie.Filename));
                 lvi.SubItems.Add(String.Format("{0:0,0}", movie.Movie.Header.FrameCount));
-                lvi.SubItems.Add(""); // start position placeholder
-                lvi.SubItems.Add(""); // end position placeholder
+                lvi.SubItems.Add(movie.Start.ToString());
+                lvi.SubItems.Add(movie.End.ToString()); 
                 lvSplice.Items.Add(lvi);
-            }            
+            }         
         }
 
         /// <summary>
-        /// Add the frame range to the selected row
+        /// Add a movie to the splicer from an OpenDialog call
         /// </summary>        
-        private void btnUpdate_Click(object sender, EventArgs e)
+        private void btnAdd_Click(object sender, EventArgs e)
         {
-            // make sure an item is selected
-            if (lvSplice.SelectedIndices.Count == 0) return;
-            
-            // range has to be numeric to proceed
-            if(!IsNumeric(txtStart.Text) || !IsNumeric(txtEnd.Text)) return;
-                        
-            int position = lvSplice.SelectedIndices[0];
-            int frames = Movies[position].Movie.Header.FrameCount;
-            int start = Convert.ToInt32(txtStart.Text);
-            int end = Convert.ToInt32(txtEnd.Text);
+            openDlg = new OpenFileDialog();
+            openDlg.Filter = TAS_FILTER;
+            openDlg.ShowDialog();
 
-            // check for valid range
-            if (start < 0 || start > frames) return;
-            if (end < start || end > frames) return;
+            Movies = populateMovieList(openDlg.FileName);            
+            openDlg.Dispose();
 
-            lvSplice.Items[position].SubItems[3].Text = start.ToString();
-            lvSplice.Items[position].SubItems[4].Text = end.ToString();
+            addMoviesToList();
         }
 
         /// <summary>
@@ -164,6 +165,38 @@ namespace MovieSplicer.UI
             Movies = temp;                
         }
 
+        /// <summary>
+        /// Add the frame range to the selected row
+        /// </summary>        
+        private void btnUpdate_Click(object sender, EventArgs e)
+        {
+            // make sure an item is selected
+            if (lvSplice.SelectedIndices.Count == 0) return;
+            
+            // range has to be numeric to proceed
+            if(!IsNumeric(txtStart.Text) || !IsNumeric(txtEnd.Text)) return;
+                        
+            int position = lvSplice.SelectedIndices[0];
+            int frames = Movies[position].Movie.Header.FrameCount;
+            int start = Convert.ToInt32(txtStart.Text);
+            int end = Convert.ToInt32(txtEnd.Text);
+
+            // check for valid range
+            if (start < 0 || start > frames) return;
+            if (end < start || end > frames) return;
+
+            // HACK::Just populate the necessary row. This avoids the need for a full redraw
+            lvSplice.Items[position].SubItems[3].Text = start.ToString();
+            lvSplice.Items[position].SubItems[4].Text = end.ToString();
+
+            // update the movie with the new range
+            Movies[position].Start = start;
+            Movies[position].End   = end;
+        }
+        
+        /// <summary>
+        /// Perform the splice
+        /// </summary>        
         private void btnSplice_Click(object sender, EventArgs e)
         {
             // exit if not enough movies are opened
@@ -186,29 +219,102 @@ namespace MovieSplicer.UI
             TASMovieInput[] spliced = new TASMovieInput[0];
 
             for(int i = 0; i < Movies.Length; i++)
-            {
-                int start = (lvSplice.Items[i].SubItems[3].Text.Length > 0) ? Convert.ToInt32(lvSplice.Items[i].SubItems[3].Text) : 0;
-                int end   = (lvSplice.Items[i].SubItems[4].Text.Length > 0) ? Convert.ToInt32(lvSplice.Items[i].SubItems[4].Text) : 0;
-
+            {                
                 // perform a range check on the current movie
-                if (start == 0 || end == 0)
+                if (Movies[i].Start == 0 || Movies[i].End == 0)
                 {
-                    MessageBox.Show("Splice could not be completed.\nMovie at position " + (i + 1) + " has an invalid range", "Splice Error");
+                    MessageBox.Show("Splice could not be completed.\n" + 
+                        lvSplice.Items[i].SubItems[1].Text + " has an invalid range", "Splice Error");
                     spliced = null;  return;
                 }
 
-                spliced = TASMovieInput.Splice(ref spliced, ref Movies[i].Movie.Input.FrameData, 0, spliced.Length, start, end);
+                spliced = TASMovieInput.Splice(ref spliced, ref Movies[i].Movie.Input.FrameData, 0, spliced.Length, Movies[i].Start - 1, Movies[i].End);
             }
             
             // DEBUG::output's to the application directory
+            // DEBUG::pass movie info to a SaveAs instance
             string filename = "spliced-" + FilenameFromPath(Movies[0].Movie.Filename);
             Movies[0].Movie.Save(filename, ref spliced);
 
             MessageBox.Show("Successfully wrote " + filename, "YAY!!!");           
-        }
+        }        
 
         
+        /// <summary>
+        /// After reordering items, refresh and select the moved item
+        /// </summary>        
+        private void updateList(int selectedPosition)
+        {
+            addMoviesToList();
 
+            lvSplice.Items[selectedPosition].Selected = true;
+            lvSplice.Focus();
+            lvSplice.EnsureVisible(selectedPosition);
+        }
+
+        /// <summary>
+        /// Move a movie to the first position in the list
+        /// </summary>        
+        private void btnMoveStart_Click(object sender, EventArgs e)
+        {
+            if (lvSplice.SelectedIndices.Count > 0 && lvSplice.SelectedIndices[0] > 0)
+            {
+                int position = lvSplice.SelectedIndices[0];
+                DroppedMovie temp = Movies[position];
+                for (int i = position; i > 0; i--)
+                    Movies[i] = Movies[i - 1];
+                Movies[0] = temp;
+                updateList(0);                
+            }
+        }
+
+        /// <summary>
+        /// Move a movie up one position in the list
+        /// </summary>        
+        private void btnMoveUp_Click(object sender, EventArgs e)
+        {
+            if (lvSplice.SelectedIndices.Count > 0 && lvSplice.SelectedIndices[0] > 0)
+            {
+                int position = lvSplice.SelectedIndices[0];
+                DroppedMovie temp = Movies[position];
+                Movies[position] = Movies[position - 1];
+                Movies[position - 1] = temp;
+
+                updateList(position - 1);            
+            }
+        }
+
+        /// <summary>
+        /// Move a move down one position in the list
+        /// </summary>        
+        private void btnMoveDown_Click(object sender, EventArgs e)
+        {
+            if (lvSplice.SelectedIndices.Count > 0 && lvSplice.SelectedIndices[0] < lvSplice.Items.Count - 1)
+            {
+                int position = lvSplice.SelectedIndices[0];
+                DroppedMovie temp = Movies[position];
+                Movies[position] = Movies[position + 1];
+                Movies[position + 1] = temp;
+
+                updateList(position + 1);
+            }
+        }
+
+        /// <summary>
+        /// Move a movie to the end of the list
+        /// </summary>        
+        private void btnMoveEnd_Click(object sender, EventArgs e)
+        {
+            if (lvSplice.SelectedIndices.Count > 0 && lvSplice.SelectedIndices[0] < lvSplice.Items.Count - 1)
+            {
+                int position = lvSplice.SelectedIndices[0];
+                DroppedMovie temp = Movies[position];
+                for (int i = 0; i < lvSplice.Items.Count - 1; i++)
+                    Movies[i] = Movies[i + 1];
+                Movies[lvSplice.Items.Count - 1] = temp;
+                updateList(lvSplice.Items.Count - 1);
+            }
+        }
 
     }
 }

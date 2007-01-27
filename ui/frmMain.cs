@@ -45,7 +45,7 @@ using MovieSplicer.Data.Formats;
 using MovieSplicer.Components;
 
 namespace MovieSplicer.UI
-{
+{    
     public partial class frmMain : TASForm
     {
         // minimum form dimensions
@@ -100,7 +100,18 @@ namespace MovieSplicer.UI
             // HACK::Refresh the listview to avoid an unnecessary horizontal scroll bar 
             // from appearing when the control's size shrinks
             lvInput.Refresh();
-        }   
+        }
+
+        // pass menu options to editor on change
+        // NOTE::effective, but optimal?
+        private void mnuAutoFireOption_CheckStateChanged(object sender, EventArgs e)
+        {
+            if (Editor != null) Editor.AutoFire = mnuAutoFireOption.Checked;
+        }
+        private void mnuEditingPrompt_CheckStateChanged(object sender, EventArgs e)
+        {
+            if (Editor != null) Editor.EditingPrompts = mnuEditingPrompt.Checked;
+        }
 
     #region Frame Data Handlers
 
@@ -396,6 +407,10 @@ namespace MovieSplicer.UI
    
     #region Editing
         
+        /////////////////////////////////////////////////////////////////////////////////
+        // TODO::Move all editing code out of the main class and into the editor class //
+        /////////////////////////////////////////////////////////////////////////////////
+
         /// <summary>
         /// Update the listview virtualListSize and the frame count in the statusbar
         /// </summary>
@@ -409,10 +424,10 @@ namespace MovieSplicer.UI
 
             // NOTE::refresh the object pointers
             // DEBUG::Not the most elegant solution
-            Editor.LoadSharedObjects(ref lvInput, ref FrameData.Input, ref UndoHistory, ref Msg);            
+            Editor.LoadSharedObjects(ref lvInput, ref FrameData.Input, ref UndoHistory, ref Msg); 
+            
         }   
    
-
         /// <summary>
         /// Insert a blank row into the listview at the selectedIndex point and
         /// update the inputArray, or prompt for insertion of multiple frames based
@@ -617,6 +632,8 @@ namespace MovieSplicer.UI
         }        
 
     #endregion                                                              
+
+        
      
     }
 }

@@ -50,13 +50,8 @@ namespace MovieSplicer.Data.Formats
         } 
 
         const byte BYTES_PER_FRAME   = 2;
-        const byte EXTRAROMINFO_SIZE = 30;
-        const byte METADATA_LENGTH   = 30;  
+        const byte EXTRAROMINFO_SIZE = 30;        
 
-        //public Header         SMVHeader;
-        //public Options        SMVOptions;
-        //public Extra          SMVExtra;
-        //public Input          SMVInput;
         public FormatSpecific SMVSpecific;
 
         private string[] InputValues = { ">", "<", "v", "^", "S", "s", "Y", "B", "R", "L", "X", "A" };
@@ -122,13 +117,16 @@ namespace MovieSplicer.Data.Formats
 
             SMVSpecific = new FormatSpecific(FileContents[Offsets[8]]);
             
-            Extra = new TASExtra();
+            Extra = new TASExtra();            
             if (SMVSpecific.HASROMINFO)
             {
                 Extra.ROM = ReadChars(ref FileContents, 0x07 + SaveStateOffset - EXTRAROMINFO_SIZE, 23);
                 Extra.CRC = ReadHEXUnicode(ref FileContents, 0x03 + SaveStateOffset - EXTRAROMINFO_SIZE, 4);
             }
-            Extra.Author = ReadChars16(ref FileContents, SaveStateOffset - METADATA_LENGTH, METADATA_LENGTH);
+            Extra.Author = (SMVSpecific.HASROMINFO) ?
+                ReadChars16(ref FileContents, Offsets[11], SaveStateOffset - EXTRAROMINFO_SIZE) :
+                ReadChars16(ref FileContents, Offsets[11], SaveStateOffset);
+
            
             Input = new TASInput(5, false);
             for (int c = 0; c < 5; c++)
@@ -230,7 +228,34 @@ namespace MovieSplicer.Data.Formats
                     }
                 }
             }
+            updateMetadata(ref outputFile);
             WriteByteArrayToFile(ref outputFile, filename, input.Length, Offsets[4]);  
-        } 
+        }
+
+        /// <summary>
+        /// Update the metadata information in the SMV
+        /// </summary>        
+        private void updateMetadata(ref byte[] byteArray)
+        {
+            int startPos = Offsets[11];
+            int extraROMLength = (SMVSpecific.HASROMINFO) ? Convert.ToInt32(EXTRAROMINFO_SIZE) : 0;
+            byte[] author = WriteChars16(Extra.Author);
+            byte[] temp = new byte[startPos + author.Length + (byteArray.Length - SaveStateOffset + extraROMLength)];
+            
+            int newSaveStateOffset = startPos + author.Length + extraROMLength;
+            int newCDataOffset = ControllerDataOffset + (newSaveStateOffset - SaveStateOffset);
+
+            for (int i = 0; i < startPos; i++)
+                temp[i] = byteArray[i];
+            for (int j = 0; j < author.Length; j++)
+                temp[j + startPos] = author[j];
+            for (int k = 0; k < byteArray.Length - SaveStateOffset - extraROMLength; k++)
+                temp[k + newSaveStateOffset] = byteArray[k + SaveStateOffset];
+
+            Write32(ref temp, Offsets[10], newCDataOffset);
+            Write32(ref temp, Offsets[9], newSaveStateOffset);
+
+            byteArray = temp;            
+        }
     }
 }

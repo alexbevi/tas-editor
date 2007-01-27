@@ -35,12 +35,7 @@ namespace MovieSplicer.Data.Formats
             public bool FDS;
         }   
 
-        const byte HEADER_SIZE = 144;
-
-        //public Header         FMVHeader;
-        //public Options        FMVOptions;
-        //public Extra          FMVExtra;
-        //public Input          FMVInput;
+        const byte HEADER_SIZE = 144;      
         public FormatSpecific FMVSpecific;
 
         private byte     BytesPerFrame = 0;
@@ -67,28 +62,14 @@ namespace MovieSplicer.Data.Formats
         {                        
             Filename = FMVFile;
             FillByteArrayFromFile(FMVFile, ref FileContents);
-
-            //FMVOptions = new Options(true);            
-            //FMVOptions.MovieStartFlag[0] = (1 & (FileContents[Offsets[1]]) >> 7) == 0 ? true : false;
-            //FMVOptions.MovieStartFlag[1] = (1 & (FileContents[Offsets[1]]) >> 7) == 1 ? true : false;
-
+         
             Options = new TASOptions(true);
             Options.MovieStartFlag[0] = (1 & (FileContents[Offsets[1]]) >> 7) == 0 ? true : false;
             Options.MovieStartFlag[1] = (1 & (FileContents[Offsets[1]]) >> 7) == 1 ? true : false;
 
             Extra = new TASExtra();
             Extra.Description = ReadChars(ref FileContents, Offsets[7], 64);
-
-            //FMVInput = new Input(2, false);            
-            //for (int i = 0; i < 2; i++)
-            //{
-            //    if ((1 & (FileContents[Offsets[2]]) >> 7 - i) == 1)
-            //    {
-            //        FMVInput.Controllers[i] = true;                    
-            //        BytesPerFrame++;
-            //    }
-            //}
-
+           
             Input = new TASInput(2, false);
             for (int i = 0; i < 2; i++)
             {
@@ -107,18 +88,12 @@ namespace MovieSplicer.Data.Formats
             }
             else
                 FMVSpecific.FDS = false;
-
-            //FMVHeader = new Header();
-            //FMVHeader.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
-            //FMVHeader.RerecordCount = Read32(ref FileContents, Offsets[4]);
-            //FMVHeader.EmulatorID    = ReadChars(ref FileContents, Offsets[6], 64);
-            //FMVHeader.FrameCount    = FileContents.Length - HEADER_SIZE / BytesPerFrame;
-
+           
             Header = new TASHeader();
-            Header.Signature = ReadHEX(ref FileContents, Offsets[0], 4);
+            Header.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
             Header.RerecordCount = Read32(ref FileContents, Offsets[4]);
-            Header.EmulatorID = ReadChars(ref FileContents, Offsets[6], 64);
-            Header.FrameCount = FileContents.Length - HEADER_SIZE / BytesPerFrame;
+            Header.EmulatorID    = ReadChars(ref FileContents, Offsets[6], 64);
+            Header.FrameCount    = FileContents.Length - HEADER_SIZE / BytesPerFrame;
 
             getFrameInput(ref FileContents);
         }
@@ -182,8 +157,15 @@ namespace MovieSplicer.Data.Formats
             int controllers = Input.ControllerCount;
             for (int i = 0; i < input.Length; i++)            
                 for (int j = 0; j < controllers; j++)                
-                    outputFile[head.Length + position++] = parseControllerData(input[i].Controller[j]);                                                          
-           
+                    outputFile[head.Length + position++] = parseControllerData(input[i].Controller[j]);
+
+            // update the movie description
+            for (int i = 0; i < 64; i++)
+                if (i < Extra.Description.Length)
+                    outputFile[Offsets[7] + i] = Convert.ToByte(Extra.Description[i]);
+                else
+                    outputFile[Offsets[7] + i] = 0;
+
             // NOTE::FMV files calculate frameCount based on filesize
             WriteByteArrayToFile(ref outputFile, filename, 0, 0);  
         }

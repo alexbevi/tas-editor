@@ -46,6 +46,9 @@ namespace MovieSplicer.Data
 
         /// <summary>
         /// Return the last buffer value and remove it from the collections
+        /// 
+        /// TODO::after an undo, this method should remove the last entry in the collection. 
+        /// Currently, this is done externally (after the call, inline)
         /// </summary>        
         public static void Undo(ref UndoBuffer[] buffer)
         {            

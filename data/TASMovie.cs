@@ -234,6 +234,17 @@ namespace MovieSplicer.Data
         }
 
         /// <summary>
+        /// Write a 4-byte little endian integer into a byte array at the desired offset        
+        /// </summary>        
+        protected void Write32(ref byte[] byteArray, int position, int value)
+        {
+            byte[] temp = Write32(value);
+            for (int i = 0; i < 4; i++)
+                byteArray[position + i] = temp[i];
+            
+        }
+        
+        /// <summary>
         /// Convert a byte array into a string of HEX characters
         /// </summary>
         public static string ReadHEX(ref byte[] byteArray, int position, int length)
@@ -257,6 +268,8 @@ namespace MovieSplicer.Data
 
         /// <summary>
         /// Convert a byte array to UTF-8 encoded character array to a string
+        /// 
+        /// NOTE::This can probably work by just returning Encoding.UTF8.GetChars(string)
         /// </summary>
         protected string ReadChars(ref byte[] byteArray, int position, int length)
         {
@@ -264,6 +277,14 @@ namespace MovieSplicer.Data
             Decoder d = Encoding.UTF8.GetDecoder();
             d.GetChars(byteArray, position, length, c, 0);
             return (new string(c));
+        }
+
+        /// <summary>
+        /// Convert a string value to a UTF-8 encoded byte array
+        /// </summary>        
+        protected byte[] WriteChars(string value)
+        {                        
+            return Encoding.UTF8.GetBytes(value);            
         }
 
         /// <summary>
@@ -275,6 +296,14 @@ namespace MovieSplicer.Data
             Decoder d = Encoding.Unicode.GetDecoder();
             d.GetChars(byteArray, position, length, c, 0);
             return (new string(c));
+        }
+
+        /// <summary>
+        /// Convert a string value to a UTF-16 encoded byte array
+        /// </summary>        
+        protected byte[] WriteChars16(string value)
+        {            
+            return Encoding.Unicode.GetBytes(value);
         }
 
         /// <summary>
@@ -313,22 +342,7 @@ namespace MovieSplicer.Data
             for (int i = 0; i < length; i++)
                 bytes[i] = byteArray[i + offset];
             return bytes;
-        }
-               
-        /// <summary>
-        /// Add the passed value to the end of the byteArray
-        /// 
-        /// NOTE::This method really causes a slowdown on larger files.
-        /// </summary>        
-        //protected void AddBytes(ref byte[] byteArray, byte[] value)
-        //{
-        //    byte[] temp = new byte[byteArray.Length + value.Length];
-                        
-        //    byteArray.CopyTo(temp, 0);
-        //    value.CopyTo(temp, byteArray.Length);
-
-        //    byteArray = null; byteArray = temp; temp = null;
-        //}
+        }                      
 
     #endregion
 

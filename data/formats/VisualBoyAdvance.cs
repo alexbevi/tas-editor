@@ -122,10 +122,10 @@ namespace MovieSplicer.Data.Formats
             ControllerDataOffset = Read32(ref FileContents, Offsets[18]);
             
             Header = new TASHeader();
-            Header.Signature = ReadHEX(ref FileContents, Offsets[0], 4);
-            Header.Version = Read32(ref FileContents, Offsets[1]);
-            Header.UID = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
-            Header.FrameCount = Read32(ref FileContents, Offsets[3]);
+            Header.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
+            Header.Version       = Read32(ref FileContents, Offsets[1]);
+            Header.UID           = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
+            Header.FrameCount    = Read32(ref FileContents, Offsets[3]);
             Header.RerecordCount = Read32(ref FileContents, Offsets[4]);
             
             Options = new TASOptions(true);
@@ -140,10 +140,10 @@ namespace MovieSplicer.Data.Formats
             Input.Controllers[3] = ((FileContents[Offsets[6]] >> 3) == 1) ? true : false;           
 
             Extra = new TASExtra();
-            Extra.Author = ReadChars(ref FileContents, HEADER_SIZE, 64);
+            Extra.Author      = ReadChars(ref FileContents, HEADER_SIZE, 64);
             Extra.Description = ReadChars(ref FileContents, HEADER_SIZE + 64, 128);
-            Extra.ROM = ReadChars(ref FileContents, Offsets[12], 12);
-            Extra.CRC = Convert.ToString((int)Offsets[14]);
+            Extra.ROM         = ReadChars(ref FileContents, Offsets[12], 12);
+            Extra.CRC         = Convert.ToString((int)Offsets[14]);
 
             VBMSpecific = new FormatSpecific(Offsets[7], Offsets[8]);
 
@@ -243,6 +243,17 @@ namespace MovieSplicer.Data.Formats
                     }                    
                 }
             }
+            // update the movie description and author
+            for (int i = 0; i < 64; i++)
+                if (i < Extra.Author.Length)
+                    outputFile[HEADER_SIZE + i] = Convert.ToByte(Extra.Author[i]);
+                else
+                    outputFile[HEADER_SIZE + i] = 0;
+            for (int j = 0; j < 128; j++)
+                if (j < Extra.Description.Length)
+                    outputFile[HEADER_SIZE + 64 + j] = Convert.ToByte(Extra.Description[j]);
+                else
+                    outputFile[HEADER_SIZE + 64 + j] = 0;
 
             WriteByteArrayToFile(ref outputFile, filename, input.Length, Offsets[3]);            
         }

@@ -16,19 +16,19 @@ is applied to a particular frame
 ///////////////////////
 // OUTSTANDING TASKS //
 ///////////////////////
+TODO::Why don't I just replace the movie's input collection instead of working with another frameData object? No updates are made till the save is invoked, so this is just wasting memory, as the original copy is never used other than to populate the listview initially.
+
+TODO::Undo still buggy on updates (add/remove works fine though)
 
 // high priority
 TODO::Add exception handlers to format loads (in case headers check out but input is corrupt)
 TODO::Add exception handlers for FCM's that terminate input population early (null entries in input table)
-TODO::Add metadata editing support
 TODO::Add internal Help options
 TODO::Finish mupen support (will have to be controller inputs ... not frame inputs :(
 TODO::Track recent files (file->open history)
       (this could be done through a config file so no need for registry entries,
       also, this would allow toggled options to be stored and loaded at runtime)
-TODO::Fix undo buffer/input updates for new editing scheme (undo doesn't work, update only works
-      if framedata.length hasn't changed from instantiation)
-TODO::Check that splicer is working properly      
+TODO::Splicer -> zero for start/end means ENTIRE movie      
    
 // medium priority
 TODO::FCM doesn't track control updates (figure out best way to implement)
@@ -52,13 +52,26 @@ TODO::Add Nestopia, VirtuaNES support? (not sure if it's even necessary)
 
 v0-x-x
 
--  UI::Editing control now "hover" (Hotkey F2)
+-  UI::Editing control now "hovers" (Hotkey F2)
 -  UI::Editing control now now accepts changes via ENTER key
 -  UI::Editing control can be hidden by hitting ESC
 -  UI::Message History visible via F4 (was CTRL+M)
 -  UI::Populate a format icon on load (this is just for fun :P)
 -  UI::Fixed a bug in the editor that didn't allow you to seek to frame 1
+-  UI::Added an "Add" button to the splicer so drag/drop not the only way to get a movie in there :)
+-  UI::SaveAs now allows you to edit metadata (Author/Description)
 - ETC::Fixed bug in copy buffer that was causing a crash if you tried to view with no movie loaded
+- ETC::Fixed a bug in the splicer that was causing the frame ranges to clear when a new movie is added
+- ETC::Fixed a bug where the splicer was dropping the first frame of input
+- ETC::Added reordering buttons to the splicer (so movie positions can be swapped)
+- ETC::Added append mode to editor (allows you to add an input to the end of a group of frames
+       without replacing the contents)
+- SMV::Fixed metadata reading (not sure what happened there, but i was reading nulls somehow :P)
+- SMV::metadata updating
+- FCM::metadata updating
+- GMV::metadata updating
+- FMV::metadata updating
+- VBM::metadata updating
 
 v0-9-2
 

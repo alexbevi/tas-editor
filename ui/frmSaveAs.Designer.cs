@@ -29,25 +29,17 @@ namespace MovieSplicer.UI
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmSaveAs));
-            this.txtFilename = new System.Windows.Forms.TextBox();
             this.btnBrowse = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.txtDescription = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.txtAuthor = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
             this.btnSave = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.txtFilename = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // txtFilename
-            // 
-            this.txtFilename.Location = new System.Drawing.Point(12, 35);
-            this.txtFilename.Name = "txtFilename";
-            this.txtFilename.ReadOnly = true;
-            this.txtFilename.Size = new System.Drawing.Size(252, 20);
-            this.txtFilename.TabIndex = 0;
             // 
             // btnBrowse
             // 
@@ -57,6 +49,7 @@ namespace MovieSplicer.UI
             this.btnBrowse.TabIndex = 1;
             this.btnBrowse.Text = "...";
             this.btnBrowse.UseVisualStyleBackColor = true;
+            this.btnBrowse.Click += new System.EventHandler(this.btnBrowse_Click);
             // 
             // groupBox1
             // 
@@ -105,6 +98,16 @@ namespace MovieSplicer.UI
             this.label2.TabIndex = 0;
             this.label2.Text = "Author";
             // 
+            // btnSave
+            // 
+            this.btnSave.Location = new System.Drawing.Point(12, 239);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Size = new System.Drawing.Size(293, 23);
+            this.btnSave.TabIndex = 4;
+            this.btnSave.Text = "&Save";
+            this.btnSave.UseVisualStyleBackColor = true;
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
+            // 
             // label1
             // 
             this.label1.AutoSize = true;
@@ -114,14 +117,13 @@ namespace MovieSplicer.UI
             this.label1.TabIndex = 3;
             this.label1.Text = "Filename";
             // 
-            // btnSave
+            // txtFilename
             // 
-            this.btnSave.Location = new System.Drawing.Point(12, 239);
-            this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(293, 23);
-            this.btnSave.TabIndex = 4;
-            this.btnSave.Text = "&Save";
-            this.btnSave.UseVisualStyleBackColor = true;
+            this.txtFilename.Location = new System.Drawing.Point(12, 35);
+            this.txtFilename.Name = "txtFilename";
+            this.txtFilename.ReadOnly = true;
+            this.txtFilename.Size = new System.Drawing.Size(252, 20);
+            this.txtFilename.TabIndex = 0;
             // 
             // frmSaveAs
             // 
@@ -150,14 +152,14 @@ namespace MovieSplicer.UI
 
         #endregion
 
-        private System.Windows.Forms.TextBox txtFilename;
         private System.Windows.Forms.Button btnBrowse;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.TextBox txtDescription;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox txtAuthor;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnSave;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox txtFilename;
     }
 }

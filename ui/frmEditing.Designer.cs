@@ -49,12 +49,14 @@ namespace MovieSplicer.UI
             this.txtJumpToFrame = new System.Windows.Forms.TextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.chkAppendInput = new System.Windows.Forms.CheckBox();
             this.grpEditing.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // grpEditing
             // 
+            this.grpEditing.Controls.Add(this.chkAppendInput);
             this.grpEditing.Controls.Add(this.btnCancel);
             this.grpEditing.Controls.Add(this.chkFrameDataC4);
             this.grpEditing.Controls.Add(this.label36);
@@ -259,6 +261,16 @@ namespace MovieSplicer.UI
             this.label1.TabIndex = 31;
             this.label1.Text = "Enter frame number or input pattern";
             // 
+            // chkAppendInput
+            // 
+            this.chkAppendInput.AutoSize = true;
+            this.chkAppendInput.Location = new System.Drawing.Point(91, 68);
+            this.chkAppendInput.Name = "chkAppendInput";
+            this.chkAppendInput.Size = new System.Drawing.Size(90, 17);
+            this.chkAppendInput.TabIndex = 9;
+            this.chkAppendInput.Text = "Append Input";
+            this.chkAppendInput.UseVisualStyleBackColor = true;
+            // 
             // frmEditing
             // 
             this.AcceptButton = this.btnUpdate;
@@ -307,5 +319,6 @@ namespace MovieSplicer.UI
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.CheckBox chkAppendInput;
     }
 }

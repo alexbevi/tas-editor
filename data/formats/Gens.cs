@@ -36,11 +36,6 @@ namespace MovieSplicer.Data.Formats
         }   
 
         const byte HEADER_SIZE = 64;
-
-        //public Header         GMVHeader;
-        //public Options        GMVOptions;
-        //public Input          GMVInput;
-        //public Extra          GMVExtra;
         public FormatSpecific GMVSpecific;
         
         private string[] InputValues = { "^", "v", "<", ">", "A", "B", "C", "S", "X", "Y", "Z", "M" };
@@ -61,31 +56,13 @@ namespace MovieSplicer.Data.Formats
         public Gens(string GMVFile)
         {
             Filename = GMVFile;
-            FillByteArrayFromFile(GMVFile, ref FileContents);
-
-            //GMVHeader = new Header();
-            //GMVHeader.Signature     = ReadChars(ref FileContents, Offsets[0], 16);
-            //GMVHeader.Version       = FileContents[Offsets[1]] - 55;
-            //GMVHeader.FrameCount    = Convert.ToInt32((FileContents.Length - HEADER_SIZE) / 3);
-            //GMVHeader.RerecordCount = Read32(ref FileContents, Offsets[2]);
+            FillByteArrayFromFile(GMVFile, ref FileContents);            
 
             Header = new TASHeader();
             Header.Signature = ReadChars(ref FileContents, Offsets[0], 16);
             Header.Version = FileContents[Offsets[1]] - 55;
             Header.FrameCount = Convert.ToInt32((FileContents.Length - HEADER_SIZE) / 3);
-            Header.RerecordCount = Read32(ref FileContents, Offsets[2]);
-
-            // options don't exist in TEST9 or older movies
-            //if (GMVHeader.Version > 9)
-            //{
-            //    GMVOptions = new Options(true);
-            //    GMVOptions.FPS               = (1 & (FileContents[Offsets[5]] >> 7)) == 1 ? 50 : 60;
-            //    GMVOptions.MovieStartFlag[0] = (1 & (FileContents[Offsets[5]] >> 6)) == 0 ? true : false;
-            //    GMVOptions.MovieStartFlag[1] = (1 & (FileContents[Offsets[5]] >> 6)) == 1 ? true : false;
-            //    GMVInput                     = (1 & (FileContents[Offsets[5]] >> 5)) == 1 ? new Input(3, true) : new Input(2, true);
-            //}
-            //else
-            //    GMVInput = new Input(2, true);
+            Header.RerecordCount = Read32(ref FileContents, Offsets[2]);         
 
             if (Header.Version > 9)
             {
@@ -97,12 +74,7 @@ namespace MovieSplicer.Data.Formats
             }
             else
                 Input = new TASInput(2, true);
-                
-
-            //GMVExtra = new Extra();
-            //try   { GMVExtra.Description = ReadCharsNullTerminated(ref FileContents, Offsets[6]); }
-            //catch { GMVExtra.Description = ReadChars(ref FileContents, Offsets[6], Offsets[7] - Offsets[6]); }
-
+                         
             Extra = new TASExtra();
             try { Extra.Description = ReadCharsNullTerminated(ref FileContents, Offsets[6]); }
             catch { Extra.Description = ReadChars(ref FileContents, Offsets[6], Offsets[7] - Offsets[6]); }
@@ -229,6 +201,14 @@ namespace MovieSplicer.Data.Formats
                     outputFile[head.Length + position++] = 0xFF;
             }
             
+            
+            // update the movie description
+            for (int i = 0; i < 40; i++)
+                if  (i < Extra.Description.Length) 
+                    outputFile[Offsets[6] + i] = Convert.ToByte(Extra.Description[i]);
+                else
+                    outputFile[Offsets[6] + i] = 0;
+
             // NOTE::GMV files calculate frameCount based on filesize
             WriteByteArrayToFile(ref outputFile, filename, 0, 0);  
         }

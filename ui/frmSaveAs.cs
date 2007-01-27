@@ -35,22 +35,64 @@ namespace MovieSplicer.UI
     {
         private TASMovie                Movie;
         private TASMovieInputCollection MovieData;
-        
+        private string                  Filename;
 
+        /// <summary>
+        /// Create a new SaveAs for with a reference to a movie and its (updated) input
+        /// </summary>        
         public frmSaveAs(ref TASMovie movie, ref TASMovieInputCollection movieData)
         {
             InitializeComponent();
 
             Movie     = movie;
             MovieData = movieData;
-            
-
+                        
             txtFilename.Text    = "new-" + FilenameFromPath(Movie.Filename);
             txtAuthor.Text      = Movie.Extra.Author;
             txtDescription.Text = Movie.Extra.Description;
 
             txtAuthor.Focus();
+
+            if (Movie.Extra.Author == null) txtAuthor.Enabled = false;
+            if (movie.Extra.Description == null) txtDescription.Enabled = false;
         }
-        
+
+        /// <summary>
+        /// Save the selected movie
+        /// </summary>        
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            Movie.Extra.Author = txtAuthor.Text;
+            Movie.Extra.Description = txtDescription.Text;
+            if (Filename == null)
+                Movie.Save(txtFilename.Text, ref MovieData.Input);
+            else
+                Movie.Save(Filename, ref MovieData.Input);
+            this.Close();
+        }
+
+        /// <summary>
+        /// Browse to a file to save
+        /// </summary>        
+        private void btnBrowse_Click(object sender, EventArgs e)
+        {
+            saveDlg = new SaveFileDialog();
+
+            switch (MovieData.Format)
+            {
+                case MovieType.FCM: saveDlg.Filter = FCM_FILTER; break;
+                case MovieType.FMV: saveDlg.Filter = FMV_FILTER; break;
+                case MovieType.M64: saveDlg.Filter = M64_FILTER; break;
+                case MovieType.SMV: saveDlg.Filter = SMV_FILTER; break;
+                case MovieType.GMV: saveDlg.Filter = GMV_FILTER; break;
+                case MovieType.VBM: saveDlg.Filter = VBM_FILTER; break;
+            }
+           
+            saveDlg.FileName = txtFilename.Text;
+            saveDlg.ShowDialog();
+            
+            if (saveDlg.FileName.Length > 0) Filename = saveDlg.FileName;
+            txtFilename.Text = FilenameFromPath(Filename);
+        }        
     }
 }
