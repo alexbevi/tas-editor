@@ -60,16 +60,16 @@ namespace MovieSplicer.UI
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(90, 13);
             this.label1.TabIndex = 1;
-            this.label1.Text = TASForm.APP_TITLE;
+            this.label1.Text = "TAS Movie Editor";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(182, 28);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(69, 13);
+            this.label2.Size = new System.Drawing.Size(66, 13);
             this.label2.TabIndex = 1;
-            this.label2.Text = "Version " + TASForm.VERSION;
+            this.label2.Text = "Version 0.10";
             // 
             // label3
             // 
@@ -115,7 +115,7 @@ namespace MovieSplicer.UI
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(109, 13);
             this.label6.TabIndex = 7;
-            this.label6.Text = "2007/01/08 @ 21:55";
+            this.label6.Text = "2007/01/28 @ 11:15";
             // 
             // label7
             // 

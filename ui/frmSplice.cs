@@ -230,13 +230,36 @@ namespace MovieSplicer.UI
 
                 spliced = TASMovieInput.Splice(ref spliced, ref Movies[i].Movie.Input.FrameData, 0, spliced.Length, Movies[i].Start - 1, Movies[i].End);
             }
-            
-            // DEBUG::output's to the application directory
+                        
             // DEBUG::pass movie info to a SaveAs instance
             string filename = "spliced-" + FilenameFromPath(Movies[0].Movie.Filename);
-            Movies[0].Movie.Save(filename, ref spliced);
+            saveDlg = new SaveFileDialog();
+            saveDlg.FileName = filename;
+            switch (Movies[0].MovieType)
+            {
+                case MovieType.FCM: saveDlg.Filter = FCM_FILTER; break;
+                case MovieType.GMV: saveDlg.Filter = GMV_FILTER; break;
+                case MovieType.SMV: saveDlg.Filter = SMV_FILTER; break;
+                case MovieType.FMV: saveDlg.Filter = FMV_FILTER; break;
+                case MovieType.VBM: saveDlg.Filter = VBM_FILTER; break;
+                case MovieType.M64:
+                    MessageBox.Show("Mupen splicing curently not implemented", "Sorry");
+                    return;
+            }                                   
+            DialogResult result = saveDlg.ShowDialog();
+            filename = saveDlg.FileName;
+            saveDlg = null;
 
-            MessageBox.Show("Successfully wrote " + filename, "YAY!!!");           
+            if (result == DialogResult.Cancel) return;
+            
+            if (filename.Length > 0)
+                Movies[0].Movie.Save(filename, ref spliced);
+            else
+            {
+                MessageBox.Show("No output file specified", "Oops");
+                return;
+            }
+            MessageBox.Show("Successfully wrote " + filename, "YAY!!!");            
         }        
 
         

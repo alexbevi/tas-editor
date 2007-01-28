@@ -50,7 +50,7 @@ TODO::Add Nestopia, VirtuaNES support? (not sure if it's even necessary)
 // CHANGELOG //
 ///////////////
 
-v0-x-x
+v0-10
 
 -  UI::Editing control now "hovers" (Hotkey F2)
 -  UI::Editing control now now accepts changes via ENTER key
@@ -66,6 +66,7 @@ v0-x-x
 - ETC::Added reordering buttons to the splicer (so movie positions can be swapped)
 - ETC::Added append mode to editor (allows you to add an input to the end of a group of frames
        without replacing the contents)
+- ETC::Splicer now prompts for location of output file       
 - SMV::Fixed metadata reading (not sure what happened there, but i was reading nulls somehow :P)
 - SMV::metadata updating
 - FCM::metadata updating
