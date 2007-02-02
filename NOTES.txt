@@ -28,13 +28,14 @@ TODO::Finish mupen support (will have to be controller inputs ... not frame inpu
 TODO::Track recent files (file->open history)
       (this could be done through a config file so no need for registry entries,
       also, this would allow toggled options to be stored and loaded at runtime)
-TODO::Splicer -> zero for start/end means ENTIRE movie      
    
 // medium priority
 TODO::FCM doesn't track control updates (figure out best way to implement)
 TODO::Add block overwrite on paste (as opposed to just inserting the block)
 TODO::Add controller muxing/demuxing (add/remove controllers)
 TODO::Add ZSNES support
+TODO::Output input as subtitle (SRT ... http://www.matroska.org/technical/specs/subtitles/srt.html)
+TODO::Add ability to extract save-state from movie
 
 // low priority
 TODO::Overhaul frame input editing
@@ -49,6 +50,20 @@ TODO::Add Nestopia, VirtuaNES support? (not sure if it's even necessary)
 ///////////////
 // CHANGELOG //
 ///////////////
+v0-10-1
+
+-  UI::virtual list caching implemented (for greater efficiency ... or, if you will, FOR GREAT JUSTICE!!!)
+-  UI::navigating the frame data via the keyboard (up/down/pageup/pagedown ... etc) now updates the
+       required controllers in the editing console
+- ETC::splicer's close button now works
+- ETC::zero ranges in the splicer indicate the whole movie (start of 0 = first frame, 
+       end of 0 = last frame)
+- SMV::fixed a bug with the parser not handling multi-controller input properly
+       (frames were offset ... didn't line up) - thanks Zefiris
+- SMV::fixed read/write bug that was dropping the last frame - thanks Zefiris   '
+- SMV::fixed extra data (rom info) being dropped when metadata was updated
+- VBM::fixed read/write bug that was dropping the last frame - thanks again Zefiris :)    
+
 
 v0-10
 

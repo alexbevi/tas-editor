@@ -77,6 +77,8 @@ namespace MovieSplicer.UI
             this.grpFrameData = new System.Windows.Forms.GroupBox();
             this.lvInput = new MovieSplicer.Components.TASListView();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
+            this.mnuExportSRT = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.mnuMain.SuspendLayout();
             this.statMain.SuspendLayout();
             this.cmnu_lvInput.SuspendLayout();
@@ -229,7 +231,9 @@ namespace MovieSplicer.UI
             // 
             this.mnuTools.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuSplice,
-            this.mnuCompareMovieInputRange});
+            this.mnuCompareMovieInputRange,
+            this.toolStripSeparator6,
+            this.mnuExportSRT});
             this.mnuTools.Name = "mnuTools";
             this.mnuTools.Size = new System.Drawing.Size(44, 20);
             this.mnuTools.Text = "&Tools";
@@ -490,12 +494,25 @@ namespace MovieSplicer.UI
             this.lvInput.VirtualMode = true;
             this.lvInput.DragEnter += new System.Windows.Forms.DragEventHandler(this.lvInput_DragEnter);
             this.lvInput.DragDrop += new System.Windows.Forms.DragEventHandler(this.lvInput_DragDrop);
+            this.lvInput.KeyUp += new System.Windows.Forms.KeyEventHandler(this.lvInput_KeyUp);
             this.lvInput.Click += new System.EventHandler(this.lvInput_Clicked);
             // 
             // columnHeader1
             // 
             this.columnHeader1.Text = "Frame";
             this.columnHeader1.Width = 391;
+            // 
+            // mnuExportSRT
+            // 
+            this.mnuExportSRT.Name = "mnuExportSRT";
+            this.mnuExportSRT.Size = new System.Drawing.Size(241, 22);
+            this.mnuExportSRT.Text = "E&xport Frame Input as Subtitle";
+            this.mnuExportSRT.Click += new System.EventHandler(this.mnuExportSRT_Click);
+            // 
+            // toolStripSeparator6
+            // 
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(238, 6);
             // 
             // frmMain
             // 
@@ -575,7 +592,9 @@ namespace MovieSplicer.UI
         private System.Windows.Forms.ToolStripMenuItem mnuSplice;
         private System.Windows.Forms.ToolStripMenuItem mnuCompareMovieInputRange;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
-        private System.Windows.Forms.PictureBox pbFormat;       
+        private System.Windows.Forms.PictureBox pbFormat;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
+        private System.Windows.Forms.ToolStripMenuItem mnuExportSRT;       
     }
 }
 

@@ -40,14 +40,14 @@ namespace MovieSplicer.UI
         /// <summary>
         /// Create a new SaveAs for with a reference to a movie and its (updated) input
         /// </summary>        
-        public frmSaveAs(ref TASMovie movie, ref TASMovieInputCollection movieData)
+        public frmSaveAs(ref TASMovie movie, ref TASMovieInputCollection movieData, string newFilePrefix)
         {
             InitializeComponent();
 
             Movie     = movie;
             MovieData = movieData;
-                        
-            txtFilename.Text    = "new-" + FilenameFromPath(Movie.Filename);
+
+            txtFilename.Text    = newFilePrefix + FilenameFromPath(Movie.Filename);
             txtAuthor.Text      = Movie.Extra.Author;
             txtDescription.Text = Movie.Extra.Description;
 
@@ -62,12 +62,17 @@ namespace MovieSplicer.UI
         /// </summary>        
         private void btnSave_Click(object sender, EventArgs e)
         {
-            Movie.Extra.Author = txtAuthor.Text;
+            Movie.Extra.Author      = txtAuthor.Text;
             Movie.Extra.Description = txtDescription.Text;
             if (Filename == null)
+            {
                 Movie.Save(txtFilename.Text, ref MovieData.Input);
+                Filename = txtFilename.Text;
+            }
             else
                 Movie.Save(Filename, ref MovieData.Input);
+
+            MessageBox.Show("New movie saved as " + Filename, "YAY!!!");
             this.Close();
         }
 
@@ -89,8 +94,8 @@ namespace MovieSplicer.UI
             }
            
             saveDlg.FileName = txtFilename.Text;
-            saveDlg.ShowDialog();
-            
+            saveDlg.ShowDialog();                        
+
             if (saveDlg.FileName.Length > 0) Filename = saveDlg.FileName;
             txtFilename.Text = FilenameFromPath(Filename);
         }        

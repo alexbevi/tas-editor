@@ -152,11 +152,11 @@ namespace MovieSplicer.Data.Formats
 
         private void getFrameInput(ref byte[] byteArray)
         {
-            Input.FrameData = new TASMovieInput[Header.FrameCount];            
+            Input.FrameData = new TASMovieInput[Header.FrameCount + 1];            
             int position = 0;
             int i = 0;
 
-            while (position < Header.FrameCount)
+            while (position <= Header.FrameCount)
             {
                 Input.FrameData[position] = new TASMovieInput();
                 for (int j = 0; j < 4; j++)
@@ -230,7 +230,7 @@ namespace MovieSplicer.Data.Formats
 
             // add the controller data
             int position = 0;
-            for (int i = 0; i < input.Length ; i++)
+            for (int i = 0; i < input.Length; i++)
             {
                 for (int j = 0; j < controllers; j++)
                 {
@@ -255,7 +255,7 @@ namespace MovieSplicer.Data.Formats
                 else
                     outputFile[HEADER_SIZE + 64 + j] = 0;
 
-            WriteByteArrayToFile(ref outputFile, filename, input.Length, Offsets[3]);            
+            WriteByteArrayToFile(ref outputFile, filename, input.Length - 1, Offsets[3]);            
         }
     }
 }

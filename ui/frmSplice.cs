@@ -182,8 +182,11 @@ namespace MovieSplicer.UI
             int end = Convert.ToInt32(txtEnd.Text);
 
             // check for valid range
-            if (start < 0 || start > frames) return;
-            if (end < start || end > frames) return;
+            if (start < 0 || start > frames || end < start || end > frames)
+            {
+                MessageBox.Show("Invalid range for selected movie", "Ooops");
+                return;
+            }
 
             // HACK::Just populate the necessary row. This avoids the need for a full redraw
             lvSplice.Items[position].SubItems[3].Text = start.ToString();
@@ -217,49 +220,23 @@ namespace MovieSplicer.UI
             }
 
             TASMovieInput[] spliced = new TASMovieInput[0];
-
-            for(int i = 0; i < Movies.Length; i++)
-            {                
-                // perform a range check on the current movie
-                if (Movies[i].Start == 0 || Movies[i].End == 0)
-                {
-                    MessageBox.Show("Splice could not be completed.\n" + 
-                        lvSplice.Items[i].SubItems[1].Text + " has an invalid range", "Splice Error");
-                    spliced = null;  return;
-                }
-
-                spliced = TASMovieInput.Splice(ref spliced, ref Movies[i].Movie.Input.FrameData, 0, spliced.Length, Movies[i].Start - 1, Movies[i].End);
-            }
-                        
-            // DEBUG::pass movie info to a SaveAs instance
-            string filename = "spliced-" + FilenameFromPath(Movies[0].Movie.Filename);
-            saveDlg = new SaveFileDialog();
-            saveDlg.FileName = filename;
-            switch (Movies[0].MovieType)
-            {
-                case MovieType.FCM: saveDlg.Filter = FCM_FILTER; break;
-                case MovieType.GMV: saveDlg.Filter = GMV_FILTER; break;
-                case MovieType.SMV: saveDlg.Filter = SMV_FILTER; break;
-                case MovieType.FMV: saveDlg.Filter = FMV_FILTER; break;
-                case MovieType.VBM: saveDlg.Filter = VBM_FILTER; break;
-                case MovieType.M64:
-                    MessageBox.Show("Mupen splicing curently not implemented", "Sorry");
-                    return;
-            }                                   
-            DialogResult result = saveDlg.ShowDialog();
-            filename = saveDlg.FileName;
-            saveDlg = null;
-
-            if (result == DialogResult.Cancel) return;
             
-            if (filename.Length > 0)
-                Movies[0].Movie.Save(filename, ref spliced);
-            else
+            for(int i = 0; i < Movies.Length; i++)
             {
-                MessageBox.Show("No output file specified", "Oops");
-                return;
-            }
-            MessageBox.Show("Successfully wrote " + filename, "YAY!!!");            
+                // handle zeroes                
+                if (Movies[i].End == 0) Movies[i].End = Movies[i].Movie.Header.FrameCount;
+                
+                // NOTE::increase VBM by 1 frame since we enumerate from zero
+                if (Movies[i].MovieType == MovieType.VBM) Movies[i].End++;
+                
+                spliced = TASMovieInput.Splice(ref spliced, ref Movies[i].Movie.Input.FrameData, 0, spliced.Length, Movies[i].Start, Movies[i].End);
+            }                                    
+
+            TASMovieInputCollection temp = new TASMovieInputCollection();
+            temp.Format = Movies[0].MovieType;
+            temp.Input  = spliced;
+            frmSaveAs frm = new frmSaveAs(ref Movies[0].Movie, ref temp, "spliced-");
+            frm.ShowDialog(); frm.Dispose(); 
         }        
 
         
@@ -337,6 +314,14 @@ namespace MovieSplicer.UI
                 Movies[lvSplice.Items.Count - 1] = temp;
                 updateList(lvSplice.Items.Count - 1);
             }
+        }
+
+        /// <summary>
+        /// Close the form
+        /// </summary>        
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
 
     }

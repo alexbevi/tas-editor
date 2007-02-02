@@ -26,13 +26,18 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
+using MovieSplicer.Components;
+
 namespace MovieSplicer.UI
 {
-    public partial class frmAbout : Form
+    public partial class frmAbout : TASForm
     {
         public frmAbout()
         {
             InitializeComponent();
+            label1.Text = APP_TITLE;
+            label2.Text = "Version " + VERSION;
+            lblBuild.Text = BUILD_DATE;
         }       
 
         private void lnkEmail_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

@@ -33,7 +33,7 @@ namespace MovieSplicer.UI
 {
     public partial class frmEditing : TASForm
     {
-        public ListView        lvInput;                
+        public TASListView     lvInput;                
         public TASMovieInput[] FrameData;        
         public UndoBuffer[]    UndoHistory;
         public frmMessages     Msg;
@@ -47,11 +47,11 @@ namespace MovieSplicer.UI
         }
 
         public void LoadSharedObjects(ref TASListView lv, ref TASMovieInput[] movie, ref UndoBuffer[] undo, ref frmMessages msg)
-        {
+        {                        
             lvInput     = lv;
             FrameData   = movie;
             UndoHistory = undo;
-            Msg         = msg;
+            Msg         = msg;            
         }
 
         // NOTE::These routines are just a quick hack to ensure that the edit field checkboxes
@@ -152,7 +152,8 @@ namespace MovieSplicer.UI
             else
                 TASMovieInput.Insert(ref FrameData, updated, updateFlag, AutoFire, frameIndex, totalFrames);
 
-            lvInput.Refresh();
+            lvInput.ClearVirtualCache();
+            lvInput.Refresh();            
             Msg.AddMsg("Updated " + totalFrames + " frame(s) at frame " + framePosition);
         }
 

@@ -33,7 +33,8 @@ namespace MovieSplicer.Components
     public class TASForm : Form
     {
         public const string APP_TITLE  = "TAS Movie Editor";
-        public const string VERSION    = "0.10";
+        public const string VERSION    = "0.10.1";
+        public const string BUILD_DATE = "2007-02-02 @ 18:15";
 
         public const string TAS_FILTER = ALL_FILTER + "|" + FCM_FILTER + "|" + FMV_FILTER + "|" + 
                                          GMV_FILTER + "|" + M64_FILTER + "|" + SMV_FILTER + "|" + 
@@ -46,6 +47,7 @@ namespace MovieSplicer.Components
         public const string SMV_FILTER = "SMV - SNES9x Movie|*.smv";
         public const string VBM_FILTER = "VBM - VisualBoyAdvance Movie|*.vbm";
 
+        //TODO::these don't follow the naming scheme ... FIX
         protected OpenFileDialog openDlg;
         protected SaveFileDialog saveDlg;
 

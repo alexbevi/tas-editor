@@ -221,7 +221,10 @@ namespace MovieSplicer.Data
         /// Splice two TASMovieInput collections together
         /// </summary>        
         public static TASMovieInput[] Splice(ref TASMovieInput[] source, ref TASMovieInput[] target, int sourceStart, int sourceEnd, int targetStart, int targetEnd)
-        {            
+        {
+            // NOTE::zero means start from the beginning, but if not, since it's an index, subtract 1                        
+            if (targetStart != 0) targetStart--;
+
             TASMovieInput[] spliced = new TASMovieInput[(sourceEnd - sourceStart) + (targetEnd - targetStart)];
             for (int i = sourceStart; i < sourceEnd; i++)
                 spliced[i] = source[i];
@@ -257,6 +260,7 @@ namespace MovieSplicer.Data
                 result.Controller[i] = left.Controller[i] + right.Controller[i];
             return result;
         }
+
     #endregion
 
     }

@@ -38,7 +38,7 @@ namespace MovieSplicer.UI
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.lnkEmail = new System.Windows.Forms.LinkLabel();
-            this.label6 = new System.Windows.Forms.Label();
+            this.lblBuild = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -58,18 +58,16 @@ namespace MovieSplicer.UI
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(182, 12);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(90, 13);
+            this.label1.Size = new System.Drawing.Size(0, 13);
             this.label1.TabIndex = 1;
-            this.label1.Text = "TAS Movie Editor";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(182, 28);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(66, 13);
+            this.label2.Size = new System.Drawing.Size(0, 13);
             this.label2.TabIndex = 1;
-            this.label2.Text = "Version 0.10";
             // 
             // label3
             // 
@@ -108,14 +106,13 @@ namespace MovieSplicer.UI
             this.lnkEmail.Text = "alexbevi@gmail.com";
             this.lnkEmail.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkEmail_LinkClicked);
             // 
-            // label6
+            // lblBuild
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(182, 74);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(109, 13);
-            this.label6.TabIndex = 7;
-            this.label6.Text = "2007/01/28 @ 11:15";
+            this.lblBuild.AutoSize = true;
+            this.lblBuild.Location = new System.Drawing.Point(182, 74);
+            this.lblBuild.Name = "lblBuild";
+            this.lblBuild.Size = new System.Drawing.Size(0, 13);
+            this.lblBuild.TabIndex = 7;
             // 
             // label7
             // 
@@ -132,7 +129,7 @@ namespace MovieSplicer.UI
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(321, 247);
             this.Controls.Add(this.label7);
-            this.Controls.Add(this.label6);
+            this.Controls.Add(this.lblBuild);
             this.Controls.Add(this.lnkEmail);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
@@ -163,7 +160,7 @@ namespace MovieSplicer.UI
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.LinkLabel lnkEmail;
-        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label lblBuild;
         private System.Windows.Forms.Label label7;
     }
 }

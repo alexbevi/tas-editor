@@ -73,7 +73,8 @@ namespace MovieSplicer.UI
         private void bindControllerDataToListview()
         {
             sbarMovieType.Text = Enum.GetName(typeof(MovieType), bufferedInput.Format);
-           
+
+            lvInputBuffer.ClearVirtualCache();
             lvInputBuffer.VirtualListSize   = bufferedInput.Input.Length;
             lvInputBuffer.VirtualListSource = bufferedInput.Input;
             lvInputBuffer.SetColumns(bufferedInput.Controllers);

@@ -30,13 +30,7 @@ namespace MovieSplicer.Components
 {
     /// <summary>
     /// This is essentially a subclass of System.Windows.Forms.ListView that provides
-    /// an auto-expanding last column and virtualization.
-    /// 
-    /// TODO::There's an issue with item caching. When enabled, the caches (if multiple listviews
-    /// are defined and accessed) collide (overwrite each other), so access goes beyond the range
-    /// of the cache's source pointer (this definition sucks, but it sorta makes sense to me so :P)
-    /// 
-    /// TODO::Not sure if the above issue still exists. Look into it as caching is sexy :)
+    /// an auto-expanding last column and virtualization.   
     /// </summary>
     public class TASListView: ListView
     {
@@ -44,11 +38,12 @@ namespace MovieSplicer.Components
         private const int WM_VSCROLL = 0x115;
         private const int WM_PAINT   = 0xF;
      
-        public TASMovieInput[] VirtualListSource;
-        
+        public TASMovieInput[]   VirtualListSource;
+        public TASForm.MovieType VirtualMovieType;
+
         // Cache items
-        //private ListViewItem[] m_cache;
-        //private int            m_firstItem;        
+        private ListViewItem[] cache;
+        private int            firstItem;        
         
         /// <summary>
         /// Create a new TASListView object with an event handler on RetriveVirtualItem
@@ -57,7 +52,7 @@ namespace MovieSplicer.Components
         {
             this.DoubleBuffered = true;
             this.RetrieveVirtualItem += new RetrieveVirtualItemEventHandler(GetVirtualItem);
-            //this.CacheVirtualItems +=new CacheVirtualItemsEventHandler(CacheVirtualItemsList);
+            this.CacheVirtualItems   += new CacheVirtualItemsEventHandler(CacheVirtualItemsList);
         }
 
         /// <summary>
@@ -181,9 +176,9 @@ namespace MovieSplicer.Components
         private void GetVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
         {
             // If we have the item cached, return it. Otherwise, recreate it.
-            //if (m_cache != null && e.ItemIndex >= m_firstItem && e.ItemIndex < m_firstItem + m_cache.Length)
-            //    e.Item = m_cache[e.ItemIndex - m_firstItem];
-            //else
+            if (cache != null && e.ItemIndex >= firstItem && e.ItemIndex < firstItem + cache.Length)
+                e.Item = cache[e.ItemIndex - firstItem];
+            else
                 e.Item = GetListItem(e.ItemIndex);
         }
 
@@ -192,7 +187,12 @@ namespace MovieSplicer.Components
         /// </summary>        
         private ListViewItem GetListItem(int listIndex)
         {
-            ListViewItem lv = new ListViewItem((listIndex + 1).ToString());
+            ListViewItem lv;
+            if(VirtualMovieType == TASForm.MovieType.VBM || 
+               VirtualMovieType == TASForm.MovieType.SMV)
+                    lv = new ListViewItem((listIndex).ToString());
+            else
+                    lv = new ListViewItem((listIndex + 1).ToString());
 
             // get each controller used and its input for the frame            
             for (int i = 0; i < this.Columns.Count - 1; i++)
@@ -210,24 +210,30 @@ namespace MovieSplicer.Components
             return lv;
         }
 
-        //public void ClearVirtualCache()
-        //{
-        //    m_cache = null;
-        //}
+        /// <summary>
+        /// Clear the virtual cache (duh :P)
+        /// </summary>
+        public void ClearVirtualCache()
+        {
+            cache = null;
+        }
 
-        //private void CacheVirtualItemsList(object sender, CacheVirtualItemsEventArgs e)
-        //{
-        //    // Only recreate the cache if we need to.
-        //    if (m_cache != null && e.StartIndex >= m_firstItem && e.EndIndex <= m_firstItem + m_cache.Length)
-        //        return;
+        /// <summary>
+        /// Cache current view
+        /// </summary>        
+        private void CacheVirtualItemsList(object sender, CacheVirtualItemsEventArgs e)
+        {
+            // Only recreate the cache if we need to.
+            if (cache != null && e.StartIndex >= firstItem && e.EndIndex <= firstItem + cache.Length)
+                return;
 
-        //    m_firstItem = e.StartIndex;
-        //    int length = e.EndIndex - e.StartIndex + 1;
-        //    m_cache = new ListViewItem[length];
+            firstItem  = e.StartIndex;
+            int length = e.EndIndex - e.StartIndex + 1;
+            cache = new ListViewItem[length];
 
-        //    for (int i = 0; i < m_cache.Length; i++)
-        //        m_cache[i] = GetListItem(m_firstItem + i);
-        //}
+            for (int i = 0; i < cache.Length; i++) 
+                cache[i] = GetListItem(firstItem + i);
+        }
 
     #endregion
 

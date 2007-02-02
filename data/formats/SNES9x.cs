@@ -137,23 +137,32 @@ namespace MovieSplicer.Data.Formats
 
         private void getFrameInput(ref byte[] byteArray)
         {
-            Input.FrameData = new TASMovieInput[Header.FrameCount];
+            Input.FrameData = new TASMovieInput[Header.FrameCount];            
+            int controllers = Input.ControllerCount;
 
             // parse frame data
+            // TODO::Figure out why the length needs to be one less than the actual
+            // array length
+            // DEBUG::It seems that if you compare to the length of the FrameData in the
+            // new logic, the last frame is trying to read beyond the length of the file
             for (int i = 0; i < Header.FrameCount; i++)
-            {
+            {              
                 Input.FrameData[i] = new TASMovieInput();
-
                 // cycle through the controller data for the current frame
-                for (int j = 0; j < Input.ControllerCount; j++)
-                {
-                    byte[] frame = ReadBytes(ref byteArray, 
-                        ControllerDataOffset + (i * BYTES_PER_FRAME) + (j * BYTES_PER_FRAME), 
-                        BYTES_PER_FRAME);
+                for (int j = 0; j < controllers; j++)
+                {                                            
+                    byte[] frame = ReadBytes(ref byteArray,
+                    ControllerDataOffset + ((i * controllers * BYTES_PER_FRAME) + (j * BYTES_PER_FRAME)),
+                    BYTES_PER_FRAME);
 
-                    Input.FrameData[i].Controller[j] = parseControllerData(frame);
-                }                  
+                    Input.FrameData[i].Controller[j] = parseControllerData(frame);                                  
+                }                               
             }
+            
+            // DEBUG::Not sure why all of a sudden this routine stopped working,
+            // but this adds a blank frame to the end of the movie (if necessary)
+            //if (Input.FrameData[Input.FrameData.Length - 1] == null)
+            //    Input.FrameData[Input.FrameData.Length - 1] = new TASMovieInput();
         }
 
         /// <summary>
@@ -210,15 +219,13 @@ namespace MovieSplicer.Data.Formats
                         size += BYTES_PER_FRAME;
 
             // create the output array and copy in the contents
-            byte[] outputFile = new byte[head.Length + size];
+            byte[] outputFile = new byte[head.Length + size + (BYTES_PER_FRAME * controllers)];
             head.CopyTo(outputFile, 0);
 
             // add the controller data
             int position = 0;
-            for (int i = 0; i < input.Length; i++)
-            {
-                for (int j = 0; j < controllers; j++)
-                {
+            for (int i = 0; i < input.Length; i++)            
+                for (int j = 0; j < controllers; j++)                
                     // check if the controller we're about to process is used
                     if (Input.Controllers[j])
                     {
@@ -226,9 +233,23 @@ namespace MovieSplicer.Data.Formats
                         outputFile[head.Length + position++] = parsed[0];
                         outputFile[head.Length + position++] = parsed[1];
                     }
-                }
-            }
+                            
             updateMetadata(ref outputFile);
+            
+            //// DEBUGGING //
+            //MovieSplicer.UI.frmDebug frm = new MovieSplicer.UI.frmDebug();
+            //for (int i = 0; i < FileContents.Length; i++)
+            //{
+            //    System.Windows.Forms.ListViewItem lvi = new System.Windows.Forms.ListViewItem();
+            //    lvi.Text = i.ToString();
+            //    lvi.SubItems.Add(FileContents[i].ToString());
+            //    string item = (i < outputFile.Length) ? outputFile[i].ToString() : "out of range";
+            //    lvi.SubItems.Add(item);
+            //    frm.Add(lvi);
+            //}
+            //frm.Show();
+            /////////////////
+
             WriteByteArrayToFile(ref outputFile, filename, input.Length, Offsets[4]);  
         }
 
@@ -241,7 +262,7 @@ namespace MovieSplicer.Data.Formats
             int extraROMLength = (SMVSpecific.HASROMINFO) ? Convert.ToInt32(EXTRAROMINFO_SIZE) : 0;
             byte[] author = WriteChars16(Extra.Author);
             byte[] temp = new byte[startPos + author.Length + (byteArray.Length - SaveStateOffset + extraROMLength)];
-            
+
             int newSaveStateOffset = startPos + author.Length + extraROMLength;
             int newCDataOffset = ControllerDataOffset + (newSaveStateOffset - SaveStateOffset);
 
@@ -249,11 +270,11 @@ namespace MovieSplicer.Data.Formats
                 temp[i] = byteArray[i];
             for (int j = 0; j < author.Length; j++)
                 temp[j + startPos] = author[j];
-            for (int k = 0; k < byteArray.Length - SaveStateOffset - extraROMLength; k++)
-                temp[k + newSaveStateOffset] = byteArray[k + SaveStateOffset];
+            for (int k = 0; k < byteArray.Length - SaveStateOffset + extraROMLength; k++)
+                temp[k + newSaveStateOffset - extraROMLength] = byteArray[k + SaveStateOffset - extraROMLength];
 
-            Write32(ref temp, Offsets[10], newCDataOffset);
             Write32(ref temp, Offsets[9], newSaveStateOffset);
+            Write32(ref temp, Offsets[10], newCDataOffset);            
 
             byteArray = temp;            
         }

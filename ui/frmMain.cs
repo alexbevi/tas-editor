@@ -125,8 +125,20 @@ namespace MovieSplicer.UI
                 ListViewItem lvi = lvInput.Items[lvInput.SelectedIndices[0]];
                 Editor.PopulateEditFields(lvi);                
             }
-        }                
-     
+        }
+
+        /// <summary>
+        /// Populate edit controls if navigating via arrow keys
+        /// </summary>        
+        private void lvInput_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (lvInput.SelectedIndices.Count > 0 && FrameData.Format != MovieType.None)
+            {
+                ListViewItem lvi = lvInput.Items[lvInput.SelectedIndices[0]];
+                Editor.PopulateEditFields(lvi);
+            }
+        }
+
         /// <summary>
         /// Change the drag cursor
         /// </summary>        
@@ -223,8 +235,9 @@ namespace MovieSplicer.UI
             FrameData.Controllers = Movie.Input.ControllerCount;
 
             // set the number of controller columns
-            lvInput.SetColumns(Movie.Input.ControllerCount);            
-            
+            lvInput.SetColumns(Movie.Input.ControllerCount);
+            lvInput.VirtualMovieType = FrameData.Format;
+
             // initialize editing fields            
             bool[] activeControllers = { false, false, false, false };
             for (int i = 0; i < Movie.Input.ControllerCount; i++)
@@ -239,7 +252,8 @@ namespace MovieSplicer.UI
             mnuSaveAs.Enabled = true;
             mnuClose.Enabled  = true;
 
-            // populate the virtual listview                
+            // populate the virtual listview 
+            lvInput.ClearVirtualCache();   
             lvInput.VirtualListSource = FrameData.Input;
             lvInput.VirtualListSize   = FrameData.Input.Length;
 
@@ -323,27 +337,9 @@ namespace MovieSplicer.UI
         private void mnuSaveAs_Click(object sender, EventArgs e)
         {
             if (FrameData.Format != MovieType.None)
-            {                
-                //saveDlg = new SaveFileDialog();
-
-                //// set the save dialog's file filter type according to the current format
-                //if (FrameData.Format == MovieType.FCM) saveDlg.Filter = FCM_FILTER;
-                //if (FrameData.Format == MovieType.FMV) saveDlg.Filter = FMV_FILTER;
-                //if (FrameData.Format == MovieType.GMV) saveDlg.Filter = GMV_FILTER;
-                //if (FrameData.Format == MovieType.SMV) saveDlg.Filter = SMV_FILTER;
-                //if (FrameData.Format == MovieType.VBM) saveDlg.Filter = VBM_FILTER;
-
-                //saveDlg.FileName = "new-" + txtMovieFilename.Text;
-                //DialogResult save = saveDlg.ShowDialog();
-
-                //if (saveDlg.FileName.Length > 0 && save != DialogResult.Cancel)
-                //{
-                //    Movie.Save(saveDlg.FileName, ref FrameData);                
-                //    MessageBox.Show(saveDlg.FileName + " written successfully", " Save As");
-                //}  
-
-                frmSaveAs frm = new frmSaveAs(ref Movie, ref FrameData);
-                frm.ShowDialog();
+            {                               
+                frmSaveAs frm = new frmSaveAs(ref Movie, ref FrameData, "new-");
+                frm.ShowDialog(); frm.Dispose();
             }
         }
 
@@ -403,6 +399,15 @@ namespace MovieSplicer.UI
                 Editor.Focus();
         }
 
+        /// <summary>
+        /// Load the subtitle export form
+        /// </summary>        
+        private void mnuExportSRT_Click(object sender, EventArgs e)
+        {
+            frmSubtitles frm = new frmSubtitles();
+            frm.ShowDialog(); frm.Dispose();
+        }
+
     #endregion   
    
     #region Editing
@@ -416,6 +421,7 @@ namespace MovieSplicer.UI
         /// </summary>
         private void updateControlsAfterEdit()
         {
+            lvInput.ClearVirtualCache();
             lvInput.VirtualListSource = FrameData.Input;
             lvInput.VirtualListSize   = FrameData.Input.Length;
             lvInput.Refresh();
@@ -632,6 +638,16 @@ namespace MovieSplicer.UI
         }        
 
     #endregion                                                              
+
+        
+
+       
+
+       
+
+       
+
+        
 
         
      
