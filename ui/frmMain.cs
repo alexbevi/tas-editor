@@ -404,7 +404,7 @@ namespace MovieSplicer.UI
         /// </summary>        
         private void mnuExportSRT_Click(object sender, EventArgs e)
         {
-            frmSubtitles frm = new frmSubtitles();
+            frmSubtitles frm = new frmSubtitles(ref FrameData);
             frm.ShowDialog(); frm.Dispose();
         }
 
