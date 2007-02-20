@@ -194,8 +194,8 @@ namespace MovieSplicer.Data.Formats
         {
             bool[] D = { false, false, false, false };
             bool[] C = { false, false, false, false };
-            int    x = 0;
-            int    y = 0;
+            Int32  x = 0;
+            Int32  y = 0;
 
             string frame = "";
 
@@ -239,11 +239,13 @@ namespace MovieSplicer.Data.Formats
                 frame += InputValues[8];
                 frame += (x < 0) ? InputDir[0] : InputDir[1];
                 frame += (y < 0) ? InputDir[2] : InputDir[3];
+                frame += x.ToString(); // DEBUGGING (append value)
             }
             if (y != 0)
             {
                 frame += InputValues[9];                
                 frame += (y < 0) ? InputDir[2] : InputDir[3];
+                frame += y.ToString(); // DEBUGGING (append value)
             }
             
             return frame;

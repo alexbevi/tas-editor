@@ -20,7 +20,8 @@ TODO::Why don't I just replace the movie's input collection instead of working w
 
 TODO::Undo still buggy on updates (add/remove works fine though)
 
-// high priority
+high priority
+-------------
 TODO::Add exception handlers to format loads (in case headers check out but input is corrupt)
 TODO::Add exception handlers for FCM's that terminate input population early (null entries in input table)
 TODO::Add internal Help options
@@ -29,19 +30,22 @@ TODO::Track recent files (file->open history)
       (this could be done through a config file so no need for registry entries,
       also, this would allow toggled options to be stored and loaded at runtime)
    
-// medium priority
+medium priority
+---------------
 TODO::FCM doesn't track control updates (figure out best way to implement)
 TODO::Add block overwrite on paste (as opposed to just inserting the block)
 TODO::Add controller muxing/demuxing (add/remove controllers)
 TODO::Add ZSNES support
 TODO::Add ability to extract save-state from movie
 
-// low priority
+low priority
+------------
 TODO::Overhaul frame input editing
 TODO::Line up input (fake columns of data, so if <>A, < AB, v  BS, ... etc)
       (This prolly won't happen until I figure out how I want to display input)
 
-// not likely to happen any time soon
+not likely to happen any time soon
+----------------------------------
 TODO::Add FinalBurnAlpha support?
 TODO::Add GMV2 support? (not sure if the format is completely defined yet)
 TODO::Add Nestopia, VirtuaNES support? (not sure if it's even necessary)
@@ -50,7 +54,10 @@ TODO::Add Nestopia, VirtuaNES support? (not sure if it's even necessary)
 // CHANGELOG //
 ///////////////
 v0-x-x
+
 - ETC::Implemented a subtitle format Export (only supports SubRip SRTs at the moment)
+- ETC::Fixed the misspelling of my own name in the about screen (heh, thanks moozooh)
+- FCM::Fixed reading of start/timing flags (not sure how long this hasn't worked, but it does now ... yay)
 
 
 v0-10-1
@@ -63,7 +70,7 @@ v0-10-1
        end of 0 = last frame)
 - SMV::Fixed a bug with the parser not handling multi-controller input properly
        (frames were offset ... didn't line up) - thanks Zefiris
-- SMV::Fixed read/write bug that was dropping the last frame - thanks Zefiris   '
+- SMV::Fixed read/write bug that was dropping the last frame - thanks Zefiris
 - SMV::Fixed extra data (rom info) being dropped when metadata was updated
 - VBM::Fixed read/write bug that was dropping the last frame - thanks again Zefiris :)    
 

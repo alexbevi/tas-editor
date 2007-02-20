@@ -85,10 +85,10 @@ namespace MovieSplicer.Data.Formats
             Extra.Author = ReadChars(ref FileContents, startPos, SaveStateOffset - startPos);           
 
             Options = new TASOptions(true);
-            Options.MovieStartFlag[0]  = ((options >> 1) == 1) ? true : false;
-            Options.MovieStartFlag[1]  = ((options >> 1) == 0) ? true : false;
-            Options.MovieTimingFlag[0] = ((options >> 2) == 0) ? true : false;
-            Options.MovieTimingFlag[1] = ((options >> 2) == 1) ? true : false;
+            Options.MovieStartFlag[0]  = ((1 & options >> 1) == 1) ? true : false;
+            Options.MovieStartFlag[1]  = ((1 & options >> 1) == 0) ? true : false;
+            Options.MovieTimingFlag[0] = ((1 & options >> 2) == 0) ? true : false;
+            Options.MovieTimingFlag[1] = ((1 & options >> 2) == 1) ? true : false;
 
             Input = new TASInput(4, false);
             getFrameInput(ref FileContents);

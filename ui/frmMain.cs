@@ -261,7 +261,9 @@ namespace MovieSplicer.UI
             sbarFrameCount.Text = FrameData.Input.Length.ToString();
 
             Editor.LoadSharedObjects(ref lvInput, ref FrameData.Input, ref UndoHistory, ref Msg);            
-            Msg.AddMsg("Successfully loaded " + FilenameFromPath(filename));                       
+            Msg.AddMsg("Successfully loaded " + FilenameFromPath(filename));
+
+            Methods.AppSettings.Save(filename);
         }
 
         /// <summary>

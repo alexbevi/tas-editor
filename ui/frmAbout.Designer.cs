@@ -85,7 +85,7 @@ namespace MovieSplicer.UI
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(128, 13);
             this.label4.TabIndex = 2;
-            this.label4.Text = "Maxmius [TASVideos.org]";
+            this.label4.Text = "Maximus [TASVideos.org]";
             // 
             // label5
             // 
