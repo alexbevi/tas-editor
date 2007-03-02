@@ -26,13 +26,11 @@ TODO::Add exception handlers to format loads (in case headers check out but inpu
 TODO::Add exception handlers for FCM's that terminate input population early (null entries in input table)
 TODO::Add internal Help options
 TODO::Finish mupen support (will have to be controller inputs ... not frame inputs :(
-TODO::Track recent files (file->open history)
-      (this could be done through a config file so no need for registry entries,
-      also, this would allow toggled options to be stored and loaded at runtime)
    
 medium priority
 ---------------
 TODO::FCM doesn't track control updates (figure out best way to implement)
+TODO::SMV support doesn't include control events (RESET is all I can see at the moment)
 TODO::Add block overwrite on paste (as opposed to just inserting the block)
 TODO::Add controller muxing/demuxing (add/remove controllers)
 TODO::Add ZSNES support
@@ -53,11 +51,14 @@ TODO::Add Nestopia, VirtuaNES support? (not sure if it's even necessary)
 ///////////////
 // CHANGELOG //
 ///////////////
-v0-x-x
+v0-11
 
-- ETC::Implemented a subtitle format Export (only supports SubRip SRTs at the moment)
+- ETC::Implemented an AVI subtitle export (only supports SubRip SRTs at the moment)
 - ETC::Fixed the misspelling of my own name in the about screen (heh, thanks moozooh)
+- ETC::Recent files tracked in an external ini file now (and are available via the File menu)
+- ETC::Help menu item now links to the brand-spankin' new CHM file that comes with the release
 - FCM::Fixed reading of start/timing flags (not sure how long this hasn't worked, but it does now ... yay)
+- SMV::Extraneous input reading/writing implemented (the extra values 0, 1 & 2 used for input animation)
 
 
 v0-10-1

@@ -92,11 +92,13 @@ namespace MovieSplicer.UI
             this.lvTarget.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.lvTarget.Location = new System.Drawing.Point(8, 24);
             this.lvTarget.Name = "lvTarget";
+            this.lvTarget.Scrollable = false;
             this.lvTarget.Size = new System.Drawing.Size(371, 265);
             this.lvTarget.TabIndex = 26;
             this.lvTarget.UseCompatibleStateImageBehavior = false;
             this.lvTarget.View = System.Windows.Forms.View.Details;
             this.lvTarget.VirtualMode = true;
+            this.lvTarget.VertScrollValueChanged += new System.Windows.Forms.ScrollEventHandler(this.synchronizeScroll);
             // 
             // columnHeader2
             // 
@@ -121,6 +123,7 @@ namespace MovieSplicer.UI
             this.btnLoadTarget.TabIndex = 32;
             this.btnLoadTarget.Text = "Load &Target";
             this.btnLoadTarget.UseVisualStyleBackColor = true;
+            this.btnLoadTarget.Click += new System.EventHandler(this.btnLoadTarget_Click);
             // 
             // button3
             // 

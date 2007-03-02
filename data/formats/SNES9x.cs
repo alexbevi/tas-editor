@@ -54,7 +54,7 @@ namespace MovieSplicer.Data.Formats
 
         public FormatSpecific SMVSpecific;
 
-        private string[] InputValues = { ">", "<", "v", "^", "S", "s", "Y", "B", "R", "L", "X", "A" };
+        private string[] InputValues = { ">", "<", "v", "^", "S", "s", "Y", "B", "0", "1", "2", "R", "L", "X", "A" };
         private int[]    Offsets = {
             0x00, // 4-byte signature: 53 4D 56 1A "SMV\x1A"
             0x04, // 4-byte little-endian unsigned int: version number, must be 1
@@ -179,10 +179,10 @@ namespace MovieSplicer.Data.Formats
                     input += InputValues[i];
             }
             // check the second byte of input
-            for (int j = 4; j < 8; j++)
+            for (int j = 1; j < 8; j++)
             {
                 if ((1 & (byteArray[0] >> j)) == 1)
-                    input += InputValues[j + 4];
+                    input += InputValues[j + 7];
             }
             return input;
         }
@@ -198,8 +198,8 @@ namespace MovieSplicer.Data.Formats
             
             for (int i = 0; i < 8; i++)            
                 if (frameInput.Contains(InputValues[i])) input[1] |= (byte)(1 << i);                                        
-            for (int j = 4; j < 8; j++)
-                if (frameInput.Contains(InputValues[j + 4])) input[0] |= (byte)(1 << j);                                        
+            for (int j = 1; j < 8; j++)
+                if (frameInput.Contains(InputValues[j + 7])) input[0] |= (byte)(1 << j);                                        
             
             return input;
         }

@@ -33,6 +33,8 @@ namespace MovieSplicer.UI
             this.mnuMain = new System.Windows.Forms.MenuStrip();
             this.mnuFile = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuOpen = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuOpenRecent = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.mnuSave = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuSaveAs = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuClose = new System.Windows.Forms.ToolStripMenuItem();
@@ -49,6 +51,8 @@ namespace MovieSplicer.UI
             this.mnuTools = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuSplice = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuCompareMovieInputRange = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+            this.mnuExportSRT = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuOptions = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuMessageHistory = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
@@ -77,8 +81,6 @@ namespace MovieSplicer.UI
             this.grpFrameData = new System.Windows.Forms.GroupBox();
             this.lvInput = new MovieSplicer.Components.TASListView();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
-            this.mnuExportSRT = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.mnuMain.SuspendLayout();
             this.statMain.SuspendLayout();
             this.cmnu_lvInput.SuspendLayout();
@@ -105,6 +107,8 @@ namespace MovieSplicer.UI
             // 
             this.mnuFile.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuOpen,
+            this.mnuOpenRecent,
+            this.toolStripSeparator7,
             this.mnuSave,
             this.mnuSaveAs,
             this.mnuClose,
@@ -121,6 +125,17 @@ namespace MovieSplicer.UI
             this.mnuOpen.Size = new System.Drawing.Size(163, 22);
             this.mnuOpen.Text = "&Open...";
             this.mnuOpen.Click += new System.EventHandler(this.mnuOpen_Click);
+            // 
+            // mnuOpenRecent
+            // 
+            this.mnuOpenRecent.Name = "mnuOpenRecent";
+            this.mnuOpenRecent.Size = new System.Drawing.Size(163, 22);
+            this.mnuOpenRecent.Text = "Open &Recent";
+            // 
+            // toolStripSeparator7
+            // 
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            this.toolStripSeparator7.Size = new System.Drawing.Size(160, 6);
             // 
             // mnuSave
             // 
@@ -254,6 +269,19 @@ namespace MovieSplicer.UI
             this.mnuCompareMovieInputRange.Size = new System.Drawing.Size(241, 22);
             this.mnuCompareMovieInputRange.Text = "&Compare Movie Input Range";
             // 
+            // toolStripSeparator6
+            // 
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(238, 6);
+            // 
+            // mnuExportSRT
+            // 
+            this.mnuExportSRT.Enabled = false;
+            this.mnuExportSRT.Name = "mnuExportSRT";
+            this.mnuExportSRT.Size = new System.Drawing.Size(241, 22);
+            this.mnuExportSRT.Text = "E&xport Frame Input as Subtitle";
+            this.mnuExportSRT.Click += new System.EventHandler(this.mnuExportSRT_Click);
+            // 
             // mnuOptions
             // 
             this.mnuOptions.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -317,6 +345,7 @@ namespace MovieSplicer.UI
             this.mnuHelp.Name = "mnuHelp";
             this.mnuHelp.Size = new System.Drawing.Size(40, 20);
             this.mnuHelp.Text = "&Help";
+            this.mnuHelp.Click += new System.EventHandler(this.mnuHelp_Click);
             // 
             // statMain
             // 
@@ -502,18 +531,6 @@ namespace MovieSplicer.UI
             this.columnHeader1.Text = "Frame";
             this.columnHeader1.Width = 391;
             // 
-            // mnuExportSRT
-            // 
-            this.mnuExportSRT.Name = "mnuExportSRT";
-            this.mnuExportSRT.Size = new System.Drawing.Size(241, 22);
-            this.mnuExportSRT.Text = "E&xport Frame Input as Subtitle";
-            this.mnuExportSRT.Click += new System.EventHandler(this.mnuExportSRT_Click);
-            // 
-            // toolStripSeparator6
-            // 
-            this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(238, 6);
-            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -594,7 +611,9 @@ namespace MovieSplicer.UI
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.PictureBox pbFormat;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
-        private System.Windows.Forms.ToolStripMenuItem mnuExportSRT;       
+        private System.Windows.Forms.ToolStripMenuItem mnuExportSRT;
+        private System.Windows.Forms.ToolStripMenuItem mnuOpenRecent;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;       
     }
 }
 

@@ -69,7 +69,8 @@ namespace MovieSplicer.UI
             InitializeComponent();
             
             this.Text = APP_TITLE + " v" + VERSION;
-            this.MinimumSize = new Size(BASE_WIDTH, BASE_HEIGHT);                    
+            this.MinimumSize = new Size(BASE_WIDTH, BASE_HEIGHT);
+            populateRecentFiles();       
         }                
        
         /// <summary>
@@ -156,7 +157,7 @@ namespace MovieSplicer.UI
 
             // we can only load 1 file at a time, so take the first in the collection
             // and ignore the rest
-            loadMovie(files[0]);
+            loadMovie(files[0], false);
         }
     
     #endregion
@@ -166,7 +167,7 @@ namespace MovieSplicer.UI
         /// <summary>
         /// Loads a TAS into the editor
         /// </summary>        
-        private void loadMovie(string filename)
+        private void loadMovie(string filename, bool fromRecent)
         {            
             resetApplication();
             
@@ -263,7 +264,30 @@ namespace MovieSplicer.UI
             Editor.LoadSharedObjects(ref lvInput, ref FrameData.Input, ref UndoHistory, ref Msg);            
             Msg.AddMsg("Successfully loaded " + FilenameFromPath(filename));
 
-            Methods.AppSettings.Save(filename);
+            // show subtitle export option
+            mnuExportSRT.Enabled = true;
+
+            if (!fromRecent)
+            {
+                Methods.AppSettings.Save(filename);
+                populateRecentFiles();
+            }
+        }
+
+        private void populateRecentFiles()
+        {
+            string[] files = Methods.AppSettings.Load();
+            mnuOpenRecent.DropDown.Items.Clear();
+            foreach (string file in files)
+            {
+                if (file == null) return;
+                mnuOpenRecent.DropDown.Items.Add(file, null, new System.EventHandler(this.recentFileClicked));    
+            }
+        }
+
+        private void recentFileClicked(object sender, EventArgs e)
+        {
+            loadMovie(sender.ToString(), true);
         }
 
         /// <summary>
@@ -275,6 +299,7 @@ namespace MovieSplicer.UI
             mnuSave.Enabled   = false;
             mnuSaveAs.Enabled = false;
             mnuClose.Enabled  = false;
+            mnuExportSRT.Enabled = true;
 
             // reset filename
             txtMovieFilename.Text = "";
@@ -314,7 +339,7 @@ namespace MovieSplicer.UI
             openDlg.ShowDialog();
 
             if (openDlg.FileName.Length > 0)
-                loadMovie(openDlg.FileName);
+                loadMovie(openDlg.FileName, false);
             
             openDlg.Dispose();            
         }
@@ -640,6 +665,12 @@ namespace MovieSplicer.UI
         }        
 
     #endregion                                                              
+
+        private void mnuHelp_Click(object sender, EventArgs e)
+        {
+            if (System.IO.File.Exists("tas-movie-editor.chm"))
+                System.Diagnostics.Process.Start("tas-movie-editor.chm");
+        }
 
         
 

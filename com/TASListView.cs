@@ -23,6 +23,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 using MovieSplicer.Data;
 
@@ -33,13 +34,17 @@ namespace MovieSplicer.Components
     /// an auto-expanding last column and virtualization.   
     /// </summary>
     public class TASListView: ListView
-    {
-        private const int WM_HSCROLL = 0x114;
-        private const int WM_VSCROLL = 0x115;
-        private const int WM_PAINT   = 0xF;
-     
+    {                
+        //private const int WM_HSCROLL = 0x114;
+        private const int WM_VSCROLL      = 0x115;
+        private const int WM_PAINT        = 0xF;
+        private const int WM_SCROLL_WHEEL = 0x20A;
+        
         public TASMovieInput[]   VirtualListSource;
         public TASForm.MovieType VirtualMovieType;
+
+        // icons for listview items
+        private ImageList images;
 
         // Cache items
         private ListViewItem[] cache;
@@ -52,9 +57,9 @@ namespace MovieSplicer.Components
         {
             this.DoubleBuffered = true;
             this.RetrieveVirtualItem += new RetrieveVirtualItemEventHandler(GetVirtualItem);
-            this.CacheVirtualItems   += new CacheVirtualItemsEventHandler(CacheVirtualItemsList);
-        }
-
+            this.CacheVirtualItems   += new CacheVirtualItemsEventHandler(CacheVirtualItemsList);                         
+        }               
+       
         /// <summary>
         // Various message handlers for this control
         /// </summary>
@@ -69,6 +74,15 @@ namespace MovieSplicer.Components
                     if (this.View == View.Details && this.Columns.Count > 0)
                         this.Columns[this.Columns.Count - 1].Width = -2;
                     break;
+                case WM_VSCROLL:
+                    if (VertScrollValueChanged != null)
+                    {
+                        uint wParam = (uint)message.WParam.ToInt32();
+                        VertScrollValueChanged(this,
+                            new ScrollEventArgs(
+                            GetEventType(wParam & 0xffff), (int)(wParam >> 16)));
+                    }
+                    break;     
             }
 
             // pass messages on to the base control for processing
@@ -82,37 +96,37 @@ namespace MovieSplicer.Components
         ///// </summary>
         //public event ScrollEventHandler HorzScrollValueChanged;
 
-        ///// <summary>
-        ///// Vertical scroll position has changed event
-        ///// </summary>
-        //public event ScrollEventHandler VertScrollValueChanged;        
+        /// <summary>
+        /// Vertical scroll position has changed event
+        /// </summary>
+        public event ScrollEventHandler VertScrollValueChanged;
 
-        //// Based on SB_* constants
-        //private static ScrollEventType[] _events =
-        //    new ScrollEventType[] {
-        //                              ScrollEventType.SmallDecrement,
-        //                              ScrollEventType.SmallIncrement,
-        //                              ScrollEventType.LargeDecrement,
-        //                              ScrollEventType.LargeIncrement,
-        //                              ScrollEventType.ThumbPosition,
-        //                              ScrollEventType.ThumbTrack,
-        //                              ScrollEventType.First,
-        //                              ScrollEventType.Last,
-        //                              ScrollEventType.EndScroll
-        //                          };
-        
-        ///// <summary>
-        ///// Decode the type of scroll message
-        ///// </summary>
-        ///// <param name="wParam">Lower word of scroll notification</param>
-        ///// <returns></returns>
-        //private ScrollEventType GetEventType(uint wParam)
-        //{
-        //    if (wParam < _events.Length)
-        //        return _events[wParam];
-        //    else
-        //        return ScrollEventType.EndScroll;
-        //}
+        // Based on SB_* constants
+        private static ScrollEventType[] _events =
+            new ScrollEventType[] {
+                                      ScrollEventType.SmallDecrement,
+                                      ScrollEventType.SmallIncrement,
+                                      ScrollEventType.LargeDecrement,
+                                      ScrollEventType.LargeIncrement,
+                                      ScrollEventType.ThumbPosition,
+                                      ScrollEventType.ThumbTrack,
+                                      ScrollEventType.First,
+                                      ScrollEventType.Last,
+                                      ScrollEventType.EndScroll
+                                  };
+
+        /// <summary>
+        /// Decode the type of scroll message
+        /// </summary>
+        /// <param name="wParam">Lower word of scroll notification</param>
+        /// <returns></returns>
+        private ScrollEventType GetEventType(uint wParam)
+        {
+            if (wParam < _events.Length)
+                return _events[wParam];
+            else
+                return ScrollEventType.EndScroll;
+        }
 
         /// <summary>
         // Various message handlers for this control
@@ -201,6 +215,7 @@ namespace MovieSplicer.Components
                 // the main array
                 //if (VirtualListSource[listIndex] != null)
                     lv.SubItems.Add(VirtualListSource[listIndex].Controller[i]);
+                    
                 //else
                 //    lv.SubItems.Add("");
             }

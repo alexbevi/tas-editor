@@ -59,7 +59,7 @@ namespace MovieSplicer.UI
         {
             saveDlg = new SaveFileDialog();
             saveDlg.Filter = SRT_FILTER;
-            saveDlg.ShowDialog();
+            saveDlg.ShowDialog();            
 
             txtFilename.Text = saveDlg.FileName;            
         }
@@ -71,7 +71,11 @@ namespace MovieSplicer.UI
         {
             // validate objects and values first
             if (Input.Input == null && txtFilename.Text.Length == 0) return;
-            if (!IsNumeric(txtAVITiming.Text)) return;
+            if (!IsNumeric(txtAVITiming.Text) || !IsNumeric(txtOffset.Text))
+            {
+                MessageBox.Show("Timing/Offset values must be numeric", "Ooops");
+                return;
+            }
 
             // create the subgenerator object
             SubtitleGenerator subGen = new SubtitleGenerator(ref Input, txtFilename.Text);
@@ -81,6 +85,6 @@ namespace MovieSplicer.UI
             subGen = null;
 
             MessageBox.Show("Subtitle file exported", "Congrats");
-        }       
+        }           
     }
 }

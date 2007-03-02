@@ -40,6 +40,15 @@ namespace MovieSplicer.UI
 
         }
 
-       
+        
+        private void btnLoadTarget_Click(object sender, EventArgs e)
+        {
+
+        }
+      
+        private void synchronizeScroll(object sender, ScrollEventArgs e)
+        {
+
+        }
     }
 }
