@@ -34,17 +34,52 @@ namespace MovieSplicer.Components
     /// an auto-expanding last column and virtualization.   
     /// </summary>
     public class TASListView: ListView
-    {                
-        //private const int WM_HSCROLL = 0x114;
-        private const int WM_VSCROLL      = 0x115;
-        private const int WM_PAINT        = 0xF;
-        private const int WM_SCROLL_WHEEL = 0x20A;
+    {     
+        [DllImport("User32.dll")]
+        private static extern bool SendMessage(IntPtr hwnd, UInt32 msg, UInt32 wParam, UInt32 lParam);
+
+        [DllImport("User32.dll", SetLastError = true)]
+        private static extern int GetScrollInfo(IntPtr hWnd, int n, ref ScrollInfoStruct lpScrollInfo);
         
+        private struct ScrollInfoStruct
+        {
+            public int cbSize;
+            public int fMask;
+            public int nMin;
+            public int nMax;
+            public int nPage;
+            public int nPos;
+            public int nTrackPos;
+        }
+        
+        public event ScrollEventHandler Scrolled = null;
+
+        private const int WM_PAINT        = 0xF;
+        private const int WM_SCROLL_WHEEL = 0x20A;        
+
+        private const int WM_HSCROLL = 0x114;
+        private const int WM_VSCROLL = 0x115;
+
+        private const int SB_LINELEFT = 0;
+        private const int SB_LINERIGHT = 1;
+        private const int SB_PAGELEFT = 2;
+        private const int SB_PAGERIGHT = 3;
+        private const int SB_THUMBPOSITION = 4;
+        private const int SB_THUMBTRACK = 5;
+        private const int SB_LEFT = 6;
+        private const int SB_RIGHT = 7;
+        private const int SB_ENDSCROLL = 8;
+
+        private const int SIF_TRACKPOS = 0x10;
+        private const int SIF_RANGE = 0x1;
+        private const int SIF_POS = 0x4;
+        private const int SIF_PAGE = 0x2;
+        private const int SIF_ALL = SIF_RANGE | SIF_PAGE | SIF_POS | SIF_TRACKPOS;
+
         public TASMovieInput[]   VirtualListSource;
         public TASForm.MovieType VirtualMovieType;
 
-        // icons for listview items
-        private ImageList images;
+        public TASListView AssociatedListView;
 
         // Cache items
         private ListViewItem[] cache;
@@ -75,94 +110,45 @@ namespace MovieSplicer.Components
                         this.Columns[this.Columns.Count - 1].Width = -2;
                     break;
                 case WM_VSCROLL:
-                    if (VertScrollValueChanged != null)
+                    if (Scrolled != null)
                     {
-                        uint wParam = (uint)message.WParam.ToInt32();
-                        VertScrollValueChanged(this,
-                            new ScrollEventArgs(
-                            GetEventType(wParam & 0xffff), (int)(wParam >> 16)));
+                        ScrollInfoStruct si = new ScrollInfoStruct();
+                        si.fMask = SIF_ALL;
+                        si.cbSize = Marshal.SizeOf(si);
+                        GetScrollInfo(message.HWnd, 0, ref si);
+
+                        if (message.WParam.ToInt32() == SB_ENDSCROLL)
+                        {
+                            ScrollEventArgs sargs = new ScrollEventArgs(
+                                ScrollEventType.EndScroll,
+                                si.nPos);
+                            Scrolled(this, sargs);                            
+                        }
                     }
-                    break;     
+                    break;
+                //case WM_SCROLL_WHEEL:
+                //    if (AssociatedListView != null)
+                //    {
+                //        int myInt = message.WParam.ToInt32();
+                //        int IntLow = myInt & 0xffff;
+                //        long IntHigh = ((long)myInt & 0xffff0000) >> 16;
+                //        SendMessage(this.AssociatedListView.Handle, (int)WM_SCROLL_WHEEL, (uint)message.WParam.ToInt64(), (uint)message.LParam.ToInt64());
+                //    }
+                //    break;
+                //case WM_VSCROLL:                  
+                //    if (AssociatedListView != null)
+                //    {
+                //        int myInt = message.WParam.ToInt32();
+                //        int IntLow = myInt & 0xffff;
+                //        long IntHigh = ((long)myInt & 0xffff0000) >> 16;
+                //        SendMessage(this.AssociatedListView.Handle, (int)WM_VSCROLL, (uint)message.WParam.ToInt64(), (uint)message.LParam.ToInt64());
+                //    }                
+                //    break;     
             }
 
             // pass messages on to the base control for processing
             base.WndProc(ref message);
-        }
-
-    #region Unused ScrollHandler code ... meant for (eventually) synching two lists to scroll together
-
-        ///// <summary>
-        ///// Horizontal scroll position has changed event
-        ///// </summary>
-        //public event ScrollEventHandler HorzScrollValueChanged;
-
-        /// <summary>
-        /// Vertical scroll position has changed event
-        /// </summary>
-        public event ScrollEventHandler VertScrollValueChanged;
-
-        // Based on SB_* constants
-        private static ScrollEventType[] _events =
-            new ScrollEventType[] {
-                                      ScrollEventType.SmallDecrement,
-                                      ScrollEventType.SmallIncrement,
-                                      ScrollEventType.LargeDecrement,
-                                      ScrollEventType.LargeIncrement,
-                                      ScrollEventType.ThumbPosition,
-                                      ScrollEventType.ThumbTrack,
-                                      ScrollEventType.First,
-                                      ScrollEventType.Last,
-                                      ScrollEventType.EndScroll
-                                  };
-
-        /// <summary>
-        /// Decode the type of scroll message
-        /// </summary>
-        /// <param name="wParam">Lower word of scroll notification</param>
-        /// <returns></returns>
-        private ScrollEventType GetEventType(uint wParam)
-        {
-            if (wParam < _events.Length)
-                return _events[wParam];
-            else
-                return ScrollEventType.EndScroll;
-        }
-
-        /// <summary>
-        // Various message handlers for this control
-        /// </summary>
-        //protected override void WndProc(ref Message message)
-        //{
-        //    switch (message.Msg)
-        //    {
-        //        // Was this a horizontal scroll message?
-        //        case WM_HSCROLL:
-        //            if (HorzScrollValueChanged != null)
-        //            {
-        //                uint wParam = (uint)message.WParam.ToInt32();
-        //                HorzScrollValueChanged(this,
-        //                    new ScrollEventArgs(
-        //                        GetEventType(wParam & 0xffff), (int)(wParam >> 16)));
-        //            }
-        //            break;
-
-        //        // or a vertical scroll message?
-        //        case WM_VSCROLL:
-        //            if (VertScrollValueChanged != null)
-        //            {
-        //                uint wParam = (uint)message.WParam.ToInt32();
-        //                VertScrollValueChanged(this,
-        //                    new ScrollEventArgs(
-        //                    GetEventType(wParam & 0xffff), (int)(wParam >> 16)));
-        //            }
-        //            break;                    
-        //    }
-
-        //    // pass messages on to the base control for processing
-        //    base.WndProc(ref message);
-        //}
-
-    #endregion
+        }   
         
     #region Methods
 

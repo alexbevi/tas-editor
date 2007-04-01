@@ -36,7 +36,7 @@ namespace MovieSplicer.UI
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
             this.btnLoadSource = new System.Windows.Forms.Button();
             this.btnLoadTarget = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
+            this.btnClose = new System.Windows.Forms.Button();
             this.groupBox12.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -66,6 +66,7 @@ namespace MovieSplicer.UI
             this.lvSource.UseCompatibleStateImageBehavior = false;
             this.lvSource.View = System.Windows.Forms.View.Details;
             this.lvSource.VirtualMode = true;
+            this.lvSource.Scrolled += new System.Windows.Forms.ScrollEventHandler(lvSource_Scrolled);
             // 
             // columnHeader1
             // 
@@ -92,13 +93,12 @@ namespace MovieSplicer.UI
             this.lvTarget.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.lvTarget.Location = new System.Drawing.Point(8, 24);
             this.lvTarget.Name = "lvTarget";
-            this.lvTarget.Scrollable = false;
+            this.lvTarget.Scrollable = true;
             this.lvTarget.Size = new System.Drawing.Size(371, 265);
             this.lvTarget.TabIndex = 26;
             this.lvTarget.UseCompatibleStateImageBehavior = false;
             this.lvTarget.View = System.Windows.Forms.View.Details;
-            this.lvTarget.VirtualMode = true;
-            this.lvTarget.VertScrollValueChanged += new System.Windows.Forms.ScrollEventHandler(this.synchronizeScroll);
+            this.lvTarget.VirtualMode = true;            
             // 
             // columnHeader2
             // 
@@ -125,34 +125,37 @@ namespace MovieSplicer.UI
             this.btnLoadTarget.UseVisualStyleBackColor = true;
             this.btnLoadTarget.Click += new System.EventHandler(this.btnLoadTarget_Click);
             // 
-            // button3
+            // btnClose
             // 
-            this.button3.Location = new System.Drawing.Point(687, 317);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(101, 23);
-            this.button3.TabIndex = 33;
-            this.button3.Text = "&Close";
-            this.button3.UseVisualStyleBackColor = true;
+            this.btnClose.Location = new System.Drawing.Point(687, 317);
+            this.btnClose.Name = "btnClose";
+            this.btnClose.Size = new System.Drawing.Size(101, 23);
+            this.btnClose.TabIndex = 33;
+            this.btnClose.Text = "&Close";
+            this.btnClose.UseVisualStyleBackColor = true;
             // 
             // frmCompare
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 350);
-            this.Controls.Add(this.button3);
+            this.Controls.Add(this.btnClose);
             this.Controls.Add(this.btnLoadTarget);
             this.Controls.Add(this.btnLoadSource);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.groupBox12);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "frmCompare";
+            this.ShowInTaskbar = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Compare Input";
             this.groupBox12.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.ResumeLayout(false);
 
-        }
+        }        
 
         #endregion
 
@@ -164,6 +167,6 @@ namespace MovieSplicer.UI
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.Button btnLoadSource;
         private System.Windows.Forms.Button btnLoadTarget;
-        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button btnClose;
     }
 }

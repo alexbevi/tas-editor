@@ -232,6 +232,10 @@ namespace MovieSplicer.Data.Formats
             int position = 0;
             for (int i = 0; i < input.Length; i++)
             {
+                //if (i == 12680){
+                //    for (int a = 0; a < 1; a++)
+                //        continue;
+                //}
                 for (int j = 0; j < controllers; j++)
                 {
                     // check if the controller we're about to process is used
@@ -239,23 +243,44 @@ namespace MovieSplicer.Data.Formats
                     {
                         byte[] parsed = parseControllerData(input[i].Controller[j]);
                         outputFile[head.Length + position++] = parsed[0];
-                        outputFile[head.Length + position++] = parsed[1];                        
+                        outputFile[head.Length + position++] = parsed[1];
+
+                        //if (parsed[0] == 34 && parsed[1] == 0)
+                        //{
+                        //    for (int a = 0; a < 1; a++)
+                        //        continue;
+                        //}
                     }                    
                 }
             }
             // update the movie description and author
-            for (int i = 0; i < 64; i++)
-                if (i < Extra.Author.Length)
-                    outputFile[HEADER_SIZE + i] = Convert.ToByte(Extra.Author[i]);
-                else
-                    outputFile[HEADER_SIZE + i] = 0;
-            for (int j = 0; j < 128; j++)
-                if (j < Extra.Description.Length)
-                    outputFile[HEADER_SIZE + 64 + j] = Convert.ToByte(Extra.Description[j]);
-                else
-                    outputFile[HEADER_SIZE + 64 + j] = 0;
+            //for (int i = 0; i < 64; i++)
+            //    if (i < Extra.Author.Length)
+            //        outputFile[HEADER_SIZE + i] = Convert.ToByte(Extra.Author[i]);
+            //    else
+            //        outputFile[HEADER_SIZE + i] = 0;
+            //for (int j = 0; j < 128; j++)
+            //    if (j < Extra.Description.Length)
+            //        outputFile[HEADER_SIZE + 64 + j] = Convert.ToByte(Extra.Description[j]);
+            //    else
+            //        outputFile[HEADER_SIZE + 64 + j] = 0;
 
-            WriteByteArrayToFile(ref outputFile, filename, input.Length - 1, Offsets[3]);            
+
+            //// DEBUGGING //
+            MovieSplicer.UI.frmDebug frm = new MovieSplicer.UI.frmDebug();
+            for (int i = 0; i < FileContents.Length; i++)
+            {
+                System.Windows.Forms.ListViewItem lvi = new System.Windows.Forms.ListViewItem();
+                lvi.Text = i.ToString();
+                lvi.SubItems.Add(FileContents[i].ToString());
+                string item = (i < outputFile.Length) ? outputFile[i].ToString() : "out of range";
+                lvi.SubItems.Add(item);
+                frm.Add(lvi);
+            }
+            frm.Show();
+            /////////////////
+
+            //WriteByteArrayToFile(ref outputFile, filename, input.Length - 1, Offsets[3]);            
         }
     }
 }

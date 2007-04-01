@@ -26,29 +26,74 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
+using MovieSplicer.Data;
+using MovieSplicer.Data.Formats;
+using MovieSplicer.Components;
+
 namespace MovieSplicer.UI
 {
-    public partial class frmCompare : Form
-    {
+    public partial class frmCompare : TASForm
+    {       
+        TASMovieInputCollection Source;
+        TASMovieInputCollection Target;
+
         public frmCompare()
         {
             InitializeComponent();
-        }
+            lvSource.AssociatedListView = lvTarget;
+        }        
 
         private void btnLoadSource_Click(object sender, EventArgs e)
         {
+            loadMovie(ref Source);
+            if (Source.Input == null) return;
 
+            lvSource.SetColumns(Source.Controllers);
+            lvSource.VirtualListSource = Source.Input;
+            lvSource.VirtualListSize   = Source.Input.Length;
         }
 
-        
+        void lvSource_Scrolled(object sender, System.Windows.Forms.ScrollEventArgs e)
+        {
+            
+        }
+
         private void btnLoadTarget_Click(object sender, EventArgs e)
         {
+            loadMovie(ref Target);
+            if (Target.Input == null) return;
+            lvTarget.SetColumns(Target.Controllers);
+            lvTarget.VirtualListSource = Target.Input;
+            lvTarget.VirtualListSize   = Target.Input.Length;
+        }       
 
-        }
-      
-        private void synchronizeScroll(object sender, ScrollEventArgs e)
+        private void loadMovie(ref TASMovieInputCollection location)
         {
-
+            openDlg = new OpenFileDialog();
+            openDlg.Filter = TAS_FILTER;
+            openDlg.ShowDialog();
+            string filename = openDlg.FileName;
+            openDlg.Dispose();            
+            
+            if (filename.Length == 0) return;               
+            
+            TASMovie movie = new TASMovie();
+            location = new TASMovieInputCollection();            
+            location.Format = IsValid(filename);                        
+            
+            
+            // load the movie object up with the correct format and display a thumbnail
+            switch (location.Format)
+            {                
+                case MovieType.SMV: movie = new SNES9x(filename); break;
+                case MovieType.FCM: movie = new FCEU(filename); break;
+                case MovieType.GMV: movie = new Gens(filename); break;
+                case MovieType.FMV: movie = new Famtasia(filename); break;
+                case MovieType.VBM: movie = new VisualBoyAdvance(filename); break;
+                case MovieType.M64: movie = new Mupen64(filename); break;                
+            }
+            location.Input = movie.Input.FrameData;
+            location.Controllers = movie.Input.ControllerCount;
         }
     }
 }

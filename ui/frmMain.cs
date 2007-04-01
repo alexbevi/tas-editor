@@ -240,7 +240,7 @@ namespace MovieSplicer.UI
             lvInput.VirtualMovieType = FrameData.Format;
 
             // initialize editing fields            
-            bool[] activeControllers = { false, false, false, false };
+            bool[] activeControllers = { false, false, false, false, false };
             for (int i = 0; i < Movie.Input.ControllerCount; i++)
                 activeControllers[i] = Movie.Input.Controllers[i];            
             Editor.ToggleInputBoxes(activeControllers); 
@@ -274,6 +274,9 @@ namespace MovieSplicer.UI
             }
         }
 
+        /// <summary>
+        /// If the INI file exists and there are movies populated, populate some menuitems
+        /// </summary>
         private void populateRecentFiles()
         {
             string[] files = Methods.AppSettings.Load();
@@ -285,6 +288,9 @@ namespace MovieSplicer.UI
             }
         }
 
+        /// <summary>
+        /// Recent file(s) list click handler
+        /// </summary>        
         private void recentFileClicked(object sender, EventArgs e)
         {
             loadMovie(sender.ToString(), true);
@@ -327,7 +333,6 @@ namespace MovieSplicer.UI
             // clear the icon
             pbFormat.Image = null;            
         }
-
 
         /// <summary>
         /// Show an OpenFileDialog to allow a file to be selected and loaded
@@ -432,6 +437,24 @@ namespace MovieSplicer.UI
         private void mnuExportSRT_Click(object sender, EventArgs e)
         {
             frmSubtitles frm = new frmSubtitles(ref FrameData);
+            frm.ShowDialog(); frm.Dispose();
+        }
+
+        /// <summary>
+        /// Launch the external CHM (Help file)
+        /// </summary>        
+        private void mnuHelp_Click(object sender, EventArgs e)
+        {
+            if (System.IO.File.Exists("tas-movie-editor.chm"))
+                System.Diagnostics.Process.Start("tas-movie-editor.chm");
+        }
+
+        /// <summary>
+        /// Show the movie compare form
+        /// </summary>    
+        private void mnuCompareMovieInputRange_Click(object sender, EventArgs e)
+        {
+            frmCompare frm = new frmCompare();
             frm.ShowDialog(); frm.Dispose();
         }
 
@@ -666,23 +689,5 @@ namespace MovieSplicer.UI
 
     #endregion                                                              
 
-        private void mnuHelp_Click(object sender, EventArgs e)
-        {
-            if (System.IO.File.Exists("tas-movie-editor.chm"))
-                System.Diagnostics.Process.Start("tas-movie-editor.chm");
-        }
-
-        
-
-       
-
-       
-
-       
-
-        
-
-        
-     
     }
 }

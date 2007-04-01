@@ -263,11 +263,11 @@ namespace MovieSplicer.UI
             // 
             // mnuCompareMovieInputRange
             // 
-            this.mnuCompareMovieInputRange.Enabled = false;
             this.mnuCompareMovieInputRange.Name = "mnuCompareMovieInputRange";
             this.mnuCompareMovieInputRange.ShortcutKeys = System.Windows.Forms.Keys.F6;
             this.mnuCompareMovieInputRange.Size = new System.Drawing.Size(241, 22);
             this.mnuCompareMovieInputRange.Text = "&Compare Movie Input Range";
+            this.mnuCompareMovieInputRange.Click += new System.EventHandler(this.mnuCompareMovieInputRange_Click);
             // 
             // toolStripSeparator6
             // 

@@ -51,6 +51,11 @@ TODO::Add Nestopia, VirtuaNES support? (not sure if it's even necessary)
 ///////////////
 // CHANGELOG //
 ///////////////
+v0-x-x
+
+- SMV::fixed a bug that prevented loading of 5-player movie files
+
+
 v0-11
 
 - ETC::Implemented an AVI subtitle export (only supports SubRip SRTs at the moment)
