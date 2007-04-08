@@ -33,12 +33,12 @@ namespace MovieSplicer.Components
     /// This is essentially a subclass of System.Windows.Forms.ListView that provides
     /// an auto-expanding last column and virtualization.   
     /// </summary>
-    public class TASListView: ListView
-    {             
-        private const int WM_PAINT        = 0xF;        
+    public class TASCompareListView: ListView
+    {     
+        private const int WM_PAINT = 0xF;
 
-        public TASMovieInput[]   VirtualListSource;
-        public TASForm.MovieType VirtualMovieType;        
+        public TASMovieInputCollection Source;
+        public TASMovieInputCollection Target;
 
         // Cache items
         private ListViewItem[] cache;
@@ -47,11 +47,12 @@ namespace MovieSplicer.Components
         /// <summary>
         /// Create a new TASListView object with an event handler on RetriveVirtualItem
         /// </summary>
-        public TASListView()
+        public TASCompareListView()
         {
             this.DoubleBuffered = true;
             this.RetrieveVirtualItem += new RetrieveVirtualItemEventHandler(GetVirtualItem);
-            this.CacheVirtualItems   += new CacheVirtualItemsEventHandler(CacheVirtualItemsList);                         
+            this.CacheVirtualItems   += new CacheVirtualItemsEventHandler(CacheVirtualItemsList);
+            this.VirtualMode = true;           
         }               
        
         /// <summary>
@@ -67,7 +68,7 @@ namespace MovieSplicer.Components
                 case WM_PAINT:
                     if (this.View == View.Details && this.Columns.Count > 0)
                         this.Columns[this.Columns.Count - 1].Width = -2;
-                    break;                                
+                    break;                
             }
 
             // pass messages on to the base control for processing
@@ -83,15 +84,17 @@ namespace MovieSplicer.Components
         /// is this necessary anymore?
         /// </summary>
         /// <param name="columns"></param>
-        public void SetColumns(int columns)
+        public void SetColumns()
         {
+            if (this.Columns.Count > 0) return;
+            
             this.Columns.Clear();
-            this.Columns.Add("Frame");
+            this.Columns.Add("Frame", 100);            
 
-            if (columns == 0) return;
-
-            for (int i = 0; i < columns; i++)
-                this.Columns.Add("Controller " + (i + 1), 75);
+            for (int i = 0; i < Source.Controllers; i++)
+                this.Columns.Add("Source Controller " + (i + 1), 200);
+            for (int j = 0; j < Target.Controllers; j++)
+                this.Columns.Add("Target Controller " + (j + 1), 200);
         }
         
         /// <summary>
@@ -111,26 +114,38 @@ namespace MovieSplicer.Components
         /// </summary>        
         private ListViewItem GetListItem(int listIndex)
         {
+            bool diff = false;
             ListViewItem lv;
-            if(VirtualMovieType == TASForm.MovieType.VBM || 
-               VirtualMovieType == TASForm.MovieType.SMV)
-                    lv = new ListViewItem((listIndex).ToString());
-            else
-                    lv = new ListViewItem((listIndex + 1).ToString());
+            //if(VirtualMovieType == TASForm.MovieType.VBM || 
+            //   VirtualMovieType == TASForm.MovieType.SMV)
+            //        lv = new ListViewItem((listIndex).ToString());
+            //else
+                    
+            lv = new ListViewItem((listIndex + 1).ToString());
 
             // get each controller used and its input for the frame            
-            for (int i = 0; i < this.Columns.Count - 1; i++)
+            for (int i = 0; i < Source.Controllers; i++)
             {
-                // DEBUG::handles movie input with null entries in the
-                // the main array
-                //if (VirtualListSource[listIndex] != null)
-                    lv.SubItems.Add(VirtualListSource[listIndex].Controller[i]);
-                    
-                //else
-                //    lv.SubItems.Add("");
+                if (listIndex > Source.Input.Length - 1)
+                    lv.SubItems.Add("");
+                else
+                    lv.SubItems.Add(Source.Input[listIndex].Controller[i]);
             }
-               
+            for (int j = 0; j < Target.Controllers ; j++)
+            {
+                if (listIndex > Target.Input.Length - 1)
+                    lv.SubItems.Add("");
+                else                
+                    lv.SubItems.Add(Target.Input[listIndex].Controller[j]);
+
+                // check if the frames differ
+                if (listIndex < Source.Input.Length && listIndex < Target.Input.Length)                                    
+                    if (Source.Input[listIndex].Controller[j] != Target.Input[listIndex].Controller[j])
+                        diff = true;
+            }
+                           
             if (listIndex % 2 == 0) lv.BackColor = System.Drawing.Color.BlanchedAlmond;
+            if (diff) lv.BackColor = System.Drawing.Color.AliceBlue;
 
             return lv;
         }

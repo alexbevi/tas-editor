@@ -80,7 +80,6 @@ namespace MovieSplicer.UI
             this.txtMovieFilename = new System.Windows.Forms.TextBox();
             this.grpFrameData = new System.Windows.Forms.GroupBox();
             this.lvInput = new MovieSplicer.Components.TASListView();
-            this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
             this.mnuMain.SuspendLayout();
             this.statMain.SuspendLayout();
             this.cmnu_lvInput.SuspendLayout();
@@ -506,8 +505,6 @@ namespace MovieSplicer.UI
             // lvInput
             // 
             this.lvInput.AllowDrop = true;
-            this.lvInput.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1});
             this.lvInput.ContextMenuStrip = this.cmnu_lvInput;
             this.lvInput.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lvInput.FullRowSelect = true;
@@ -525,11 +522,6 @@ namespace MovieSplicer.UI
             this.lvInput.DragDrop += new System.Windows.Forms.DragEventHandler(this.lvInput_DragDrop);
             this.lvInput.KeyUp += new System.Windows.Forms.KeyEventHandler(this.lvInput_KeyUp);
             this.lvInput.Click += new System.EventHandler(this.lvInput_Clicked);
-            // 
-            // columnHeader1
-            // 
-            this.columnHeader1.Text = "Frame";
-            this.columnHeader1.Width = 391;
             // 
             // frmMain
             // 
@@ -587,9 +579,8 @@ namespace MovieSplicer.UI
         private System.Windows.Forms.ToolStripMenuItem cmnuitemPasteFrames;
         private System.Windows.Forms.ToolStripMenuItem mnuCopy;
         private System.Windows.Forms.ToolStripMenuItem mnuPaste;
-        private System.Windows.Forms.ToolStripMenuItem mnuViewBuffer;        
+        private System.Windows.Forms.ToolStripMenuItem mnuViewBuffer;
         private MovieSplicer.Components.TASListView lvInput;
-        private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.TreeView tvInfo;
         private System.Windows.Forms.GroupBox grpMovieInfo;
         private System.Windows.Forms.TextBox txtMovieFilename;

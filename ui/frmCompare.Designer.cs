@@ -28,86 +28,46 @@ namespace MovieSplicer.UI
         /// </summary>
         private void InitializeComponent()
         {
-            this.groupBox12 = new System.Windows.Forms.GroupBox();
-            this.lvSource = new MovieSplicer.Components.TASListView();
-            this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.lvTarget = new MovieSplicer.Components.TASListView();
-            this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
+            this.lvOutput = new MovieSplicer.Components.TASCompareListView();
             this.btnLoadSource = new System.Windows.Forms.Button();
             this.btnLoadTarget = new System.Windows.Forms.Button();
-            this.btnClose = new System.Windows.Forms.Button();
-            this.groupBox12.SuspendLayout();
+            this.btnClear = new System.Windows.Forms.Button();
+            this.txtSource = new System.Windows.Forms.TextBox();
+            this.txtTarget = new System.Windows.Forms.TextBox();
+            this.btnProcess = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.txtSourceFrames = new System.Windows.Forms.TextBox();
+            this.txtTargetFrames = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // groupBox12
-            // 
-            this.groupBox12.Controls.Add(this.lvSource);
-            this.groupBox12.Location = new System.Drawing.Point(12, 12);
-            this.groupBox12.Name = "groupBox12";
-            this.groupBox12.Size = new System.Drawing.Size(385, 299);
-            this.groupBox12.TabIndex = 30;
-            this.groupBox12.TabStop = false;
-            this.groupBox12.Text = "Source";
-            // 
-            // lvSource
-            // 
-            this.lvSource.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1});
-            this.lvSource.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lvSource.FullRowSelect = true;
-            this.lvSource.GridLines = true;
-            this.lvSource.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.lvSource.Location = new System.Drawing.Point(8, 24);
-            this.lvSource.Name = "lvSource";
-            this.lvSource.Size = new System.Drawing.Size(371, 265);
-            this.lvSource.TabIndex = 26;
-            this.lvSource.UseCompatibleStateImageBehavior = false;
-            this.lvSource.View = System.Windows.Forms.View.Details;
-            this.lvSource.VirtualMode = true;
-            this.lvSource.Scrolled += new System.Windows.Forms.ScrollEventHandler(lvSource_Scrolled);
-            // 
-            // columnHeader1
-            // 
-            this.columnHeader1.Text = "Frame";
-            this.columnHeader1.Width = 367;
-            // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.lvTarget);
-            this.groupBox1.Location = new System.Drawing.Point(403, 12);
+            this.groupBox1.Controls.Add(this.lvOutput);
+            this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(385, 299);
+            this.groupBox1.Size = new System.Drawing.Size(776, 359);
             this.groupBox1.TabIndex = 31;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Target";
+            this.groupBox1.Text = "Output";
             // 
-            // lvTarget
+            // lvOutput
             // 
-            this.lvTarget.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader2});
-            this.lvTarget.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lvTarget.FullRowSelect = true;
-            this.lvTarget.GridLines = true;
-            this.lvTarget.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.lvTarget.Location = new System.Drawing.Point(8, 24);
-            this.lvTarget.Name = "lvTarget";
-            this.lvTarget.Scrollable = true;
-            this.lvTarget.Size = new System.Drawing.Size(371, 265);
-            this.lvTarget.TabIndex = 26;
-            this.lvTarget.UseCompatibleStateImageBehavior = false;
-            this.lvTarget.View = System.Windows.Forms.View.Details;
-            this.lvTarget.VirtualMode = true;            
-            // 
-            // columnHeader2
-            // 
-            this.columnHeader2.Text = "Frame";
-            this.columnHeader2.Width = 367;
+            this.lvOutput.FullRowSelect = true;
+            this.lvOutput.GridLines = true;
+            this.lvOutput.Location = new System.Drawing.Point(6, 19);
+            this.lvOutput.MultiSelect = false;
+            this.lvOutput.Name = "lvOutput";
+            this.lvOutput.Size = new System.Drawing.Size(764, 334);
+            this.lvOutput.TabIndex = 0;
+            this.lvOutput.UseCompatibleStateImageBehavior = false;
+            this.lvOutput.View = System.Windows.Forms.View.Details;
             // 
             // btnLoadSource
             // 
-            this.btnLoadSource.Location = new System.Drawing.Point(12, 317);
+            this.btnLoadSource.Location = new System.Drawing.Point(12, 377);
             this.btnLoadSource.Name = "btnLoadSource";
             this.btnLoadSource.Size = new System.Drawing.Size(101, 23);
             this.btnLoadSource.TabIndex = 32;
@@ -117,7 +77,7 @@ namespace MovieSplicer.UI
             // 
             // btnLoadTarget
             // 
-            this.btnLoadTarget.Location = new System.Drawing.Point(119, 317);
+            this.btnLoadTarget.Location = new System.Drawing.Point(12, 406);
             this.btnLoadTarget.Name = "btnLoadTarget";
             this.btnLoadTarget.Size = new System.Drawing.Size(101, 23);
             this.btnLoadTarget.TabIndex = 32;
@@ -125,25 +85,92 @@ namespace MovieSplicer.UI
             this.btnLoadTarget.UseVisualStyleBackColor = true;
             this.btnLoadTarget.Click += new System.EventHandler(this.btnLoadTarget_Click);
             // 
-            // btnClose
+            // btnClear
             // 
-            this.btnClose.Location = new System.Drawing.Point(687, 317);
-            this.btnClose.Name = "btnClose";
-            this.btnClose.Size = new System.Drawing.Size(101, 23);
-            this.btnClose.TabIndex = 33;
-            this.btnClose.Text = "&Close";
-            this.btnClose.UseVisualStyleBackColor = true;
+            this.btnClear.Location = new System.Drawing.Point(687, 406);
+            this.btnClear.Name = "btnClear";
+            this.btnClear.Size = new System.Drawing.Size(101, 23);
+            this.btnClear.TabIndex = 33;
+            this.btnClear.Text = "&Clear";
+            this.btnClear.UseVisualStyleBackColor = true;
+            this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
+            // 
+            // txtSource
+            // 
+            this.txtSource.Location = new System.Drawing.Point(119, 380);
+            this.txtSource.Name = "txtSource";
+            this.txtSource.ReadOnly = true;
+            this.txtSource.Size = new System.Drawing.Size(428, 20);
+            this.txtSource.TabIndex = 34;
+            // 
+            // txtTarget
+            // 
+            this.txtTarget.Location = new System.Drawing.Point(119, 406);
+            this.txtTarget.Name = "txtTarget";
+            this.txtTarget.ReadOnly = true;
+            this.txtTarget.Size = new System.Drawing.Size(428, 20);
+            this.txtTarget.TabIndex = 35;
+            // 
+            // btnProcess
+            // 
+            this.btnProcess.Location = new System.Drawing.Point(687, 378);
+            this.btnProcess.Name = "btnProcess";
+            this.btnProcess.Size = new System.Drawing.Size(101, 23);
+            this.btnProcess.TabIndex = 36;
+            this.btnProcess.Text = "&Process";
+            this.btnProcess.UseVisualStyleBackColor = true;
+            this.btnProcess.Click += new System.EventHandler(this.btnProcess_Click);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(553, 383);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(41, 13);
+            this.label1.TabIndex = 37;
+            this.label1.Text = "Frames";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(553, 411);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(41, 13);
+            this.label2.TabIndex = 38;
+            this.label2.Text = "Frames";
+            // 
+            // txtSourceFrames
+            // 
+            this.txtSourceFrames.Location = new System.Drawing.Point(600, 380);
+            this.txtSourceFrames.Name = "txtSourceFrames";
+            this.txtSourceFrames.ReadOnly = true;
+            this.txtSourceFrames.Size = new System.Drawing.Size(81, 20);
+            this.txtSourceFrames.TabIndex = 39;
+            // 
+            // txtTargetFrames
+            // 
+            this.txtTargetFrames.Location = new System.Drawing.Point(600, 409);
+            this.txtTargetFrames.Name = "txtTargetFrames";
+            this.txtTargetFrames.ReadOnly = true;
+            this.txtTargetFrames.Size = new System.Drawing.Size(81, 20);
+            this.txtTargetFrames.TabIndex = 40;
             // 
             // frmCompare
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 350);
-            this.Controls.Add(this.btnClose);
+            this.ClientSize = new System.Drawing.Size(800, 441);
+            this.Controls.Add(this.txtTargetFrames);
+            this.Controls.Add(this.txtSourceFrames);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.btnProcess);
+            this.Controls.Add(this.txtTarget);
+            this.Controls.Add(this.txtSource);
+            this.Controls.Add(this.btnClear);
             this.Controls.Add(this.btnLoadTarget);
             this.Controls.Add(this.btnLoadSource);
             this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.groupBox12);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -151,22 +178,25 @@ namespace MovieSplicer.UI
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Compare Input";
-            this.groupBox12.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }        
 
         #endregion
 
-        private System.Windows.Forms.GroupBox groupBox12;
-        private MovieSplicer.Components.TASListView lvSource;
-        private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.GroupBox groupBox1;
-        private MovieSplicer.Components.TASListView lvTarget;
-        private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.Button btnLoadSource;
         private System.Windows.Forms.Button btnLoadTarget;
-        private System.Windows.Forms.Button btnClose;
+        private System.Windows.Forms.Button btnClear;
+        private MovieSplicer.Components.TASCompareListView lvOutput;
+        private System.Windows.Forms.TextBox txtSource;
+        private System.Windows.Forms.TextBox txtTarget;
+        private System.Windows.Forms.Button btnProcess;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox txtSourceFrames;
+        private System.Windows.Forms.TextBox txtTargetFrames;
     }
 }

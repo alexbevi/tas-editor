@@ -39,35 +39,10 @@ namespace MovieSplicer.UI
 
         public frmCompare()
         {
-            InitializeComponent();
-            lvSource.AssociatedListView = lvTarget;
+            InitializeComponent();            
         }        
-
-        private void btnLoadSource_Click(object sender, EventArgs e)
-        {
-            loadMovie(ref Source);
-            if (Source.Input == null) return;
-
-            lvSource.SetColumns(Source.Controllers);
-            lvSource.VirtualListSource = Source.Input;
-            lvSource.VirtualListSize   = Source.Input.Length;
-        }
-
-        void lvSource_Scrolled(object sender, System.Windows.Forms.ScrollEventArgs e)
-        {
-            
-        }
-
-        private void btnLoadTarget_Click(object sender, EventArgs e)
-        {
-            loadMovie(ref Target);
-            if (Target.Input == null) return;
-            lvTarget.SetColumns(Target.Controllers);
-            lvTarget.VirtualListSource = Target.Input;
-            lvTarget.VirtualListSize   = Target.Input.Length;
-        }       
-
-        private void loadMovie(ref TASMovieInputCollection location)
+       
+        private string loadMovie(ref TASMovieInputCollection location)
         {
             openDlg = new OpenFileDialog();
             openDlg.Filter = TAS_FILTER;
@@ -75,13 +50,12 @@ namespace MovieSplicer.UI
             string filename = openDlg.FileName;
             openDlg.Dispose();            
             
-            if (filename.Length == 0) return;               
+            if (filename.Length == 0) return null;               
             
             TASMovie movie = new TASMovie();
             location = new TASMovieInputCollection();            
             location.Format = IsValid(filename);                        
-            
-            
+                        
             // load the movie object up with the correct format and display a thumbnail
             switch (location.Format)
             {                
@@ -92,8 +66,53 @@ namespace MovieSplicer.UI
                 case MovieType.VBM: movie = new VisualBoyAdvance(filename); break;
                 case MovieType.M64: movie = new Mupen64(filename); break;                
             }
-            location.Input = movie.Input.FrameData;
+            location.Input       = movie.Input.FrameData;
             location.Controllers = movie.Input.ControllerCount;
+
+            return filename;
         }
+
+        private void btnLoadSource_Click(object sender, EventArgs e)
+        {
+            txtSource.Text = loadMovie(ref Source);
+            if (txtSource.Text.Length > 0)
+            {
+                btnLoadSource.Enabled = false;
+                txtSourceFrames.Text = String.Format("{0:0,0}", Source.Input.Length);
+            }
+        }
+
+        private void btnLoadTarget_Click(object sender, EventArgs e)
+        {
+            txtTarget.Text = loadMovie(ref Target);
+            if (txtTarget.Text.Length > 0) 
+            {
+                btnLoadTarget.Enabled = false;
+                txtTargetFrames.Text = String.Format("{0:0,0}", Target.Input.Length);
+            }
+        }
+
+        private void btnProcess_Click(object sender, EventArgs e)
+        {            
+            lvOutput.Source = Source;
+            lvOutput.Target = Target;
+            lvOutput.SetColumns();
+            lvOutput.VirtualListSize = (Source.Input.Length > Target.Input.Length) ? Source.Input.Length : Target.Input.Length;
+            
+            btnProcess.Enabled = false;
+        }
+
+        private void btnClear_Click(object sender, EventArgs e)
+        {
+            txtSource.Text = ""; txtSourceFrames.Text = "";
+            txtTarget.Text = ""; txtTargetFrames.Text = "";
+            btnLoadSource.Enabled = true;
+            btnLoadTarget.Enabled = true;
+            btnProcess.Enabled = true;
+            lvOutput.ClearVirtualCache();
+            lvOutput.Clear();
+        }
+
+       
     }
 }

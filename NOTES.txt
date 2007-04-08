@@ -53,8 +53,8 @@ TODO::Add Nestopia, VirtuaNES support? (not sure if it's even necessary)
 ///////////////
 v0-x-x
 
-- SMV::fixed a bug that prevented loading of 5-player movie files
-
+- SMV::Fixed a bug that prevented loading of 5-player movie files
+- ETC::Added a movie comparisson module
 
 v0-11
 
