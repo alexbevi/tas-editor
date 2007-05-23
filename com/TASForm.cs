@@ -33,8 +33,8 @@ namespace MovieSplicer.Components
     public class TASForm : Form
     {
         public const string APP_TITLE  = "TAS Movie Editor";
-        public const string VERSION    = "0.11";
-        public const string BUILD_DATE = "2007-03-01 @ 22:00";
+        public const string VERSION    = "0.12";
+        public const string BUILD_DATE = "2007-05-22 @ 22:00";
 
         public const string TAS_FILTER = ALL_FILTER + "|" + FCM_FILTER + "|" + FMV_FILTER + "|" + 
                                          GMV_FILTER + "|" + M64_FILTER + "|" + SMV_FILTER + "|" + 
@@ -165,6 +165,14 @@ namespace MovieSplicer.Components
                     return new Mupen64(filename);                                
             }
             return null;
+        }
+
+        /// <summary>
+        /// Convert a value to an integer
+        /// </summary>        
+        public int CInt(object value)
+        {
+            return Convert.ToInt32(value);
         }
 
     #endregion

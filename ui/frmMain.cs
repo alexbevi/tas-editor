@@ -183,7 +183,7 @@ namespace MovieSplicer.UI
             try { System.IO.File.OpenRead(filename); }
             catch
             {
-                MessageBox.Show(filename + " cannot be accessed at the moment", "File Possibly Locked");
+                MessageBox.Show(filename + " cannot be accessed at the moment.\nEither the file is locked or it doesn't exist.", "File Access Error");
                 return;
             }
 

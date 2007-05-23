@@ -154,7 +154,15 @@ namespace MovieSplicer.Data
         /// <summary>
         /// overriden base method for saving back out to file
         /// </summary>        
-        public virtual void Save(string filename, ref TASMovieInput[] input) { }
+        public virtual void Save(string filename, ref TASMovieInput[] input) 
+        {
+            try { System.IO.File.OpenRead(filename); }
+            catch
+            {
+                System.Windows.Forms.MessageBox.Show(filename + " cannot be accessed at the moment", "File Possibly Locked");
+                return;
+            }
+        }
 
     #endregion
 

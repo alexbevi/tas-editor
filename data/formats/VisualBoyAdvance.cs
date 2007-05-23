@@ -157,7 +157,7 @@ namespace MovieSplicer.Data.Formats
             int i = 0;
 
             while (position <= Header.FrameCount)
-            {
+            {                
                 Input.FrameData[position] = new TASMovieInput();
                 for (int j = 0; j < 4; j++)
                 {
@@ -179,11 +179,11 @@ namespace MovieSplicer.Data.Formats
         {
             string input = "";
 
-            int value = bytes[0] | bytes[1];            
-
-            for (int i = 0; i < 16; i++)
-                if ((1 & (value >> i)) == 1)
-                    input += InputValues[i];
+            for (int i = 0; i < 8; i++)
+            {
+                if ((1 & (bytes[0] >> i)) == 1) input += InputValues[i];
+                if ((1 & (bytes[1] >> i)) == 1) input += InputValues[i + 8];
+            }
 
             return input;
         }
@@ -231,11 +231,7 @@ namespace MovieSplicer.Data.Formats
             // add the controller data
             int position = 0;
             for (int i = 0; i < input.Length; i++)
-            {
-                //if (i == 12680){
-                //    for (int a = 0; a < 1; a++)
-                //        continue;
-                //}
+            {               
                 for (int j = 0; j < controllers; j++)
                 {
                     // check if the controller we're about to process is used
@@ -243,44 +239,38 @@ namespace MovieSplicer.Data.Formats
                     {
                         byte[] parsed = parseControllerData(input[i].Controller[j]);
                         outputFile[head.Length + position++] = parsed[0];
-                        outputFile[head.Length + position++] = parsed[1];
-
-                        //if (parsed[0] == 34 && parsed[1] == 0)
-                        //{
-                        //    for (int a = 0; a < 1; a++)
-                        //        continue;
-                        //}
+                        outputFile[head.Length + position++] = parsed[1];                        
                     }                    
                 }
             }
             // update the movie description and author
-            //for (int i = 0; i < 64; i++)
-            //    if (i < Extra.Author.Length)
-            //        outputFile[HEADER_SIZE + i] = Convert.ToByte(Extra.Author[i]);
-            //    else
-            //        outputFile[HEADER_SIZE + i] = 0;
-            //for (int j = 0; j < 128; j++)
-            //    if (j < Extra.Description.Length)
-            //        outputFile[HEADER_SIZE + 64 + j] = Convert.ToByte(Extra.Description[j]);
-            //    else
-            //        outputFile[HEADER_SIZE + 64 + j] = 0;
+            for (int i = 0; i < 64; i++)
+                if (i < Extra.Author.Length)
+                    outputFile[HEADER_SIZE + i] = Convert.ToByte(Extra.Author[i]);
+                else
+                    outputFile[HEADER_SIZE + i] = 0;
+            for (int j = 0; j < 128; j++)
+                if (j < Extra.Description.Length)
+                    outputFile[HEADER_SIZE + 64 + j] = Convert.ToByte(Extra.Description[j]);
+                else
+                    outputFile[HEADER_SIZE + 64 + j] = 0;
 
 
             //// DEBUGGING //
-            MovieSplicer.UI.frmDebug frm = new MovieSplicer.UI.frmDebug();
-            for (int i = 0; i < FileContents.Length; i++)
-            {
-                System.Windows.Forms.ListViewItem lvi = new System.Windows.Forms.ListViewItem();
-                lvi.Text = i.ToString();
-                lvi.SubItems.Add(FileContents[i].ToString());
-                string item = (i < outputFile.Length) ? outputFile[i].ToString() : "out of range";
-                lvi.SubItems.Add(item);
-                frm.Add(lvi);
-            }
-            frm.Show();
+            //MovieSplicer.UI.frmDebug frm = new MovieSplicer.UI.frmDebug();
+            //for (int i = 0; i < FileContents.Length; i++)
+            //{
+            //    System.Windows.Forms.ListViewItem lvi = new System.Windows.Forms.ListViewItem();
+            //    lvi.Text = i.ToString();
+            //    lvi.SubItems.Add(FileContents[i].ToString());
+            //    string item = (i < outputFile.Length) ? outputFile[i].ToString() : "out of range";
+            //    lvi.SubItems.Add(item);
+            //    frm.Add(lvi);
+            //}
+            //frm.Show();
             /////////////////
 
-            //WriteByteArrayToFile(ref outputFile, filename, input.Length - 1, Offsets[3]);            
+            WriteByteArrayToFile(ref outputFile, filename, input.Length - 1, Offsets[3]);            
         }
     }
 }

@@ -40,6 +40,9 @@ namespace MovieSplicer.Components
         public TASMovieInputCollection Source;
         public TASMovieInputCollection Target;
 
+        public int SourceOffset;
+        public int TargetOffset;
+
         // Cache items
         private ListViewItem[] cache;
         private int            firstItem;        
@@ -89,12 +92,14 @@ namespace MovieSplicer.Components
             if (this.Columns.Count > 0) return;
             
             this.Columns.Clear();
-            this.Columns.Add("Frame", 100);            
-
+            
+            this.Columns.Add("Movie 1", 100);            
             for (int i = 0; i < Source.Controllers; i++)
-                this.Columns.Add("Source Controller " + (i + 1), 200);
+                this.Columns.Add("Controller " + (i + 1), 200);
+            
+            this.Columns.Add("Movie 2", 100);            
             for (int j = 0; j < Target.Controllers; j++)
-                this.Columns.Add("Target Controller " + (j + 1), 200);
+                this.Columns.Add("Controller " + (j + 1), 200);
         }
         
         /// <summary>
@@ -115,24 +120,31 @@ namespace MovieSplicer.Components
         private ListViewItem GetListItem(int listIndex)
         {
             bool diff = false;
-            ListViewItem lv;
+            ListViewItem lv = new ListViewItem();
             //if(VirtualMovieType == TASForm.MovieType.VBM || 
             //   VirtualMovieType == TASForm.MovieType.SMV)
             //        lv = new ListViewItem((listIndex).ToString());
-            //else
-                    
-            lv = new ListViewItem((listIndex + 1).ToString());
-
-            // get each controller used and its input for the frame            
+            //else                                
+            
+            // if we're not out of (source) range, add the frame number
+            lv.Text = (listIndex > Source.Input.Length - 1) ? "" : ((listIndex + SourceOffset).ToString());
+            
             for (int i = 0; i < Source.Controllers; i++)
             {
-                if (listIndex > Source.Input.Length - 1)
-                    lv.SubItems.Add("");
-                else
-                    lv.SubItems.Add(Source.Input[listIndex].Controller[i]);
+                if (listIndex > Source.Input.Length - 1)                             
+                    lv.SubItems.Add("");                
+                else                             
+                    lv.SubItems.Add(Source.Input[listIndex].Controller[i]);                
             }
+            
+            // if we're not out of (target) range, add the frame number
+            if (listIndex > Target.Input.Length - 1)
+                lv.SubItems.Add("");
+            else
+                lv.SubItems.Add((listIndex + TargetOffset).ToString());
+            
             for (int j = 0; j < Target.Controllers ; j++)
-            {
+            {                
                 if (listIndex > Target.Input.Length - 1)
                     lv.SubItems.Add("");
                 else                

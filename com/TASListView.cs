@@ -19,6 +19,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA    *
  *******************************************************************************/
 using System;
+using System.Resources;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -35,15 +36,17 @@ namespace MovieSplicer.Components
     /// </summary>
     public class TASListView: ListView
     {             
-        private const int WM_PAINT        = 0xF;        
+        private const int WM_PAINT = 0xF;        
 
         public TASMovieInput[]   VirtualListSource;
         public TASForm.MovieType VirtualMovieType;        
 
         // Cache items
         private ListViewItem[] cache;
-        private int            firstItem;        
-        
+        private int            firstItem;
+
+        //private ImageList input;
+
         /// <summary>
         /// Create a new TASListView object with an event handler on RetriveVirtualItem
         /// </summary>
@@ -51,7 +54,26 @@ namespace MovieSplicer.Components
         {
             this.DoubleBuffered = true;
             this.RetrieveVirtualItem += new RetrieveVirtualItemEventHandler(GetVirtualItem);
-            this.CacheVirtualItems   += new CacheVirtualItemsEventHandler(CacheVirtualItemsList);                         
+            this.CacheVirtualItems   += new CacheVirtualItemsEventHandler(CacheVirtualItemsList);
+            
+            //ResourceManager rm = new ResourceManager("MovieSplicer.Properties.Resources", GetType().Assembly);
+            
+            //// add our resource images to an imagelist (graphical representations of keys)
+            //input = new ImageList();
+            //input.Images.Add((System.Drawing.Image)(rm.GetObject("up")));
+            //input.Images.Add((System.Drawing.Image)(rm.GetObject("down")));
+            //input.Images.Add((System.Drawing.Image)(rm.GetObject("left")));
+            //input.Images.Add((System.Drawing.Image)(rm.GetObject("right")));
+            //input.Images.Add((System.Drawing.Image)(rm.GetObject("B")));
+            //input.Images.Add((System.Drawing.Image)(rm.GetObject("A")));
+            //input.Images.Add((System.Drawing.Image)(rm.GetObject("X")));
+            //input.Images.Add((System.Drawing.Image)(rm.GetObject("Y")));
+            //input.Images.Add((System.Drawing.Image)(rm.GetObject("se")));
+            //input.Images.Add((System.Drawing.Image)(rm.GetObject("st")));
+            //input.Images.Add((System.Drawing.Image)(rm.GetObject("L")));
+            //input.Images.Add((System.Drawing.Image)(rm.GetObject("R")));
+
+            //rm = null;
         }               
        
         /// <summary>
@@ -67,7 +89,7 @@ namespace MovieSplicer.Components
                 case WM_PAINT:
                     if (this.View == View.Details && this.Columns.Count > 0)
                         this.Columns[this.Columns.Count - 1].Width = -2;
-                    break;                                
+                    break;
             }
 
             // pass messages on to the base control for processing
@@ -81,8 +103,7 @@ namespace MovieSplicer.Components
         /// 
         /// TODO::Now that the TASMovieInputCollection contains the controller count,
         /// is this necessary anymore?
-        /// </summary>
-        /// <param name="columns"></param>
+        /// </summary>       
         public void SetColumns(int columns)
         {
             this.Columns.Clear();
@@ -99,41 +120,69 @@ namespace MovieSplicer.Components
         /// </summary>        
         private void GetVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
         {
+            this.BeginUpdate();
             // If we have the item cached, return it. Otherwise, recreate it.
             if (cache != null && e.ItemIndex >= firstItem && e.ItemIndex < firstItem + cache.Length)
                 e.Item = cache[e.ItemIndex - firstItem];
             else
                 e.Item = GetListItem(e.ItemIndex);
+            this.EndUpdate();
         }
 
         /// <summary>
         /// Get the item at a specified index
         /// </summary>        
         private ListViewItem GetListItem(int listIndex)
-        {
+        {            
             ListViewItem lv;
             if(VirtualMovieType == TASForm.MovieType.VBM || 
                VirtualMovieType == TASForm.MovieType.SMV)
-                    lv = new ListViewItem((listIndex).ToString());
+                lv = new ListViewItem((listIndex).ToString());
             else
-                    lv = new ListViewItem((listIndex + 1).ToString());
+                lv = new ListViewItem((listIndex + 1).ToString());
 
             // get each controller used and its input for the frame            
             for (int i = 0; i < this.Columns.Count - 1; i++)
             {
                 // DEBUG::handles movie input with null entries in the
                 // the main array
-                //if (VirtualListSource[listIndex] != null)
-                    lv.SubItems.Add(VirtualListSource[listIndex].Controller[i]);
-                    
+                if (VirtualListSource[listIndex] != null)                    
+                    lv.SubItems.Add(VirtualListSource[listIndex].Controller[i]);                                                       
+                //lv.SubItems.Add(new EXMultipleImagesListViewSubItem(ConvertStringToImage(VirtualListSource[listIndex].Controller[i]))); 
                 //else
                 //    lv.SubItems.Add("");
             }
                
             if (listIndex % 2 == 0) lv.BackColor = System.Drawing.Color.BlanchedAlmond;
-
+            
             return lv;
         }
+
+        /// <summary>
+        /// Lookup key image in imagelist
+        /// 
+        /// NOTE::I don't really like arraylists, but I didn't write the ExtendedListView class,
+        /// and seeing as the author did a really good job, there's no need to re-write it ... for now :P
+        /// </summary>        
+        //private ArrayList ConvertStringToImage(string controller)
+        //{            
+        //    ArrayList arr = new ArrayList();
+        //    if (controller == null) return arr;
+        //    if (controller.Contains("^")) arr.Add(input.Images[0]);
+        //    if (controller.Contains("v")) arr.Add(input.Images[1]);
+        //    if (controller.Contains("<")) arr.Add(input.Images[2]);
+        //    if (controller.Contains(">")) arr.Add(input.Images[3]);
+        //    if (controller.Contains("B")) arr.Add(input.Images[4]);
+        //    if (controller.Contains("A")) arr.Add(input.Images[5]);
+        //    if (controller.Contains("X")) arr.Add(input.Images[6]);
+        //    if (controller.Contains("Y")) arr.Add(input.Images[7]);
+        //    if (controller.Contains("s")) arr.Add(input.Images[8]);
+        //    if (controller.Contains("S")) arr.Add(input.Images[9]);
+        //    if (controller.Contains("L")) arr.Add(input.Images[10]);
+        //    if (controller.Contains("R")) arr.Add(input.Images[11]);
+
+        //    return arr;
+        //}
 
         /// <summary>
         /// Clear the virtual cache (duh :P)
