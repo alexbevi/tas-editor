@@ -212,5 +212,18 @@ namespace MovieSplicer.Data.Formats
             // NOTE::GMV files calculate frameCount based on filesize
             WriteByteArrayToFile(ref outputFile, filename, 0, 0);  
         }
+
+        public override string[] GetUsableInputs()
+        {
+            System.Collections.ArrayList inputsArray = new System.Collections.ArrayList();
+            for (int i = 0; i < InputValues.Length; i++)
+            {
+                if (InputValues[i] == "") continue;
+                inputsArray.Add(InputValues[i]);
+            }
+            return (string[])inputsArray.ToArray(typeof(string));
+        }
+
+
     }
 }

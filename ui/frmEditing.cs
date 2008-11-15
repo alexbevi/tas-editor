@@ -141,7 +141,8 @@ namespace MovieSplicer.UI
             // prompt for multiple frame insertion
             if (lvInput.SelectedIndices.Count > 1 && EditingPrompts)
             {
-                DialogResult confirmUpdate = MessageBox.Show("Are you sure you want to update the " + totalFrames + " frames with the same input?", "Confirm Multiple Frame Update", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+                DialogResult confirmUpdate = MessageBox.Show("Are you sure you want to update the " + totalFrames + " frames with the same input?", "Confirm Multiple Frame Update", MessageBoxButtons.OKCancel, MessageBoxIcon.Question,
+                    MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
                 if (confirmUpdate != DialogResult.OK) return;
             }
 
@@ -185,7 +186,7 @@ namespace MovieSplicer.UI
             if (FrameData == null || txtJumpToFrame.Text.Length == 0) return;
 
             int start = (lvInput.SelectedIndices.Count > 0) ? lvInput.SelectedIndices[0] + 1 : 0;                        
-            int position = TASMovieInput.Search(ref FrameData, txtJumpToFrame.Text, start);
+            int position = TASMovieInput.Search(ref FrameData, txtJumpToFrame.Text, start, true);
 
             if (position > 0 && position < FrameData.Length)
             {
@@ -200,7 +201,10 @@ namespace MovieSplicer.UI
                 lvInput.EnsureVisible(position);
             }
             else
-                MessageBox.Show("Input pattern not found between selected position and end of movie", "Sorry");
+            {
+                MessageBox.Show("Input pattern not found between selected position and end of movie", "Sorry",
+                    MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+            }
         }
 
         /// <summary>
@@ -213,6 +217,18 @@ namespace MovieSplicer.UI
             this.Visible = false;
         }
 
-       
+        public bool IsControllerChecked( int player )
+        {
+            if (player == 1)
+                return chkFrameDataC1.Checked;
+            else if (player == 2)
+                return chkFrameDataC2.Checked;
+            else if (player == 3)
+                return chkFrameDataC3.Checked;
+            else if (player == 4)
+                return chkFrameDataC4.Checked;
+
+            return false;
+        }
     }
 }

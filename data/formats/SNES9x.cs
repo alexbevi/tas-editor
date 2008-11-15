@@ -278,5 +278,17 @@ namespace MovieSplicer.Data.Formats
 
             byteArray = temp;            
         }
+
+        public override string[] GetUsableInputs()
+        {
+            System.Collections.ArrayList inputsArray = new System.Collections.ArrayList();
+            for (int i = 0; i < InputValues.Length; i++)
+            {
+                if (InputValues[i] == "") continue;
+                inputsArray.Add(InputValues[i]);
+            }
+            return (string[])inputsArray.ToArray(typeof(string));
+        }
+
     }
 }

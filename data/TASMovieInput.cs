@@ -240,13 +240,22 @@ namespace MovieSplicer.Data
         /// Cycle through the input collection returning an index of the first available match
         /// from the given offset
         /// </summary>                
-        public static int Search(ref TASMovieInput[] input, string pattern, int startPosition)
+        public static int Search(ref TASMovieInput[] input, string pattern, int startPosition, bool direction)
         {
-            for (int i = startPosition; i < input.Length; i++)            
-                for(int j = 0; j < input[i].Controller.Length; j++)
-                    if(input[i].Controller[j] != null)
-                        if (input[i].Controller[j].Contains(pattern)) return i;
-            
+            if (direction == true )
+            {
+                for (int i = startPosition; i < input.Length; i++)
+                    for (int j = 0; j < input[i].Controller.Length; j++)
+                        if (input[i].Controller[j] != null)
+                            if (input[i].Controller[j] == pattern) return i;
+            }
+            else
+            {
+                for (int i = startPosition; i > -1; i--)
+                    for (int j = 0; j < input[i].Controller.Length; j++)
+                        if (input[i].Controller[j] != null)
+                            if (input[i].Controller[j] == pattern) return i;
+            }
             return 0;
         }
     

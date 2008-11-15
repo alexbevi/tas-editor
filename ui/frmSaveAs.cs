@@ -72,7 +72,8 @@ namespace MovieSplicer.UI
             else
                 Movie.Save(Filename, ref MovieData.Input);
 
-            MessageBox.Show("New movie saved as " + Filename, "YAY!!!");
+            MessageBox.Show("New movie saved as " + Filename, "YAY!!!",
+                MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
             this.Close();
         }
 

@@ -61,9 +61,17 @@
     <Compile Include="data\config\Ini.cs" />
     <Compile Include="data\config\IProfile.cs" />
     <Compile Include="data\config\Profile.cs" />
+    <Compile Include="data\util\IntegerBase.cs" />
+    <Compile Include="data\moviegenerator\MovieGenerator.cs" />
     <Compile Include="data\TASMovie.cs" />
     <Compile Include="data\TASMovieInput.cs" />
     <Compile Include="data\UndoBuffer.cs" />
+    <Compile Include="ui\FindReplaceDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ui\FindReplaceDialog.Designer.cs">
+      <DependentUpon>FindReplaceDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="ui\frmAbout.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -82,23 +90,11 @@
     <Compile Include="ui\frmCompare.Designer.cs">
       <DependentUpon>frmCompare.cs</DependentUpon>
     </Compile>
-    <Compile Include="ui\frmDebug.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ui\frmDebug.Designer.cs">
-      <DependentUpon>frmDebug.cs</DependentUpon>
-    </Compile>
     <Compile Include="ui\frmEditing.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="ui\frmEditing.Designer.cs">
       <DependentUpon>frmEditing.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ui\frmInputAnimator.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ui\frmInputAnimator.Designer.cs">
-      <DependentUpon>frmInputAnimator.cs</DependentUpon>
     </Compile>
     <Compile Include="ui\frmMain.cs">
       <SubType>Form</SubType>
@@ -108,6 +104,10 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="ui\FindReplaceDialog.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>FindReplaceDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ui\frmAbout.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmAbout.cs</DependentUpon>
@@ -120,17 +120,9 @@
       <SubType>Designer</SubType>
       <DependentUpon>frmCompare.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ui\frmDebug.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>frmDebug.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="ui\frmEditing.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmEditing.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ui\frmInputAnimator.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>frmInputAnimator.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ui\frmMain.resx">
       <DependentUpon>frmMain.cs</DependentUpon>
@@ -156,6 +148,10 @@
     <EmbeddedResource Include="ui\frmSubtitles.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmSubtitles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ui\GoToDialog.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>GoToDialog.cs</DependentUpon>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -194,6 +190,12 @@
     </Compile>
     <Compile Include="ui\frmSubtitles.Designer.cs">
       <DependentUpon>frmSubtitles.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ui\GoToDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ui\GoToDialog.Designer.cs">
+      <DependentUpon>GoToDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="ui\methods\AppSettings.cs" />
     <Compile Include="ui\methods\SubtitleGenerator.cs" />

@@ -60,17 +60,19 @@ namespace MovieSplicer.UI
         // will contain the message history for this session
         frmMessages Msg = new frmMessages();
         frmEditing  Editor;
-
+        FindReplaceDialog frd;
+        
         /// <summary>
         /// Class constructor. Sets up the common components and controls
         /// </summary>
         public frmMain()
         {
             InitializeComponent();
+            frd = new FindReplaceDialog(this);
             
             this.Text = APP_TITLE + " v" + VERSION;
             this.MinimumSize = new Size(BASE_WIDTH, BASE_HEIGHT);
-            populateRecentFiles();       
+            populateRecentFiles();
         }                
        
         /// <summary>
@@ -109,6 +111,7 @@ namespace MovieSplicer.UI
         {
             if (Editor != null) Editor.AutoFire = mnuAutoFireOption.Checked;
         }
+
         private void mnuEditingPrompt_CheckStateChanged(object sender, EventArgs e)
         {
             if (Editor != null) Editor.EditingPrompts = mnuEditingPrompt.Checked;
@@ -138,6 +141,116 @@ namespace MovieSplicer.UI
                 ListViewItem lvi = lvInput.Items[lvInput.SelectedIndices[0]];
                 Editor.PopulateEditFields(lvi);
             }
+        }
+
+        /// <summary>
+        /// Edit the movie when th euser submits new input
+        /// </summary>        
+        private void lvInput_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (lvInput.SelectedIndices.Count == 0) return;
+            return;
+            /*
+            char[] input = new char[0];
+            input[0] = "";
+            if (FrameData.Format != MovieType.None)
+            {
+                switch (e.KeyChar)
+                {
+                    //WSAD
+                    case 'w':
+                    case 'W':
+                        input = "^";
+                        break;
+                    case 'a':
+                    case 'A':
+                        input = "<";
+                        break;
+                    case 's':
+                    case 'S':
+                        input = "v";
+                        break;
+                    case 'd':
+                    case 'D':
+                        input = ">";
+                        break;
+                    //Num-pad snes buttons
+                    case '1':
+                        input = "Y";
+                        break;
+                    case '0':
+                        input = "B";
+                        break;
+                    case '.':
+                        input = "A";
+                        break;
+                    case '3':
+                        input = "X";
+                        break;
+                    case '4':
+                        input = "L";
+                        break;
+                    case '5':
+                        input = "R";
+                        break;
+                    //Bah...
+                    case 'x':
+                    case 'X':
+                        input = "S";
+                        break;
+                    case 'z':
+                    case 'Z':
+                        input = "s";
+                        break;
+                    case 'r':
+                    case 'R':
+                        input = "(reset)";
+                        break;
+                    //Clear
+                    case '\b':
+                        input = "\b";
+                        break;
+                }
+            }
+            if (input[0] == "") return;
+
+            int frameIndex = lvInput.SelectedIndices[0];
+            int framePosition = Convert.ToInt32(lvInput.Items[frameIndex].Text);
+            int totalFrames = lvInput.SelectedIndices[lvInput.SelectedIndices.Count - 1] - frameIndex + 1;
+            bool[] updateFlag = { false, false, false, false };
+
+            TASMovieInput updated = new TASMovieInput();
+            for (int i = 0; i < updated.Controller.Length; i++)
+                updated.Controller[i] = FrameData[frameIndex].Controller[i];
+
+
+            // if no controllers were set, return
+            if (!Editor.IsControllerChecked(0)
+                && !Editor.IsControllerChecked(1)
+                && !Editor.IsControllerChecked(2)
+                && !Editor.IsControllerChecked(3)
+                )
+                return;
+
+            UndoBuffer.Add(ref UndoHistory, ref FrameData);
+
+            for( int i = 0; i < 4; i++ )
+            {
+                if (!Editor.IsControllerChecked(i)) continue;
+
+                // append or overwrite check
+                if (chkAppendInput.Checked)
+                    TASMovieInput.ToggleUpdate(ref FrameData, updated, updateFlag, AutoFire, frameIndex, totalFrames);
+                else
+                    TASMovieInput.Insert(ref FrameData, updated, updateFlag, AutoFire, frameIndex, totalFrames);
+
+                updated.Controller[0] = txtFrameDataC1.Text;
+            }
+
+            lvInput.ClearVirtualCache();
+            lvInput.Refresh();
+            Msg.AddMsg("Updated " + totalFrames + " frame(s) at frame " + framePosition);
+             * */
         }
 
         /// <summary>
@@ -183,8 +296,11 @@ namespace MovieSplicer.UI
             try { System.IO.File.OpenRead(filename); }
             catch
             {
-                MessageBox.Show(filename + " cannot be accessed at the moment.\nEither the file is locked or it doesn't exist.", "File Access Error");
-                return;
+                MessageBox.Show(
+                    filename + " cannot be accessed at the moment.\nEither the file is locked or it doesn't exist.",
+                    "File Access Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+                 return;
             }
 
             FrameData.Format = IsValid(filename);            
@@ -272,6 +388,8 @@ namespace MovieSplicer.UI
                 Methods.AppSettings.Save(filename);
                 populateRecentFiles();
             }
+
+            runMovieGeneratorToolStripMenuItem.Enabled = true;
         }
 
         /// <summary>
@@ -331,7 +449,9 @@ namespace MovieSplicer.UI
             mnuUndoChange.Enabled = false;
 
             // clear the icon
-            pbFormat.Image = null;            
+            pbFormat.Image = null;
+
+            runMovieGeneratorToolStripMenuItem.Enabled = false;
         }
 
         /// <summary>
@@ -354,13 +474,21 @@ namespace MovieSplicer.UI
         /// </summary>
         private void mnuSave_Click(object sender, EventArgs e)
         {
-            DialogResult verifyOverwrite = MessageBox.Show("Are you sure you want to overwrite the existing file?", "Confirm Overwrite", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+            DialogResult verifyOverwrite = MessageBox.Show(
+                    "Are you sure you want to overwrite the existing file?",
+                    "Confirm Overwrite",
+                    MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+ 
             if (verifyOverwrite != DialogResult.OK)
                 return;
 
             Movie.Save("", ref FrameData.Input);
             
-            MessageBox.Show(txtMovieFilename.Text + " written successfully", " Save");
+            MessageBox.Show(
+                    txtMovieFilename.Text + " written successfully",
+                    " Save",
+                    MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+ 
         }
 
         /// <summary>
@@ -501,7 +629,12 @@ namespace MovieSplicer.UI
             // prompt for multiple frame insertion
             if (lvInput.SelectedIndices.Count > 1 && mnuEditingPrompt.Checked)
             {
-                DialogResult confirmAdd = MessageBox.Show("Are you sure you want to insert " + totalFrames + " frames after frame " + framePosition, "Confirm Multiple Frame Insertion", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+                DialogResult confirmAdd = 
+                MessageBox.Show(
+                        "Are you sure you want to insert " + totalFrames + " frames after frame " + framePosition,
+                        "Confirm Multiple Frame Insertion",
+                        MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+ 
                 if (confirmAdd != DialogResult.OK) return;
             }
 
@@ -528,7 +661,11 @@ namespace MovieSplicer.UI
             // prompt for multiple frame insertion
             if (lvInput.SelectedIndices.Count > 1 && mnuEditingPrompt.Checked)
             {
-                DialogResult confirmDelete = MessageBox.Show("Are you sure you want to remove the selected " + totalFrames + " frames", "Confirm Multiple Frame Removal", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+                DialogResult confirmDelete = MessageBox.Show(
+                        "Are you sure you want to remove the selected " + totalFrames + " frames", 
+                        "Confirm Multiple Frame Removal",
+                        MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+ 
                 if (confirmDelete != DialogResult.OK) return;
             }
 
@@ -611,7 +748,12 @@ namespace MovieSplicer.UI
             // confirm that the paste should occur
             if (mnuEditingPrompt.Checked)
             {
-                DialogResult confirmPaste = MessageBox.Show("Are you sure you want to paste " + FrameBuffer.Input.Length + " frames after frame " + framePosition, "Confirm Paste", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+                DialogResult confirmPaste = 
+                MessageBox.Show(
+                        "Are you sure you want to paste " + FrameBuffer.Input.Length + " frames after frame " + framePosition, 
+                        "Confirm Paste",
+                        MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+ 
                 if (confirmPaste != DialogResult.OK) return;
             }
 
@@ -656,22 +798,6 @@ namespace MovieSplicer.UI
         }
 
         /// <summary>
-        /// Undo a change
-        /// </summary>        
-        private void mnuUndoChange_Click(object sender, EventArgs e)
-        {
-            if (UndoHistory.Length > 0)
-            {
-                FrameData.Input = UndoHistory[UndoHistory.Length - 1].Changes;
-                UndoBuffer.Undo(ref UndoHistory);                
-                
-                Msg.AddMsg("Undid last change");
-                updateControlsAfterEdit();
-            }        
-        } 
-
-        
-        /// <summary>
         /// Copy Frames (context menu)
         /// </summary>        
         private void cmnuitemCopyFrames_Click(object sender, EventArgs e)
@@ -688,6 +814,216 @@ namespace MovieSplicer.UI
         }        
 
     #endregion                                                              
+
+    #region Select/Find/Replace/GoTo
+        public bool findNext( string find, bool direction )
+        {
+            if (Movie == null ) return false;
+
+            int start = (lvInput.SelectedIndices.Count > 0 ? lvInput.SelectedIndices[0] + 1 : 0 );
+            if (!direction) start = (lvInput.SelectedIndices.Count > 0 ? lvInput.SelectedIndices[0] - 1 : FrameData.Input.Length-1);
+            if (start < 0) start = 0;
+            if (start > FrameData.Input.Length - 1) start = FrameData.Input.Length - 1;
+            int position = TASMovieInput.Search(ref FrameData.Input, find, start, direction);
+
+            if (position > 0 && position < FrameData.Input.Length)
+            {
+                // clear the selection collection
+                // NOTE::This is since we will be creating a new selected items collection 
+                // with only 1 item (the resulting frame), but we don't want to clear if no results are
+                // found (since it'll just jump back to the top and repeat if we do)
+                lvInput.SelectedIndices.Clear();
+
+                lvInput.Items[position].Selected = true;
+                lvInput.Focus();
+                lvInput.EnsureVisible(position);
+
+                return true;
+            }
+            else
+            {
+                MessageBox.Show(
+                        "Input pattern not found between selected position and end of movie",
+                        "Sorry",
+                        MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+ 
+                return false;
+            }
+         }
+
+        public void replaceCurrentSelection(string replaceWith)
+        {
+            if (Movie == null) return;
+            if (lvInput.SelectedIndices.Count < 1) return;
+
+
+            UndoBuffer.Add(ref UndoHistory, ref FrameData.Input);
+
+            for (int i = 0; i < lvInput.SelectedIndices.Count; i++)
+            {
+                FrameData.Input[lvInput.SelectedIndices[i]].Controller[0] = replaceWith;
+            }
+
+            updateControlsAfterEdit();
+            Msg.AddMsg("Replaced frame(s) on position with " + lvInput.SelectedIndices[0]);
+        }
+
+        public void replaceAllItems(string replaceWhat, string replaceWith, bool direction)
+        {
+            if (Movie == null) return;
+
+            int start = 0;
+            int end = FrameData.Input.Length;
+            bool search = !(lvInput.SelectedIndices.Count > 1);
+            
+            UndoBuffer.Add(ref UndoHistory, ref FrameData.Input);
+
+            int totalReplacements = 0;
+            if (!search)
+            {
+                for (int i = 0; i < lvInput.SelectedIndices.Count; i++)
+                {
+                    for (int j = 0; j < FrameData.Input[i].Controller.Length; j++)
+                    {
+                        if (FrameData.Input[lvInput.SelectedIndices[i]].Controller[j] != replaceWhat) continue;
+                        FrameData.Input[lvInput.SelectedIndices[i]].Controller[j] = replaceWith;
+                        ++totalReplacements;
+                    }
+                }
+            }
+            else
+            {
+                for (int i = start; i < end; i++)
+                {
+                    for (int j = 0; i < FrameData.Input[i].Controller.Length; i++)
+                    {
+                        if (FrameData.Input[i].Controller[j] != replaceWhat) continue;
+                        FrameData.Input[i].Controller[j] = replaceWith;
+                        ++totalReplacements;
+                    }
+                }
+            }
+            updateControlsAfterEdit();
+            MessageBox.Show(
+                "" + totalReplacements + " cases replaced.",
+                "Replace",
+                MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+ 
+            Msg.AddMsg("Replaced frame(s) on position with " + lvInput.SelectedIndices[0]);
+        }
+
+        private void findToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // if not numeric or no movie loaded
+            frd.Show(this);
+            frd.SelectedTabIn(0);
+        }
+
+        private void findNextToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            findNext(frd.FindOut, frd.FindUpOrDownOut);
+        }
+
+        private void replaceToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // if not numeric or no movie loaded
+            frd.Show(this);
+            frd.SelectedTabIn(1);
+        }
+
+        private void goToToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            UI.GoToDialog dlg = new UI.GoToDialog();
+            //dlg.Parent = this;
+
+            // if not numeric or no movie loaded
+            dlg.LabelIn = ( Movie != null ? (Movie.Input.FrameData.Length-1).ToString() : "no movie" );
+            dlg.ShowDialog();
+
+            if (dlg.DialogResult != DialogResult.OK)
+                return;
+
+            // if not numeric or no movie loaded
+            if (IsNumeric(dlg.TextOut) == false || Movie == null) return;
+
+            // subtract 1 since we're looking for an index
+            int targetFrame = Convert.ToInt32(dlg.TextOut);
+
+            // check for valid range
+            if (targetFrame < FrameData.Input.Length && targetFrame >= 0)
+            {
+                for (int i = lvInput.SelectedIndices.Count-1; i >= 0 ; i--)
+                {
+                    lvInput.Items[lvInput.SelectedIndices[i]].Selected = false;
+                }
+                lvInput.Items[targetFrame].Selected = true;
+                lvInput.Focus();
+                lvInput.EnsureVisible(targetFrame);
+            }
+        }
+
+        private void selectAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            for (int i = 0; i < lvInput.Items.Count; i++ )
+            {
+                lvInput.Items[i].Selected = true;
+            } 
+        }
+        #endregion
+
+        private void runMovieGeneratorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MovieSplicer.Data.moviegenerator.MovieGenerator mg = new MovieSplicer.Data.moviegenerator.MovieGenerator();
+            mg.movie = Movie;
+            if (!mg.RestoreSavedSession()) mg.LoadConfig();
+            if (!mg.Preprocess()) return;
+            mg.Generate(this);
+
+            /*
+                        MessageBox.Show(
+                                "",
+                                "",
+                                MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+ 
+             */
+        }
+
+        #region Undo
+        private void undoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Undo();
+        }
+
+        /// <summary>
+        /// Undo a change
+        /// </summary>        
+        private void mnuUndoChange_Click(object sender, EventArgs e)
+        {
+            Undo();
+        }
+
+        private void Undo()
+        {
+            if (UndoHistory.Length > 0)
+            {
+                FrameData.Input = UndoHistory[UndoHistory.Length - 1].Changes;
+                UndoBuffer.Undo(ref UndoHistory);
+
+                Msg.AddMsg("Undid last change");
+                updateControlsAfterEdit();
+            }
+        }
+        #endregion
+
+        private void frmMain_Load(object sender, EventArgs e)
+        {
+
+        }
+
+
+
+
 
     }
 }

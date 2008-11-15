@@ -23,6 +23,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Windows.Forms;
 
 namespace MovieSplicer.Data
 {      
@@ -159,7 +160,8 @@ namespace MovieSplicer.Data
             try { System.IO.File.OpenRead(filename); }
             catch
             {
-                System.Windows.Forms.MessageBox.Show(filename + " cannot be accessed at the moment", "File Possibly Locked");
+                System.Windows.Forms.MessageBox.Show(filename + " cannot be accessed at the moment", "File Possibly Locked",
+                    MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
                 return;
             }
         }
@@ -353,6 +355,56 @@ namespace MovieSplicer.Data
         }                      
 
     #endregion
+
+
+        public virtual string GetUsableInputsAsString()
+        {
+            string[] inputs = GetUsableInputs();
+            string answer = "";
+            foreach (string s in inputs)
+            {
+                answer += s;
+            }
+            return answer;
+        }
+        public virtual string[] GetUsableInputs()
+        {
+            return null;
+        }
+
+        //yawn don't feel like fully cleaning it...
+        //inputs may contain any combination of input per each item
+        //ie, i,>,A,A>,S,etc
+        //so a straight comparison won't do, it has to be checked char by char
+        //now, if it finds a bad char, should it remove it, or drop the input entirely?
+        //and in any case, if th euser inserted two equal inputs (even with unordered chars)
+        //we should find out and remove the duplicates
+        //YAWN
+        public void CleanInputList(ref string[] inputs)
+        {
+            string allowedInputs = GetUsableInputsAsString();
+
+            System.Collections.ArrayList inputsArray = new System.Collections.ArrayList();
+            bool missed;
+            for (int i = 0; i < inputs.Length; i++)
+            {
+                if (inputs[i] == "i")
+                {
+                    inputsArray.Add("");
+                    continue;
+                }
+                missed = false;
+                for (int k = 0; k < inputs[i].Length; k++)
+                {
+                    if (allowedInputs.IndexOfAny(inputs[i][k].ToString().ToCharArray()) > -1)
+                        continue;
+                    missed = true;
+                    break;
+                }
+                if (!missed) inputsArray.Add(inputs[i]);
+            }
+            inputs = (string[])inputsArray.ToArray(typeof(string));
+        }
 
     }
 }

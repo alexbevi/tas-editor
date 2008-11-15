@@ -73,7 +73,8 @@ namespace MovieSplicer.UI
             if (Input.Input == null && txtFilename.Text.Length == 0) return;
             if (!IsNumeric(txtAVITiming.Text) || !IsNumeric(txtOffset.Text))
             {
-                MessageBox.Show("Timing/Offset values must be numeric", "Ooops");
+                MessageBox.Show("Timing/Offset values must be numeric", "Ooops",
+                    MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
                 return;
             }
 
@@ -84,7 +85,8 @@ namespace MovieSplicer.UI
             subGen.Export();
             subGen = null;
 
-            MessageBox.Show("Subtitle file exported", "Congrats");
+            MessageBox.Show("Subtitle file exported", "Congrats",
+                MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
         }           
     }
 }
