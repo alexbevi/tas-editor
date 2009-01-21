@@ -31,8 +31,8 @@ namespace MovieSplicer.Data.moviegenerator
         public FrameWithInput(int number_inputs)
         {
             if (number_inputs < 1) number_inputs = 7;
-            Input = new MovieSplicer.Data.TASMovieInput[number_inputs+1];
-            for( int i = 0; i < number_inputs+1 ; i++ )
+            Input = new MovieSplicer.Data.TASMovieInput[number_inputs];
+            for( int i = 0; i < number_inputs; i++ )
             {
                 Input[i] = new MovieSplicer.Data.TASMovieInput();
             }
@@ -529,9 +529,14 @@ public bool frameremove_pushframelist_onremove;
 
         /// <summary>
         /// Go to this or next loop
-        /// and add one to the combination
+        /// and add one to the insert subcombination
         /// </summary>
-        private bool addonemore;
+        private bool addonemoreinsertsub;
+        /// <summary>
+        /// Go to this or next loop
+        /// and add one to the replace combination
+        /// </summary>
+        private bool addonemorereplace;
 
         /// <summary>
         /// Starting this frame, data will be generated
@@ -655,7 +660,8 @@ public bool frameremove_pushframelist_onremove;
             frameremove_iteration = -1;
             frameinsert_totalframesinsertedsofar = 0;
             frameremove_totalframesremovedsofar = 0;
-            addonemore = false;
+            addonemoreinsertsub = false;
+            addonemorereplace = false;
 
             insertCombinations = null;
             removeCombinations = null;
@@ -1071,7 +1077,7 @@ public bool frameremove_pushframelist_onremove;
 
             for ( int i = 0; i < movieheader_endindex; i++)
             {
-                if (movieheader_endindex >= movie.Input.FrameData.Length) break;
+                if( i >= movie.Input.FrameData.Length) break;
                 for (int j = 0; j < movie.Input.ControllerCount; j++ )
                 {
                     baseinput[i].Controller[j] = movie.Input.FrameData[i].Controller[j];
@@ -1253,6 +1259,7 @@ public bool frameremove_pushframelist_onremove;
                 while(frameremove_current >= frameremove_min)
                 {
                     SaveMoviesForGeneration();
+                    MessageBox.Show("Total Movies Generated so far: " + lastmoviesaved_index.ToString(), "Generation step done", MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
                     --frameremove_current;
                     if (finishrunning) break;
                 }
@@ -1342,23 +1349,31 @@ public bool frameremove_pushframelist_onremove;
                 //then do all insertions
                 //then do all replacements
                 //avoid crash
-                if (frameremove_do)
+                if (frameremove_do && frameremove_current > 0)
                 {
                     removeCombinations[removeCombinations.Length - 1].value = frameremove_current; //start in first iteration
+                    frameremove_iteration = removeCombinations.Length - 1 - 1; //this will put the iteration ready for entering and doing the next iteration
+                    frameremove_totalframesremovedsofar = frameremove_current; //starts ready for second combination
                 }
-                frameremove_iteration = removeCombinations.Length - 1 - 1; //this will put the iteration ready for entering and doing the next iteration
-                frameremove_totalframesremovedsofar = frameremove_current; //starts ready for second combination
+                else
+                {
+                    frameremove_iteration = -1;
+                }
             
             //    frameremove_iteration = -1;
               //  frameremove_totalframesremovedsofar = 0;
 
                 //avoid crash
-                if (frameinsert_do)
+                if (frameinsert_do && frameinsert_current > 0 )
                 {
                     insertCombinations[insertCombinations.Length - 1].value = frameinsert_current; //start in first iteration
+                    frameinsert_iteration = insertCombinations.Length - 1 - 1; //this will put the iteration ready for entering and doing the next iteration
+                    frameinsert_totalframesinsertedsofar = frameinsert_current; //starts ready for second combination
                 }
-                frameinsert_iteration = insertCombinations.Length - 1 - 1; //this will put the iteration ready for entering and doing the next iteration
-                frameinsert_totalframesinsertedsofar = frameinsert_current; //starts ready for second combination
+                else
+                {
+                    frameinsert_iteration = -1;
+                }
             }
 
             while(true)
@@ -1378,37 +1393,37 @@ public bool frameremove_pushframelist_onremove;
                         finishrunning = true;
                         return;
                     };
-
-
-                    //1. Update combinations for next save
-                    //update remove combinations
-                    //in case of overflow value is left broken
-                    //so next call sets it to first value
-                    addonemore = true;
-                    MoveFrameRemoveGenerationForwardOneStep();
-                }
-
-                if ( frameremove_iteration < 0)
+                };
+                
+                
+                //1. Update combinations for next save
+                //update remove combinations
+                //in case of overflow value is left broken
+                //so next call sets it to first value
+                if (frameremove_iteration == -1)
                 {
-                    addonemore = true;
-                    //in case of overflow value is left on its first value
-                    MoveFrameInsertSubGenerationForwardOneStep();
-                    if (addonemore)
+                    //next turn we will start saving the results of current turn
+                    addonemoreinsertsub = true; //and add one to next combination
+                }
+                MoveFrameRemoveGenerationForwardOneStep();
+                
+                if (addonemoreinsertsub)
+                {
+                    addonemoreinsertsub = false;
+                    if ( MoveFrameInsertSubGenerationForwardOneStep() )
                     {
-                        addonemore = true;
-                        //in case of overflow value is left on its first value
-                        MoveFrameInsertGenerationForwardOneStep();
-                        if ( frameinsert_iteration < 0)
+                        if (frameinsert_iteration == -1)
                         {
-                            addonemore = true;
-                            //in case of overflow value doesnt matter
-                            //as we finished the generation
-                            //(gets set to first value anyway)
-                            MoveFrameReplaceGenerationForwardOneStep();
-                            if (addonemore)
+                            addonemorereplace = true;
+                        }
+
+                        MoveFrameInsertGenerationForwardOneStep();
+
+                        if (addonemorereplace)
+                        {
+                            addonemorereplace = false;
+                            if( MoveFrameReplaceGenerationForwardOneStep() )
                             {
-                                addonemore = true;
-                                //finally finished
                                 break;
                             };
                         };
@@ -1420,12 +1435,14 @@ public bool frameremove_pushframelist_onremove;
         private void MoveFrameRemoveGenerationForwardOneStep()
         {
             //dont do this, do insert or replace
-            if (!frameremove_do)
+            if (!frameremove_do || frameremove_current == 0 )
             {
                 frameremove_iteration = -1;
                 return;
             };
 
+            bool addonemore = true;
+            
             //reset last combination step
             //first time this is zero
             frameremove_totalframesremovedsofar -= removeCombinations[frameremove_iteration+1].value;
@@ -1433,7 +1450,7 @@ public bool frameremove_pushframelist_onremove;
 
             if (frameremove_iteration < 0)
             {
-                frameremove_iteration = 0;
+                frameremove_iteration = removeCombinations.Length - 1;
             }
 
             for (; frameremove_iteration < removeCombinations.Length; frameremove_iteration++)
@@ -1453,7 +1470,6 @@ public bool frameremove_pushframelist_onremove;
                 {
                     //new combination!
                     --frameremove_iteration; //do again the one behind
-                    addonemore = true;
                     //if it gets set to -1 then it will cause an overflow
                     //to the next combination mode!
                     return;
@@ -1467,11 +1483,13 @@ public bool frameremove_pushframelist_onremove;
         private void MoveFrameInsertGenerationForwardOneStep()
         {
             //dont do this, do removes or replaces
-            if (!frameinsert_do)
+            if (!frameinsert_do || frameinsert_current == 0 )
             {
                 frameinsert_iteration = -1;
                 return;
             };
+            
+            bool addonemore = true;
 
             //reset last combination step
             //first time this is zero
@@ -1480,7 +1498,7 @@ public bool frameremove_pushframelist_onremove;
 
             if (frameinsert_iteration < 0)
             {
-                frameinsert_iteration = 0;
+                frameinsert_iteration = insertCombinations.Length - 1;
             }
 
             for (; frameinsert_iteration < insertCombinations.Length; frameinsert_iteration++)
@@ -1508,15 +1526,12 @@ public bool frameremove_pushframelist_onremove;
             frameinsert_iteration = -1;
         }
 
-        public void MoveFrameInsertSubGenerationForwardOneStep()
+        public bool MoveFrameInsertSubGenerationForwardOneStep()
         {
-            addonemore = false;
-
             //dont do this, do removes or replaces
             if (!frameinsert_do)
             {
-                addonemore = true;
-                return;
+                return true;
             };
 
             //update insert combinations
@@ -1532,29 +1547,25 @@ public bool frameremove_pushframelist_onremove;
                     {
                         //we finished the combinations of this mode!
                         //be sure to increase the next combination mode!
-                        addonemore = true;
-                        return;
+                        return true;
                     }
                     continue;
                 }
                 
                 //new combination!
-                return;
+                return false;
             }
 
             //safety
-            addonemore = true;
+            return true;
         }
 
-        public void MoveFrameReplaceGenerationForwardOneStep()
+        public bool MoveFrameReplaceGenerationForwardOneStep()
         {
-            addonemore = false;
-
             //dont do this, do removes or inserts
             if (!inputreplace_do)
             {
-                addonemore = true;
-                return;
+                return true;
             };
 
             //update replace combinations
@@ -1568,18 +1579,17 @@ public bool frameremove_pushframelist_onremove;
                     replaceCombinations[j].value = 0;
                     if (j == replaceCombinations.Length - 1)
                     {
-                        addonemore = true;
-                        return;
+                        return true;
                     }
                     continue;
                 }
 
                 //new combination!
-                return;
+                return false;
             }
 
             //safety
-            addonemore = true;
+            return true;
         }
 
         private void dosave()
@@ -1588,7 +1598,6 @@ public bool frameremove_pushframelist_onremove;
             int removeoffset = 0;
 
             int frame = 0;
-            int index_baseinput = 0;
             int index_input = 0;
             int index_heldinput = 0;
             int index_insert = 0;
@@ -1672,7 +1681,7 @@ public bool frameremove_pushframelist_onremove;
             movie.Save(lastmoviesaved_index.ToString() + movie.Filename.Substring(movie.Filename.IndexOf(".")), ref baseinput);
 
             //clear garbage
-            for (int i = movieheader_endindex; i < index_baseinput; i++)
+            for (int i = movieheader_endindex; i < movie.Input.FrameData.Length; i++)
             {
                 baseinput[i].Controller[0] = "";
             }
