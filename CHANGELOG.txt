@@ -50,14 +50,18 @@ TODO::Add Nestopia, VirtuaNES support? (not sure if it's even necessary)
 ///////////////
 // CHANGELOG //
 ///////////////
-v0-13
+v0-12-1
 
-- M64::M64 file saving (thanks to bkDJ). Due to difficulties with the data you have to load a
-       savestate in record mode after the end of your movie to allow th emulator to fix the
-       movie's length, tas-movie-editor does not have the information required to do this.
-- ETC::Automatic Movie generator (thanks to gia). Generates combinations of different movies
-       given a base one. Useful for bots. Check generator.config for a extensive list of
-       parameters.
+- M64::M64 file saving (thanks to bkDJ). If you do not modify the length of the movie things will be ok.
+       However, if you do modify it (append/remove frames), due to difficulties with the emulator your
+       movie length will be wrong. To fix this you have to play your movie, pause right at the end of it,
+       create a savestate, change to write-mode, and reload your savestate. This will force the emulator
+       to fix this piece of information on your movie file.
+       tas-movie-editor does not have the information required to do this.
+- ETC::Automatic Movie generator (thanks to gia). Generates combinations of different movies (each with
+       different inputs) given a base one. Useful for bots. Check generator.config for a extensive list
+       of parameters.
+- ETC::Better code for application resize.
 - ETC::Usability improvements. Go To, Find, Replace, etc, dialogs.
 
 v0-12
