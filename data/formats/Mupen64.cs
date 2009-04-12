@@ -3,6 +3,7 @@
  *                                                                              *
  * Copyright notice for this file:                                              *
  *  Copyright (C) 2006-7 Maximus                                                *
+ *  Copyright (C) 2008   bkDJ                                                   *
  *                                                                              *
  * This program is free software; you can redistribute it and/or modify         *
  * it under the terms of the GNU General Public License as published by         *
@@ -128,15 +129,16 @@ namespace MovieSplicer.Data.Formats
             // Though ControllerInputs is stored in the header, it can be determined 
             // mathematically, so we may as well do it once instead of twice ;)
             //ControllerInputs     = Read32(ref FileContents, Offsets[8]);
+            ControllerInputs = Read32(ref FileContents, Offsets[8]);
 
             if (Header.Version >= 3)
             {
-                ControllerInputs = (FileContents.Length - 0x400) / BYTES_PER_FRAME;
+                //ControllerInputs = (FileContents.Length - 0x400) / BYTES_PER_FRAME;
                 ControllerDataOffset = 0x400;
             }
             else
             {
-                ControllerInputs = (FileContents.Length - 0x200) / BYTES_PER_FRAME;
+                //ControllerInputs = (FileContents.Length - 0x200) / BYTES_PER_FRAME;
                 ControllerDataOffset = 0x200;
             }
 
@@ -167,7 +169,7 @@ namespace MovieSplicer.Data.Formats
 
         private void getFrameInput(ref byte[] byteArray)
         {
-            // NOTE::ControllerInputs seems to always be 1/2 of the FrameCount
+            // NOTE::ControllerInputs is how many times the game polled for data, NOT how many VIs happen during a movie
             Input.FrameData = new TASMovieInput[ControllerInputs];                        
 
             // parse frame data
@@ -194,8 +196,8 @@ namespace MovieSplicer.Data.Formats
         {
             bool[] D = { false, false, false, false };
             bool[] C = { false, false, false, false };
-            Int32  x = 0;
-            Int32  y = 0;
+            sbyte x = 0;
+            sbyte y = 0;
 
             string frame = "";
 
@@ -213,8 +215,8 @@ namespace MovieSplicer.Data.Formats
             C[3] = (byteArray[1] & (0x08)) != 0;
             if ((byteArray[1] & (0x10)) != 0) frame += InputValues[6];
             if ((byteArray[1] & (0x20)) != 0) frame += InputValues[7];
-            x = byteArray[2] & (0xFF);
-            y = byteArray[3] & (0xFF);
+            x = (sbyte)byteArray[2];
+            y = (sbyte)byteArray[3];
 
             if (D[0] || D[1] || D[2] || D[3])
             {
@@ -230,25 +232,187 @@ namespace MovieSplicer.Data.Formats
                     if (C[i]) frame += InputDir[i];
                 frame += ")";
             }
-            
-            int xamt = (x < 0 ? -x : x) * 99 / 127; if (xamt == 0 && x != 0) xamt = 1;
-            int yamt = (y < 0 ? -y : y) * 99 / 127; if (yamt == 0 && y != 0) yamt = 1;
-                        
+
             if (x != 0)
             {
+                frame += "(";
                 frame += InputValues[8];
                 frame += (x < 0) ? InputDir[0] : InputDir[1];
-                frame += (y < 0) ? InputDir[2] : InputDir[3];
-                frame += x.ToString(); // DEBUGGING (append value)
+                int xprint = 0;
+                xprint = (x < 0) ? -(int)x : (int)x;
+                frame += xprint.ToString();
+                frame += ")";
             }
             if (y != 0)
             {
-                frame += InputValues[9];                
+                frame += "(";
+                frame += InputValues[9];
                 frame += (y < 0) ? InputDir[2] : InputDir[3];
-                frame += y.ToString(); // DEBUGGING (append value)
+                int yprint = 0;
+                yprint = (y < 0) ? -(int)y : (int)y;
+                frame += yprint.ToString();
+                frame += ")";
             }
-            
+
             return frame;
+        }
+
+
+        /// <summary>
+        /// Convert the string representation of input back to binary values
+        /// </summary>
+        private byte[] parseControllerData(string frameInput)
+        {
+            byte[] input = { 0x00, 0x00, 0x00, 0x00 };
+
+            if (frameInput == null || frameInput == "") return input;
+
+            //first we take care of analog
+            if (frameInput.Contains(InputValues[1])) input[0] |= (byte)(0x10);  // Start
+            if (frameInput.Contains(InputValues[2])) input[0] |= (byte)(0x20);  // Z
+            if (frameInput.Contains(InputValues[3])) input[0] |= (byte)(0x40);  // B
+            if (frameInput.Contains(InputValues[4])) input[0] |= (byte)(0x80);  // A
+            if (frameInput.Contains(InputValues[6])) input[1] |= (byte)(0x10);  // R
+            if (frameInput.Contains(InputValues[7])) input[1] |= (byte)(0x20);  // L
+
+            //then we take care of directions for D-pad...
+            if (frameInput.Contains(InputValues[0]))
+            {
+                int nStart = frameInput.IndexOf(InputValues[0][0]) + 1;
+                int nEnd = frameInput.IndexOf(')', nStart);
+                string dirs = frameInput.Substring(nStart, nEnd - nStart);
+
+                if (frameInput.Contains(InputDir[0])) input[0] |= (byte)(0x01);  // Right
+                if (frameInput.Contains(InputDir[1])) input[0] |= (byte)(0x02);  // Left
+                if (frameInput.Contains(InputDir[2])) input[0] |= (byte)(0x04);  // Down
+                if (frameInput.Contains(InputDir[3])) input[0] |= (byte)(0x08);  // Up
+            }
+
+            //..and directions for C
+            if (frameInput.Contains(InputValues[5]))
+            {
+                int nStart = frameInput.IndexOf(InputValues[5][0]) + 1;
+                int nEnd = frameInput.IndexOf(')', nStart);
+                string dirs = frameInput.Substring(nStart, nEnd - nStart);
+
+                if (frameInput.Contains(InputDir[0])) input[1] |= (byte)(0x01);  // Right
+                if (frameInput.Contains(InputDir[1])) input[1] |= (byte)(0x02);  // Left
+                if (frameInput.Contains(InputDir[2])) input[1] |= (byte)(0x04);  // Down
+                if (frameInput.Contains(InputDir[3])) input[1] |= (byte)(0x08);  // Up
+            }
+
+            // Analog stick X axis
+            if (frameInput.Contains(InputValues[8]))
+            {
+                int nStart = frameInput.IndexOf(InputValues[8][0]) + 2;
+                int nEnd = frameInput.IndexOf(')', nStart);
+                string num = frameInput.Substring(nStart, nEnd - nStart);
+                Int32 xaxis = Convert.ToInt32(num);
+                if (frameInput[nStart - 1] == InputDir[0][0])
+                {
+                    // number should be negative
+                    if (xaxis > 128) xaxis = 128;
+                    xaxis = -xaxis;
+                }
+                else
+                {
+                    // number is positive
+                    if (xaxis > 127) xaxis = 127;
+                }
+                byte x = (byte)xaxis;
+                input[2] = x;
+            }
+
+            // Analog stick Y axis
+            if (frameInput.Contains(InputValues[9]))
+            {
+                int nStart = frameInput.IndexOf(InputValues[9][0]) + 2;
+                int nEnd = frameInput.IndexOf(')', nStart);
+                string num = frameInput.Substring(nStart, nEnd - nStart);
+                Int32 yaxis = Convert.ToInt32(num);
+                if (frameInput[nStart - 1] == InputDir[2][0])
+                {
+                    // number should be negative
+                    if (yaxis > 128) yaxis = 128;
+                    yaxis = -yaxis;
+                }
+                else
+                {
+                    // number is positive
+                    if (yaxis > 127) yaxis = 127;
+                }
+                byte y = (byte)yaxis;
+                input[3] = y;
+            }
+
+            return input;
+        }
+
+        /// <summary>
+        /// Save the content of the frame data back out to an M64 file
+        /// </summary>        
+        public override void Save(string filename, ref TASMovieInput[] input)
+        {
+            byte[] head = ReadBytes(ref FileContents, 0, ControllerDataOffset);
+            int size = 0;
+            int controllers = Input.ControllerCount;
+
+            // get the size of the file byte[] (minus the header)
+            for (int i = 0; i < input.Length; i++)
+                for (int j = 0; j < controllers; j++)
+                    size += BYTES_PER_FRAME;
+
+            // create the output array and copy in the contents
+            byte[] outputFile = new byte[head.Length + size + (BYTES_PER_FRAME * controllers)];
+            head.CopyTo(outputFile, 0);
+
+            // add the controller data
+            int position = 0;
+            for (int i = 0; i < input.Length; i++)
+                for (int j = 0; j < controllers; j++)
+                    // check if the controller we're about to process is used
+                    if (Input.Controllers[j])
+                    {
+                        byte[] parsed = parseControllerData(input[i].Controller[j]);
+                        outputFile[head.Length + position++] = parsed[0];
+                        outputFile[head.Length + position++] = parsed[1];
+                        outputFile[head.Length + position++] = parsed[2];
+                        outputFile[head.Length + position++] = parsed[3];
+                    }
+
+            updateMetadata(ref outputFile);
+
+            WriteByteArrayToFile(ref outputFile, filename, input.Length, Offsets[8]);
+
+            //return true;
+        }
+
+        /// <summary>
+        /// Update the metadata information in the M64
+        /// </summary>        
+        private void updateMetadata(ref byte[] byteArray)
+        {
+            // TODO: convert this to be m64 compliant insted of stolen from smv
+
+            //int startPos = Offsets[11];
+            //int extraROMLength = (SMVSpecific.HASROMINFO) ? Convert.ToInt32(EXTRAROMINFO_SIZE) : 0;
+            //byte[] author = WriteChars16(Extra.Author);
+            //byte[] temp = new byte[startPos + author.Length + (byteArray.Length - SaveStateOffset + extraROMLength)];
+
+            //int newSaveStateOffset = startPos + author.Length + extraROMLength;
+            //int newCDataOffset = ControllerDataOffset + (newSaveStateOffset - SaveStateOffset);
+
+            //for (int i = 0; i < startPos; i++)
+            //    temp[i] = byteArray[i];
+            //for (int j = 0; j < author.Length; j++)
+            //    temp[j + startPos] = author[j];
+            //for (int k = 0; k < byteArray.Length - SaveStateOffset + extraROMLength; k++)
+            //    temp[k + newSaveStateOffset - extraROMLength] = byteArray[k + SaveStateOffset - extraROMLength];
+
+            //Write32(ref temp, Offsets[9], newSaveStateOffset);
+            //Write32(ref temp, Offsets[10], newCDataOffset);
+
+            //byteArray = temp;
         }
 
         public override string[] GetUsableInputs()
