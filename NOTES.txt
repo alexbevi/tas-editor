@@ -8,7 +8,7 @@ FCM     [x]         [x]         [x]          [x]            [x]         [x]     
 GMV     [x]         [x]         [x]          [x]            [x]         [x]     [x] 
 FMV     [x]         [x]         [x]          [x]            [x]         [x]     [x]
 VBM     [x]         [x]         [x]          [x]            [x]         [x]     [x]
-M64*    [x]         [x]         [x]          [x]            [x]         [ ]     [ ]
+M64*    [x]         [x]         [x]          [x]            [x]         [ ]     [X]
 
 *mupen support is difficult since there's not direct correlation between how often an input sample
 is applied to a particular frame
@@ -50,6 +50,16 @@ TODO::Add Nestopia, VirtuaNES support? (not sure if it's even necessary)
 ///////////////
 // CHANGELOG //
 ///////////////
+v0-13
+
+- M64::M64 file saving (thanks to bkDJ). Due to difficulties with the data you have to load a
+       savestate in record mode after the end of your movie to allow th emulator to fix the
+       movie's length, tas-movie-editor does not have the information required to do this.
+- ETC::Automatic Movie generator (thanks to gia). Generates combinations of different movies
+       given a base one. Useful for bots. Check generator.config for a extensive list of
+       parameters.
+- ETC::Usability improvements. Go To, Find, Replace, etc, dialogs.
+
 v0-12
 
 - SMV::Fixed a bug that prevented loading of 5-player movie files
