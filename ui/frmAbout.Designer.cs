@@ -76,7 +76,7 @@ namespace MovieSplicer.UI
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(140, 13);
             this.label3.TabIndex = 2;
-            this.label3.Text = "(c) 2006-07 Alex Bevilacqua";
+            this.label3.Text = "(c) 2006-09 Alex Bevilacqua";
             // 
             // label4
             // 

@@ -2,7 +2,8 @@
  * TAS Movie Editor                                                             *
  *                                                                              *
  * Copyright notice for this file:                                              *
- *  Copyright (C) 2006-7 Maximus                                                *
+ *  Copyright (C) 2006-2009 Maximus                                             *
+ *                                                                              *
  *                                                                              *
  * This program is free software; you can redistribute it and/or modify         *
  * it under the terms of the GNU General Public License as published by         *
@@ -47,11 +48,7 @@ using MovieSplicer.Components;
 namespace MovieSplicer.UI
 {    
     public partial class frmMain : TASForm
-    {
-        // minimum form dimensions
-        const int BASE_WIDTH  = 850;
-        const int BASE_HEIGHT = 435;
-      
+    {        
         private TASMovie                Movie;
         private TASMovieInputCollection FrameData;
         private TASMovieInputCollection FrameBuffer;
@@ -70,41 +67,10 @@ namespace MovieSplicer.UI
             InitializeComponent();
             frd = new FindReplaceDialog(this);
             
-            this.Text = APP_TITLE + " v" + VERSION;
-            this.MinimumSize = new Size(BASE_WIDTH, BASE_HEIGHT);
+            this.Text = APP_TITLE + " v" + VERSION;            
             populateRecentFiles();
-        }                
-       
-        /// <summary>
-        /// Resize/reposition the controls when the main form size changes
-        /// </summary>
-        private void resizeControls()
-        {
-            int diffW = this.Width - BASE_WIDTH;
-            int diffH = this.Height - BASE_HEIGHT;
-            
-            int screenW = Screen.PrimaryScreen.WorkingArea.Width;
-            int screenH = Screen.PrimaryScreen.WorkingArea.Height;
-            
-            grpMovieInfo.Size = new Size(417, 347 + diffH);
-            tvInfo.Size = new Size(400, 283 + diffH);           
-            
-            grpFrameData.Size = new Size(410 + diffW, 347 + diffH);
-            lvInput.Size = new Size(395 + diffW, 321 + diffH);
-        }
-
-        /// <summary>
-        /// Form sizing handler
-        /// </summary>
-        private void frmMain_SizeChanged(object sender, EventArgs e)
-        {
-            resizeControls();
-
-            // HACK::Refresh the listview to avoid an unnecessary horizontal scroll bar 
-            // from appearing when the control's size shrinks
-            lvInput.Refresh();
-        }
-
+        }                               
+        
         // pass menu options to editor on change
         // NOTE::effective, but optimal?
         private void mnuAutoFireOption_CheckStateChanged(object sender, EventArgs e)

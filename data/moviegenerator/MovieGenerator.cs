@@ -851,7 +851,7 @@ public bool frameremove_pushframelist_onremove;
                         frameremove_pushframelist_onremove = (line.Substring("frameremove_pushframelist_onremove".Length).Trim() != "0");
                     }
                 }
-                catch (SystemException se)
+                catch (SystemException)
                 {
                     continue;
                 }
@@ -1891,7 +1891,7 @@ public bool frameremove_pushframelist_onremove;
                 sr = new System.IO.StreamReader(fs);
                 MessageBox.Show("generator.save was detected, the generation will continue from this point! If you do not wish this, you will have to delete generator.save.", "Generation restore!", MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
             }
-            catch (System.IO.FileNotFoundException fnfe)
+            catch (System.IO.FileNotFoundException)
             {
                 //If there is no file then this is not an actual error
                 return false;

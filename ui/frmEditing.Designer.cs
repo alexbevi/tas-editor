@@ -30,6 +30,7 @@ namespace MovieSplicer.UI
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmEditing));
             this.grpEditing = new System.Windows.Forms.GroupBox();
+            this.chkAppendInput = new System.Windows.Forms.CheckBox();
             this.btnCancel = new System.Windows.Forms.Button();
             this.chkFrameDataC4 = new System.Windows.Forms.CheckBox();
             this.label36 = new System.Windows.Forms.Label();
@@ -49,7 +50,6 @@ namespace MovieSplicer.UI
             this.txtJumpToFrame = new System.Windows.Forms.TextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.chkAppendInput = new System.Windows.Forms.CheckBox();
             this.grpEditing.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -77,6 +77,16 @@ namespace MovieSplicer.UI
             this.grpEditing.TabIndex = 10;
             this.grpEditing.TabStop = false;
             this.grpEditing.Text = "Input Editor";
+            // 
+            // chkAppendInput
+            // 
+            this.chkAppendInput.AutoSize = true;
+            this.chkAppendInput.Location = new System.Drawing.Point(91, 68);
+            this.chkAppendInput.Name = "chkAppendInput";
+            this.chkAppendInput.Size = new System.Drawing.Size(90, 17);
+            this.chkAppendInput.TabIndex = 9;
+            this.chkAppendInput.Text = "Append Input";
+            this.chkAppendInput.UseVisualStyleBackColor = true;
             // 
             // btnCancel
             // 
@@ -261,16 +271,6 @@ namespace MovieSplicer.UI
             this.label1.TabIndex = 31;
             this.label1.Text = "Enter frame number or input pattern";
             // 
-            // chkAppendInput
-            // 
-            this.chkAppendInput.AutoSize = true;
-            this.chkAppendInput.Location = new System.Drawing.Point(91, 68);
-            this.chkAppendInput.Name = "chkAppendInput";
-            this.chkAppendInput.Size = new System.Drawing.Size(90, 17);
-            this.chkAppendInput.TabIndex = 9;
-            this.chkAppendInput.Text = "Append Input";
-            this.chkAppendInput.UseVisualStyleBackColor = true;
-            // 
             // frmEditing
             // 
             this.AcceptButton = this.btnUpdate;
@@ -288,6 +288,7 @@ namespace MovieSplicer.UI
             this.MinimizeBox = false;
             this.Name = "frmEditing";
             this.ShowInTaskbar = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Editing Console";
             this.grpEditing.ResumeLayout(false);
             this.grpEditing.PerformLayout();
