@@ -134,6 +134,8 @@ namespace MovieSplicer.Data.Formats
         {
             byte input = 0x00;
 
+            if (frameValue == null || frameValue == "") return input;
+                
             for (int i = 0; i < 8; i++)
                 if (frameValue.Contains(InputValues[i])) input |= (byte)(1 << i);
 

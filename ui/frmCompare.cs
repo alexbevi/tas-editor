@@ -68,7 +68,8 @@ namespace MovieSplicer.UI
                 case MovieType.GMV: movie = new Gens(filename); break;
                 case MovieType.FMV: movie = new Famtasia(filename); break;
                 case MovieType.VBM: movie = new VisualBoyAdvance(filename); break;
-                case MovieType.M64: movie = new Mupen64(filename); break;                
+                case MovieType.M64: movie = new Mupen64(filename); break;
+                case MovieType.MMV: movie = new Dega(filename); break;
             }
             location.Input       = movie.Input.FrameData;
             location.Controllers = movie.Input.ControllerCount;

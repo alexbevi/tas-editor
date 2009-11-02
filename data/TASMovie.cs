@@ -75,8 +75,8 @@ namespace MovieSplicer.Data
             {
                 get
                 {                    
-                    if      (MovieStartFlag[0]) return "Reset";
-                    else if (MovieStartFlag[1]) return "Save";
+                    if      (MovieStartFlag[0]) return "Save";
+                    else if (MovieStartFlag[1]) return "Reset";
                     else if (MovieStartFlag[2]) return "Power On";
                     return null;
                 }
@@ -175,7 +175,14 @@ namespace MovieSplicer.Data
         /// </summary> 
         protected void FillByteArrayFromFile(string filename, ref byte[] byteArray)
         {
-            FileStream   fs = File.OpenRead(filename);
+            FileStream fs;
+            try { fs = File.OpenRead(filename); }
+            catch
+            {
+                System.Windows.Forms.MessageBox.Show(filename + " cannot be accessed at the moment", "File Possibly Locked",
+                    MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+                return;
+            }
             BinaryReader br = new BinaryReader(fs);
 
             byteArray = br.ReadBytes((int)fs.Length);
@@ -192,7 +199,14 @@ namespace MovieSplicer.Data
         {
             if (filename == "") filename = this.Filename;
 
-            FileStream   fs     = File.Open(filename, FileMode.Create);
+            FileStream fs;
+            try { fs = File.Open(filename, FileMode.Create); }
+            catch
+            {
+                MessageBox.Show(filename + " cannot be accessed at the moment", "File Possibly Locked",
+                    MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+                return;
+            }
             BinaryWriter writer = new BinaryWriter(fs);
             
             if (frameCount > 0 && frameCountPosition > 0)
@@ -209,6 +223,10 @@ namespace MovieSplicer.Data
             foreach (byte b in outputFile) writer.Write(b);
 
             writer.Close(); writer = null; fs.Dispose();
+
+            MessageBox.Show(filename + " written successfully", " Save",
+                    MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+
         }
         
         /// <summary>
@@ -261,7 +279,7 @@ namespace MovieSplicer.Data
         {
             string s = "";
             for (int i = 0; i < length; i++)
-                s += byteArray[position + i].ToString("X");
+                s += byteArray[position + i].ToString("X2");
             return s;
         }
 

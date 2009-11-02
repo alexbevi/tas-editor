@@ -143,8 +143,8 @@ namespace MovieSplicer.Data.Formats
             }
 
             Options = new TASOptions(true);
-            Options.MovieStartFlag[0] = (FileContents[Offsets[9]] | FileContents[Offsets[9] + 1]) == 2 ? true : false;
-            Options.MovieStartFlag[1] = (FileContents[Offsets[9]] | FileContents[Offsets[9] + 1]) == 1 ? true : false;
+            Options.MovieStartFlag[0] = (FileContents[Offsets[9]] | FileContents[Offsets[9] + 1]) == 1 ? true : false;
+            Options.MovieStartFlag[2] = (FileContents[Offsets[9]] | FileContents[Offsets[9] + 1]) == 2 ? true : false;
             Options.FPS = FileContents[Offsets[5]];
 
             Extra = new TASExtra();

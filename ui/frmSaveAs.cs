@@ -89,6 +89,7 @@ namespace MovieSplicer.UI
                 case MovieType.FCM: saveDlg.Filter = FCM_FILTER; break;
                 case MovieType.FMV: saveDlg.Filter = FMV_FILTER; break;
                 case MovieType.M64: saveDlg.Filter = M64_FILTER; break;
+                case MovieType.MMV: saveDlg.Filter = MMV_FILTER; break;
                 case MovieType.SMV: saveDlg.Filter = SMV_FILTER; break;
                 case MovieType.GMV: saveDlg.Filter = GMV_FILTER; break;
                 case MovieType.VBM: saveDlg.Filter = VBM_FILTER; break;

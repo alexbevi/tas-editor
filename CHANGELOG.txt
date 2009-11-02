@@ -9,6 +9,7 @@ GMV     [x]         [x]         [x]          [x]            [x]         [x]     
 FMV     [x]         [x]         [x]          [x]            [x]         [x]     [x]
 VBM     [x]         [x]         [x]          [x]            [x]         [x]     [x]
 M64*    [x]         [x]         [x]          [x]            [x]         [ ]     [X]
+MMV     [x]         [x]         [x]          [x]            [x]         [?]     [x]
 
 *mupen support is difficult since there's not direct correlation between how often an input sample
 is applied to a particular frame
@@ -50,6 +51,38 @@ TODO::Add Nestopia, VirtuaNES support? (not sure if it's even necessary)
 ///////////////
 // CHANGELOG //
 ///////////////
+
+v0-12-1f
+
+- GMV::Fixed file saving.
+- FMV::Fixed file saving.
+- ETC::Fixed detection of movie start type.
+- ETC::Handled a few IO exceptions.
+
+v0-12-1e
+
+- ETC::Fixed several shortcut keys.
+- ETC::Tweaked menu items.
+
+v0-12-1d-hotfix
+
+- MMV::Fixed file saving.
+
+v0-12-1d
+
+- ETC::Fixed high CPU usage.
+- ETC::The editor console will be automatically closed when a new movie is loaded.
+
+v0-12-1c
+
+- MMV::Experimental MMV support.
+- FCM::Fixed a bug that caused the wrong length of controller data to be saved.
+- FCM::Fixed broken detection and saving of movie start type.
+- ETC::Added insufficient specifications to MMV, ZMV and PXM formats.
+- ETC::Fixed a bug that ReadHEX didn't generate the leading 0 when the HEX number was less than 0x10.
+- ETC::Fixed a bug that Movie Start mode displayed "Reset" instead of "Save", and vice versa.
+- ETC::Placed all the 4 Controller checkboxes in the edit dialog over the texts that could obscure them on some systems.
+
 v0-12-1
 
 - M64::M64 file saving (thanks to bkDJ). If you do not modify the length of the movie things will be ok.

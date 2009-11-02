@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{3B1B300D-4A1F-4D79-9AC9-ADA66ADBA7E9}</ProjectGuid>
     <OutputType>WinExe</OutputType>
@@ -69,6 +69,7 @@
     <Compile Include="com\TASListView.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="data\formats\Dega.cs" />
     <Compile Include="data\formats\Famtasia.cs" />
     <Compile Include="data\formats\FCEU.cs" />
     <Compile Include="data\formats\Gens.cs" />
@@ -227,17 +228,21 @@
     <Content Include="etc\FMV.txt" />
     <Content Include="etc\GMV.txt" />
     <Content Include="etc\M64.txt" />
+    <Content Include="etc\MMV.txt" />
+    <Content Include="etc\PXM.txt" />
     <Content Include="etc\SMV.txt" />
     <Content Include="etc\VBM.txt" />
     <None Include="inc\icon-fmv.ico" />
     <None Include="inc\icon-gmv.ico" />
     <None Include="inc\icon-m64.ico" />
     <None Include="inc\icon-fcm.ico" />
+    <Content Include="etc\ZMV.txt" />
+    <None Include="inc\icon-mmv.ico" />
     <Content Include="inc\icon-snes.ico" />
+    <Content Include="CHANGELOG.txt" />
     <None Include="inc\icon-smv.ico" />
     <None Include="inc\icon-vbm.ico" />
     <None Include="inc\icon-zmv.ico" />
-    <Content Include="NOTES.txt" />
     <None Include="inc\icon-app.ico" />
   </ItemGroup>
   <ItemGroup>

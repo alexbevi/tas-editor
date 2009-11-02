@@ -85,8 +85,9 @@ namespace MovieSplicer.Data.Formats
             Extra.Author = ReadChars(ref FileContents, startPos, SaveStateOffset - startPos);           
 
             Options = new TASOptions(true);
-            Options.MovieStartFlag[0]  = ((1 & options >> 1) == 1) ? true : false;
-            Options.MovieStartFlag[1]  = ((1 & options >> 1) == 0) ? true : false;
+            Options.MovieStartFlag[0]  = ((1 & options >> 1) == 0) ? true : false;
+            Options.MovieStartFlag[1]  = ((1 & FileContents[ControllerDataOffset] >> 0) == 1) ? true : false;
+            Options.MovieStartFlag[2]  = ((1 & FileContents[ControllerDataOffset] >> 1) == 1) ? true : false;
             Options.MovieTimingFlag[0] = ((1 & options >> 2) == 0) ? true : false;
             Options.MovieTimingFlag[1] = ((1 & options >> 2) == 1) ? true : false;
 
@@ -215,10 +216,14 @@ namespace MovieSplicer.Data.Formats
             int[] joop     = { 0, 0, 0, 0 };
             int   position = ControllerDataOffset;
 
-            byte[] outputFile = new byte[head.Length + cdataLength + 2];
+            byte[] outputFile = new byte[head.Length + cdataLength];
             head.CopyTo(outputFile, 0);
 
-            outputFile[position++] = ((0x81) & 0x9F) | (0 << 5); // start from reset            
+            // start from either power-on or reset
+            if (Options.MovieStartFlag[2])
+                outputFile[position++] = (0x82 & 0x9F) | (0 << 5);
+            else // if (Options.MovieStartFlag[1])
+                outputFile[position++] = (0x81 & 0x9F) | (0 << 5); // FIXME
 
             int frame = 0;
             while (frame < input.Length)
@@ -246,7 +251,7 @@ namespace MovieSplicer.Data.Formats
             //outputFile[position++] = ((0x80) & 0x9F) | (0 << 5); // null command
 
             // write the new controllerDataLength            
-            Write32(ref outputFile, Offsets[8], cdataLength + 1);
+            Write32(ref outputFile, Offsets[8], cdataLength);
             
             updateMetaData(ref outputFile);
             WriteByteArrayToFile(ref outputFile, filename, input.Length, Offsets[6]);  
@@ -323,7 +328,7 @@ namespace MovieSplicer.Data.Formats
         {
             int buffer = 0;
             int[] joop = { 0, 0, 0, 0 };     
-            int length = 0;
+            int length = 1;
             for (int i = 0; i < input.Length; i++)
             {                
                 // cycle through the controllers
@@ -353,6 +358,7 @@ namespace MovieSplicer.Data.Formats
             }
             // handle additional buffered values that may have escaped the initial loop
             // TODO::Functional, but inefficent
+            length++;
             while (buffer > 0)
             {
                 length++;

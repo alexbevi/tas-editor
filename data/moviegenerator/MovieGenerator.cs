@@ -683,7 +683,12 @@ public bool frameremove_pushframelist_onremove;
 
         public void LoadConfig()
         {
-            System.IO.FileStream fs = System.IO.File.OpenRead("generator.config");
+            System.IO.FileStream fs;
+            try { fs = System.IO.File.OpenRead("generator.config"); }
+            catch
+            {
+                return;
+            }
             System.IO.StreamReader sr = new System.IO.StreamReader(fs);
             char[] separator = new char[1];
                 separator[0] = ',';

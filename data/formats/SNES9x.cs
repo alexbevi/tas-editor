@@ -110,8 +110,8 @@ namespace MovieSplicer.Data.Formats
             Header.RerecordCount = Read32(ref FileContents, Offsets[3]);
                       
             Options = new TASOptions(true);
-            Options.MovieStartFlag[0]  = (1 & (FileContents[Offsets[6]] >> 0)) == 1 ? true : false;
-            Options.MovieStartFlag[1]  = (1 & (FileContents[Offsets[6]] >> 0)) == 0 ? true : false;
+            Options.MovieStartFlag[0]  = (1 & (FileContents[Offsets[6]] >> 0)) == 0 ? true : false;
+            Options.MovieStartFlag[1]  = (1 & (FileContents[Offsets[6]] >> 0)) == 1 ? true : false;
             Options.MovieTimingFlag[0] = (1 & (FileContents[Offsets[6]] >> 1)) == 0 ? true : false;
             Options.MovieTimingFlag[1] = (1 & (FileContents[Offsets[6]] >> 1)) == 1 ? true : false;
 

@@ -68,8 +68,8 @@ namespace MovieSplicer.Data.Formats
             {
                 Options = new TASOptions(true);
                 Options.FPS = (1 & (FileContents[Offsets[5]] >> 7)) == 1 ? 50 : 60;
-                Options.MovieStartFlag[0] = (1 & (FileContents[Offsets[5]] >> 6)) == 0 ? true : false;
-                Options.MovieStartFlag[1] = (1 & (FileContents[Offsets[5]] >> 6)) == 1 ? true : false;
+                Options.MovieStartFlag[0] = (1 & (FileContents[Offsets[5]] >> 6)) == 1 ? true : false;
+                Options.MovieStartFlag[1] = (1 & (FileContents[Offsets[5]] >> 6)) == 0 ? true : false;
                 Input = (1 & (FileContents[Offsets[5]] >> 5)) == 1 ? new TASInput(3, true) : new TASInput(2, true);
             }
             else
@@ -137,7 +137,7 @@ namespace MovieSplicer.Data.Formats
         private byte parseControllerData(string frameInput)
         {
             byte input = 0xFF;
-            if (frameInput != null || frameInput != "")
+            if (frameInput != null && frameInput != "")
             {                
                 for (int i = 0; i < 8; i++)
                     if (frameInput.Contains(InputValues[i])) input -= (byte)(1 << i);                
@@ -164,10 +164,20 @@ namespace MovieSplicer.Data.Formats
         {
             byte input = 0xFF;
 
-            for (int i = 0; i < 4; i++)
+            if (player1 != null && player1 != "")
             {
-                if (player1.Contains(InputValues[i + 8])) input -= (byte)(1 << i);
-                if (player2.Contains(InputValues[i + 8])) input -= (byte)(1 << i + 4);
+                for (int i = 0; i < 4; i++)
+                {
+                    if (player1.Contains(InputValues[i + 8])) input -= (byte)(1 << i);
+                }
+            }
+
+            if (player2 != null && player2 != "")
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    if (player2.Contains(InputValues[i + 8])) input -= (byte)(1 << i + 4);
+                }
             }
 
             return input;

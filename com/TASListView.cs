@@ -120,13 +120,13 @@ namespace MovieSplicer.Components
         /// </summary>        
         private void GetVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
         {
-            this.BeginUpdate();
+//            /*this.BeginUpdate();*/ // EPIC BUG FIX: THIS WAS MAKING MY CPU/GRAPHIC CARD FAN *WHINING*!
             // If we have the item cached, return it. Otherwise, recreate it.
             if (cache != null && e.ItemIndex >= firstItem && e.ItemIndex < firstItem + cache.Length)
                 e.Item = cache[e.ItemIndex - firstItem];
             else
                 e.Item = GetListItem(e.ItemIndex);
-            this.EndUpdate();
+//            /*this.EndUpdate();*/
         }
 
         /// <summary>

@@ -258,5 +258,40 @@ namespace MovieSplicer.UI.Methods
             movie = null; tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
         }
 
+        /// <summary>
+        /// Populate a Dega movie file's header information
+        /// </summary>
+        public static void MMV(ref TreeView tv, ref TASMovie mmv)
+        {
+            Dega movie = (Dega)mmv;
+            tv.Nodes.Clear();
+
+            tv.Nodes.Add("Header");
+            tv.Nodes[0].Nodes.Add("Signature:      " + movie.Header.Signature);
+            tv.Nodes[0].Nodes.Add("Version:        " + movie.Header.Version.ToString());
+            tv.Nodes[0].Nodes.Add("Frame Count:    " + String.Format("{0:0,0}", movie.Header.FrameCount));
+            tv.Nodes[0].Nodes.Add("Rerecord Count: " + String.Format("{0:0,0}", movie.Header.RerecordCount));
+
+            tv.Nodes.Add("Options");
+            tv.Nodes[1].Nodes.Add("Movie Start:  " + movie.Options.MovieStart);
+            tv.Nodes[1].Nodes.Add("Movie Timing: " + movie.Options.MovieTiming);
+            tv.Nodes[1].Nodes.Add("System Type");
+            tv.Nodes[1].Nodes[2].Nodes.Add("Japan:     " + movie.MMVSpecific.Japan.ToString());
+            tv.Nodes[1].Nodes[2].Nodes.Add("Game Gear: " + movie.MMVSpecific.GameGear.ToString());
+
+            tv.Nodes.Add("Metadata");
+            tv.Nodes[2].Nodes.Add("Author: " + movie.Extra.Author);
+
+            tv.Nodes.Add("ROM Information");
+            tv.Nodes[3].Nodes.Add("ROM Name: " + movie.Extra.ROM);
+            tv.Nodes[3].Nodes.Add("ROM MD5:  " + movie.Extra.CRC);
+
+            tv.Nodes.Add("Controllers");
+            tv.Nodes[4].Nodes.Add("Controller 1 Present: " + movie.Input.Controllers[0].ToString());
+            tv.Nodes[4].Nodes.Add("Controller 2 Present: " + movie.Input.Controllers[1].ToString());
+
+            movie = null; tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
+        }       
+
     }
 }

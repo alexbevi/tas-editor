@@ -305,6 +305,11 @@ namespace MovieSplicer.UI
                     Methods.PopulateMovieInfo.M64(ref tvInfo, ref Movie);
                     pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_m64"))).ToBitmap();
                     break;
+                case MovieType.MMV:
+                    Movie = new Dega(filename);
+                    Methods.PopulateMovieInfo.MMV(ref tvInfo, ref Movie);
+                    pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_mmv"))).ToBitmap();
+                    break;
                 case MovieType.None:
                     resetApplication();
                     return;
@@ -406,7 +411,9 @@ namespace MovieSplicer.UI
             FrameData.Input  = null;
             FrameData.Format = MovieType.None;
 
-            // reset the editor            
+            // reset the editor
+            if (Editor != null)
+                Editor.Close();
             Editor = null;
             mnuEditing.Enabled = false;
 
@@ -449,12 +456,6 @@ namespace MovieSplicer.UI
                 return;
 
             Movie.Save("", ref FrameData.Input);
-            
-            MessageBox.Show(
-                    txtMovieFilename.Text + " written successfully",
-                    " Save",
-                    MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
- 
         }
 
         /// <summary>
