@@ -123,6 +123,13 @@ namespace MovieSplicer.Properties {
             }
         }
         
+        internal static System.Drawing.Icon icon_pxm {
+            get {
+                object obj = ResourceManager.GetObject("icon_pxm", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
         internal static System.Drawing.Icon icon_smv {
             get {
                 object obj = ResourceManager.GetObject("icon_smv", resourceCulture);

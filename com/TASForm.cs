@@ -33,18 +33,19 @@ namespace MovieSplicer.Components
     public class TASForm : Form
     {
         public const string APP_TITLE  = "TAS Movie Editor";
-        public const string VERSION    = "0.12.1f";
-        public const string BUILD_DATE = "2009-11-2 @ 12:00";
+        public const string VERSION    = "0.12.2";
+        public const string BUILD_DATE = "2009-11-14 @ 22:00";
 
         public const string TAS_FILTER = ALL_FILTER + "|" + FCM_FILTER + "|" + FMV_FILTER + "|" + 
-                                         GMV_FILTER + "|" + M64_FILTER + "|" + MMV_FILTER + "|" + 
-                                         SMV_FILTER + "|" + VBM_FILTER;
-        public const string ALL_FILTER = "All Supported Movie Formats (*.*) | *.smv;*.fcm;*.gmv;*.fmv;*.vbm;*.m64;*.mmv";
+                                         GMV_FILTER + "|" + M64_FILTER + "|" + MMV_FILTER + "|" +
+                                         PXM_FILTER + "|" + SMV_FILTER + "|" + VBM_FILTER;
+        public const string ALL_FILTER = "All Supported Movie Formats (*.*) | *.smv;*.fcm;*.gmv;*.fmv;*.vbm;*.m64;*.mmv;*.pxm";
         public const string FCM_FILTER = "FCM - FCE Ultra Movie|*.fcm";
         public const string FMV_FILTER = "FMV - Famtasia Movie|*.fmv";
         public const string GMV_FILTER = "GMV - Gens Movie|*.gmv";
         public const string M64_FILTER = "M64 - Mupen64 Movie|*.m64";
         public const string MMV_FILTER = "MMV - Dega Movie|*.mmv";
+        public const string PXM_FILTER = "PXM - PCSX Movie|*.pxm";
         public const string SMV_FILTER = "SMV - SNES9x Movie|*.smv";
         public const string VBM_FILTER = "VBM - VisualBoyAdvance Movie|*.vbm";
 
@@ -64,7 +65,8 @@ namespace MovieSplicer.Components
             FMV = 4,
             VBM = 5,
             M64 = 6,
-            MMV = 7
+            MMV = 7,
+            PXM = 8
         }
 
         /// <summary>
@@ -89,11 +91,19 @@ namespace MovieSplicer.Components
         }
 
         /// <summary>
+        /// Extract the directory from a file path
+        /// </summary>
+        public string DirectoryFromPath(string pathToFile)
+        {
+            return pathToFile.TrimEnd(FilenameFromPath(pathToFile).ToCharArray());
+        }
+
+        /// <summary>
         /// Extract the filename from a file path
         /// </summary>
         public string FilenameFromPath(string pathToFile)
         {
-            char[]   splitter = { '\\' };
+            char[] splitter = { '\\' };
             string[] filePath;
             filePath = pathToFile.Split(splitter);
             return filePath[filePath.Length - 1];
@@ -125,6 +135,7 @@ namespace MovieSplicer.Components
             const uint VBM = 0x56424D1A;
             const uint M64 = 0x4D36341A;
             const uint MMV = 0x4D4D5600;
+            const uint PXM = 0x50584D20;
 
             uint signature = ReadHeader(filename);
 
@@ -144,6 +155,8 @@ namespace MovieSplicer.Components
                     return MovieType.M64;
                 case MMV:
                     return MovieType.MMV;
+                case PXM:
+                    return MovieType.PXM;
                 default:
                     return MovieType.None;
             }

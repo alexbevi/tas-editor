@@ -47,7 +47,7 @@ namespace MovieSplicer.UI
             Movie     = movie;
             MovieData = movieData;
 
-            txtFilename.Text    = newFilePrefix + FilenameFromPath(Movie.Filename);
+            txtFilename.Text    = DirectoryFromPath(Movie.Filename) + newFilePrefix + FilenameFromPath(Movie.Filename);
             txtAuthor.Text      = Movie.Extra.Author;
             txtDescription.Text = Movie.Extra.Description;
 
@@ -64,16 +64,11 @@ namespace MovieSplicer.UI
         {
             Movie.Extra.Author      = txtAuthor.Text;
             Movie.Extra.Description = txtDescription.Text;
-            if (Filename == null)
-            {
-                Movie.Save(txtFilename.Text, ref MovieData.Input);
-                Filename = txtFilename.Text;
-            }
-            else
-                Movie.Save(Filename, ref MovieData.Input);
 
-            MessageBox.Show("New movie saved as " + Filename, "YAY!!!",
-                MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+            Filename = txtFilename.Text;
+
+            Movie.Save(Filename, ref MovieData.Input);
+
             this.Close();
         }
 
@@ -88,10 +83,11 @@ namespace MovieSplicer.UI
             {
                 case MovieType.FCM: saveDlg.Filter = FCM_FILTER; break;
                 case MovieType.FMV: saveDlg.Filter = FMV_FILTER; break;
+                case MovieType.GMV: saveDlg.Filter = GMV_FILTER; break;
                 case MovieType.M64: saveDlg.Filter = M64_FILTER; break;
                 case MovieType.MMV: saveDlg.Filter = MMV_FILTER; break;
+                case MovieType.PXM: saveDlg.Filter = PXM_FILTER; break;
                 case MovieType.SMV: saveDlg.Filter = SMV_FILTER; break;
-                case MovieType.GMV: saveDlg.Filter = GMV_FILTER; break;
                 case MovieType.VBM: saveDlg.Filter = VBM_FILTER; break;
             }
            
@@ -99,7 +95,7 @@ namespace MovieSplicer.UI
             saveDlg.ShowDialog();                        
 
             if (saveDlg.FileName.Length > 0) Filename = saveDlg.FileName;
-            txtFilename.Text = FilenameFromPath(Filename);
+            txtFilename.Text = Filename;
         }        
     }
 }

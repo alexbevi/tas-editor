@@ -10,6 +10,7 @@ FMV     [x]         [x]         [x]          [x]            [x]         [x]     
 VBM     [x]         [x]         [x]          [x]            [x]         [x]     [x]
 M64*    [x]         [x]         [x]          [x]            [x]         [ ]     [X]
 MMV     [x]         [x]         [x]          [x]            [x]         [?]     [x]
+PXM     [x]         [x]         [x]          [x]            [x]         [?]     [x]
 
 *mupen support is difficult since there's not direct correlation between how often an input sample
 is applied to a particular frame
@@ -52,35 +53,23 @@ TODO::Add Nestopia, VirtuaNES support? (not sure if it's even necessary)
 // CHANGELOG //
 ///////////////
 
-v0-12-1f
+v0-12-2
 
+- MMV::Added MMV support.
+- PXM::Partial PXM support (standard controllers only).
 - GMV::Fixed file saving.
 - FMV::Fixed file saving.
-- ETC::Fixed detection of movie start type.
+- FCM::Fixed saving the wrong movie start type and length of the controller data.
+- ETC::Fixed display of movie start types.
+- ETC::Fixed a bug that ReadHEX didn't generate the leading 0 when the HEX number was less than 0x10.
+- ETC::Fixed high CPU usage.
 - ETC::Handled a few IO exceptions.
-
-v0-12-1e
-
+- ETC::The editor console will now be automatically closed when a new movie is loaded.
+- ETC::Added insufficient specifications to MMV, ZMV and PXM formats.
+- ETC::Fixed recent file list.
+- ETC::Tweaked Save As dialog.
 - ETC::Fixed several shortcut keys.
 - ETC::Tweaked menu items.
-
-v0-12-1d-hotfix
-
-- MMV::Fixed file saving.
-
-v0-12-1d
-
-- ETC::Fixed high CPU usage.
-- ETC::The editor console will be automatically closed when a new movie is loaded.
-
-v0-12-1c
-
-- MMV::Experimental MMV support.
-- FCM::Fixed a bug that caused the wrong length of controller data to be saved.
-- FCM::Fixed broken detection and saving of movie start type.
-- ETC::Added insufficient specifications to MMV, ZMV and PXM formats.
-- ETC::Fixed a bug that ReadHEX didn't generate the leading 0 when the HEX number was less than 0x10.
-- ETC::Fixed a bug that Movie Start mode displayed "Reset" instead of "Save", and vice versa.
 - ETC::Placed all the 4 Controller checkboxes in the edit dialog over the texts that could obscure them on some systems.
 
 v0-12-1

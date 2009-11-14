@@ -43,9 +43,9 @@ namespace MovieSplicer.UI
             // 
             // btnBrowse
             // 
-            this.btnBrowse.Location = new System.Drawing.Point(270, 32);
+            this.btnBrowse.Location = new System.Drawing.Point(270, 30);
             this.btnBrowse.Name = "btnBrowse";
-            this.btnBrowse.Size = new System.Drawing.Size(35, 23);
+            this.btnBrowse.Size = new System.Drawing.Size(35, 21);
             this.btnBrowse.TabIndex = 1;
             this.btnBrowse.Text = "...";
             this.btnBrowse.UseVisualStyleBackColor = true;
@@ -57,52 +57,52 @@ namespace MovieSplicer.UI
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.txtAuthor);
             this.groupBox1.Controls.Add(this.label2);
-            this.groupBox1.Location = new System.Drawing.Point(12, 61);
+            this.groupBox1.Location = new System.Drawing.Point(12, 56);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(293, 172);
+            this.groupBox1.Size = new System.Drawing.Size(293, 159);
             this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Extra Information";
             // 
             // txtDescription
             // 
-            this.txtDescription.Location = new System.Drawing.Point(6, 111);
+            this.txtDescription.Location = new System.Drawing.Point(6, 102);
             this.txtDescription.Multiline = true;
             this.txtDescription.Name = "txtDescription";
-            this.txtDescription.Size = new System.Drawing.Size(281, 46);
+            this.txtDescription.Size = new System.Drawing.Size(281, 43);
             this.txtDescription.TabIndex = 3;
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(3, 95);
+            this.label3.Location = new System.Drawing.Point(3, 88);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(60, 13);
+            this.label3.Size = new System.Drawing.Size(71, 12);
             this.label3.TabIndex = 2;
             this.label3.Text = "Description";
             // 
             // txtAuthor
             // 
-            this.txtAuthor.Location = new System.Drawing.Point(6, 41);
+            this.txtAuthor.Location = new System.Drawing.Point(6, 38);
             this.txtAuthor.Multiline = true;
             this.txtAuthor.Name = "txtAuthor";
-            this.txtAuthor.Size = new System.Drawing.Size(281, 41);
+            this.txtAuthor.Size = new System.Drawing.Size(281, 38);
             this.txtAuthor.TabIndex = 1;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 25);
+            this.label2.Location = new System.Drawing.Point(3, 23);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(38, 13);
+            this.label2.Size = new System.Drawing.Size(41, 12);
             this.label2.TabIndex = 0;
             this.label2.Text = "Author";
             // 
             // btnSave
             // 
-            this.btnSave.Location = new System.Drawing.Point(12, 239);
+            this.btnSave.Location = new System.Drawing.Point(12, 221);
             this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(293, 23);
+            this.btnSave.Size = new System.Drawing.Size(293, 21);
             this.btnSave.TabIndex = 4;
             this.btnSave.Text = "&Save";
             this.btnSave.UseVisualStyleBackColor = true;
@@ -111,25 +111,24 @@ namespace MovieSplicer.UI
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(9, 19);
+            this.label1.Location = new System.Drawing.Point(9, 18);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(49, 13);
+            this.label1.Size = new System.Drawing.Size(53, 12);
             this.label1.TabIndex = 3;
             this.label1.Text = "Filename";
             // 
             // txtFilename
             // 
-            this.txtFilename.Location = new System.Drawing.Point(12, 35);
+            this.txtFilename.Location = new System.Drawing.Point(12, 32);
             this.txtFilename.Name = "txtFilename";
-            this.txtFilename.ReadOnly = true;
-            this.txtFilename.Size = new System.Drawing.Size(252, 20);
+            this.txtFilename.Size = new System.Drawing.Size(252, 21);
             this.txtFilename.TabIndex = 0;
             // 
             // frmSaveAs
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(317, 267);
+            this.ClientSize = new System.Drawing.Size(317, 246);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.groupBox1);

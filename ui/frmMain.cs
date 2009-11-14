@@ -310,6 +310,11 @@ namespace MovieSplicer.UI
                     Methods.PopulateMovieInfo.MMV(ref tvInfo, ref Movie);
                     pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_mmv"))).ToBitmap();
                     break;
+                case MovieType.PXM:
+                    Movie = new PCSX(filename);
+                    Methods.PopulateMovieInfo.PXM(ref tvInfo, ref Movie);
+                    pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_pxm"))).ToBitmap();
+                    break;
                 case MovieType.None:
                     resetApplication();
                     return;
@@ -354,11 +359,8 @@ namespace MovieSplicer.UI
             // show subtitle export option
             mnuExportSRT.Enabled = true;
 
-            if (!fromRecent)
-            {
-                Methods.AppSettings.Save(filename);
-                populateRecentFiles();
-            }
+            Methods.AppSettings.Save(filename);
+            populateRecentFiles();
 
             runMovieGeneratorToolStripMenuItem.Enabled = true;
         }

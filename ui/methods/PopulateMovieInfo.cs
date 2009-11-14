@@ -291,7 +291,40 @@ namespace MovieSplicer.UI.Methods
             tv.Nodes[4].Nodes.Add("Controller 2 Present: " + movie.Input.Controllers[1].ToString());
 
             movie = null; tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
-        }       
+        }
 
+        /// <summary>
+        /// Populate a PCSX movie file's header information
+        /// </summary>
+        public static void PXM(ref TreeView tv, ref TASMovie mmv)
+        {
+            PCSX movie = (PCSX)mmv;
+            tv.Nodes.Clear();
+
+            tv.Nodes.Add("Header");
+            tv.Nodes[0].Nodes.Add("Signature:        " + movie.Header.Signature);
+            tv.Nodes[0].Nodes.Add("Emulator Version: " + movie.Header.Version.ToString());
+            tv.Nodes[0].Nodes.Add("Movie Version:    " + movie.PXMSpecific.EmulatorVersion.ToString());
+            tv.Nodes[0].Nodes.Add("Frame Count:      " + String.Format("{0:0,0}", movie.Header.FrameCount));
+            tv.Nodes[0].Nodes.Add("Rerecord Count:   " + String.Format("{0:0,0}", movie.Header.RerecordCount));
+
+            tv.Nodes.Add("Options");
+            tv.Nodes[1].Nodes.Add("Movie Start:  " + movie.Options.MovieStart);
+            tv.Nodes[1].Nodes.Add("Movie Timing: " + movie.Options.MovieTiming);
+            tv.Nodes[1].Nodes.Add("Uses Hacks:   " + movie.PXMSpecific.UsesHacks.ToString());
+            tv.Nodes[1].Nodes.Add("Contains Embedded Memory Cards: " + movie.PXMSpecific.HasEmbeddedMemoryCards.ToString());
+            tv.Nodes[1].Nodes.Add("Contains Embedded Cheat List:   " + movie.PXMSpecific.HasEmbeddedCheatList.ToString());
+            tv.Nodes.Add("Metadata");
+            tv.Nodes[2].Nodes.Add("Author: " + movie.Extra.Author);
+
+            tv.Nodes.Add("CD-ROM Information");
+            tv.Nodes[3].Nodes.Add("CD-ROM ID(s): " + movie.Extra.ROM);
+
+            tv.Nodes.Add("Controllers");
+            tv.Nodes[4].Nodes.Add("Controller 1 Type: " + movie.PXMSpecific.GetControllerTypeString(0));
+            tv.Nodes[4].Nodes.Add("Controller 2 Type: " + movie.PXMSpecific.GetControllerTypeString(1));
+
+            movie = null; tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
+        }       
     }
 }

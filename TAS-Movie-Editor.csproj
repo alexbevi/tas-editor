@@ -76,6 +76,7 @@
     <Compile Include="data\formats\Mupen64.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="data\formats\PCSX.cs" />
     <Compile Include="data\formats\SNES9x.cs" />
     <Compile Include="data\formats\VisualBoyAdvance.cs" />
     <Compile Include="data\config\Events.cs" />
@@ -238,6 +239,7 @@
     <None Include="inc\icon-fcm.ico" />
     <Content Include="etc\ZMV.txt" />
     <None Include="inc\icon-mmv.ico" />
+    <Content Include="inc\icon-pxm.ico" />
     <Content Include="inc\icon-snes.ico" />
     <Content Include="CHANGELOG.txt" />
     <None Include="inc\icon-smv.ico" />

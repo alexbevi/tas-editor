@@ -33,19 +33,28 @@ namespace MovieSplicer.UI.Methods
         const byte MAX_FILES = 9;
 
         /// <summary>
-        /// Save a new filename as the first recent file
+        /// Save a filename as the first recent file no matter it is old or new
+        /// Bring up the new file if it is already on the list
         /// Only MAX_FILES are stored, so bump the last entry off the list
         /// </summary>        
         public static void Save(string filename)
         {
-            
+
             Ini settingsFile = new Ini();
             string[] files = Load();
 
-            settingsFile.SetValue(SECTION_FILES, "File 1", filename);            
-            
-            for (int i = 0; i < MAX_FILES - 1; i++)
-                if (files[i] != null) settingsFile.SetValue(SECTION_FILES, "File " + (i + 2), files[i]);                                                
+            settingsFile.SetValue(SECTION_FILES, "File 1", filename);
+
+            int n = 1;
+            foreach (string file in files)
+            {
+                if (n >= MAX_FILES) break;
+                if (file != null && file != filename)
+                {
+                    n++;
+                    settingsFile.SetValue(SECTION_FILES, "File " + n, file);
+                }
+            }
         }
 
         /// <summary>
