@@ -81,8 +81,7 @@ namespace MovieSplicer.Data.Formats
 
         public FormatSpecific PXMSpecific;
 
-        private string[] InputValues = { "s", "r1", "r2", "S", "^", ">", "V", "<", "L2", "R2", "L1", "R1", "Tr", "Ci", "Cr", "Sq" };
- //       private string[] InputValues = { "L2", "R2", "L1", "R1", "Tr", "Ci", "Cr", "Sq", "s", "r1", "r2", "S", "^", ">", "V", "<" };
+        private string[] InputValues = { "Se", "_1", "_2", "St", "^", ">", "V", "<", "L2", "R2", "L1", "R1", "Tr", "Ci", "Cr", "Sq" };
         private string[] ControlValues = { "r0", "!", "CDcase", "SIOhack", "SPUhack", "Cheats", "REhack", "PEhack" };
         private int[] Offsets = {
             0x00, // 4-byte signature: "PXM "
@@ -200,7 +199,7 @@ namespace MovieSplicer.Data.Formats
             for (int j = 0; j < 8; j++)
             {
                 if ((1 & (byteArray[pos + 1] >> j)) == 1)
-                    input += InputValues[j + 7];
+                    input += InputValues[j + 8];
             }
             return input;
         }
@@ -215,9 +214,10 @@ namespace MovieSplicer.Data.Formats
             if (frameInput == null || frameInput == "") return input;
             
             for (int i = 0; i < 8; i++)            
-                if (frameInput.Contains(InputValues[i])) input[0] |= (byte)(1 << i);                                        
+                if (frameInput.Contains(InputValues[i])) input[0] |= (byte)(1 << i);  
+
             for (int j = 0; j < 8; j++)
-                if (frameInput.Contains(InputValues[j + 7])) input[1] |= (byte)(1 << j);                                        
+                if (frameInput.Contains(InputValues[j + 8])) input[1] |= (byte)(1 << j);                                        
             
             return input;
         }
@@ -248,7 +248,7 @@ namespace MovieSplicer.Data.Formats
             if (frameInput == null || frameInput == "") return input;
 
             for (int i = 0; i < 8; i++)
-                if (frameInput.Contains(ControlValues[i])) input[1] |= (byte)(1 << i);
+                if (frameInput.Contains(ControlValues[i])) input[0] |= (byte)(1 << i);
 
             return input;
         }
