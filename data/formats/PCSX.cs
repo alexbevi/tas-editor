@@ -81,8 +81,8 @@ namespace MovieSplicer.Data.Formats
 
         public FormatSpecific PXMSpecific;
 
-        private string[] InputValues = { "Se", "_1", "_2", "St", "^", ">", "V", "<", "L2", "R2", "L1", "R1", "Tr", "Ci", "Cr", "Sq" };
-        private string[] ControlValues = { "r0", "!", "CDcase", "SIOhack", "SPUhack", "Cheats", "REhack", "PEhack" };
+        private string[] InputValues = { "Se", "_1", "_2", "St", "^", ">", "v", "<", "L2", "R2", "L1", "R1", "Tr", "Ci", "Cr", "Sq" };
+        private string[] ControlValues = { "_0", "!", "CDcase", "SIOhack", "SPUhack", "Cheats", "REhack", "PEhack" };
         private int[] Offsets = {
             0x00, // 4-byte signature: "PXM "
             0x04, // 4-byte unsigned long: version number (for now it is always 2)
