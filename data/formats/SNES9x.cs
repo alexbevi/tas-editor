@@ -88,10 +88,17 @@ namespace MovieSplicer.Data.Formats
                   //        if "1", there is extra ROM info located right in between of the metadata and the savestate.
             0x18, // 4-byte little-endian unsigned int: offset to the savestate inside file
             0x1C, // 4-byte little-endian unsigned int: offset to the controller data inside file
-            0x20, // UTF16-coded movie title string (author info)   
+            0x20, // Snes9x v1.43: UTF16-coded movie title string (author info)
+                  // Snes9x v1.51: 4-byte little-endian unsigned int: number of input samples, primarily for peripheral-using games
          
             0x03, // Extra Rom Info -> Rom CRC
-            0x07  // Extra Rom Info -> Rom Name
+            0x07, // Extra Rom Info -> Rom Name
+
+            0x24, // Snes9x v1.51: 2-byte unsigned ints: what type of controller is plugged into ports 1 and 2 respectively: 0=NONE, 1=JOYPAD, 2=MOUSE, 3=SUPERSCOPE, 4=JUSTIFIER, 5=MULTITAP
+            0x26, // Snes9x v1.51: 4-byte signed ints: controller IDs of port 1, or -1 for unplugged
+            0x2A, // Snes9x v1.51: 4-byte signed ints: controller IDs of port 2, or -1 for unplugged
+            0x2E, // Snes9x v1.51: 18 bytes: reserved for future use
+            0x40, // Snes9x v1.51: UTF16-coded movie title string (author info)
         };
 
         public SNES9x(string SMVFile)

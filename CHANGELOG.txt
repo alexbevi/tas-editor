@@ -3,15 +3,16 @@
 //////////////////////
 
     VIEW HEADER VIEW INPUT  ADD FRAMES  REMOVE FRAMES   EDIT FRAMES   SPLICE   SAVE 
-SMV     [x]         [x]         [x]          [x]            [x]         [x]     [x]
+SMV*    [x]         [x]         [x]          [x]            [x]         [x]     [x]
 FCM     [x]         [x]         [x]          [x]            [x]         [x]     [x]
 GMV     [x]         [x]         [x]          [x]            [x]         [x]     [x] 
 FMV     [x]         [x]         [x]          [x]            [x]         [x]     [x]
 VBM     [x]         [x]         [x]          [x]            [x]         [x]     [x]
-M64*    [x]         [x]         [x]          [x]            [x]         [ ]     [X]
+M64**   [x]         [x]         [x]          [x]            [x]         [ ]     [X]
 MMV     [x]         [x]         [x]          [x]            [x]         [?]     [x]
 PXM     [x]         [x]         [x]          [x]            [x]         [?]     [x]
 
+*only snes v1.43 is supported
 *mupen support is difficult since there's not direct correlation between how often an input sample
 is applied to a particular frame
 
@@ -56,7 +57,7 @@ TODO::Add Nestopia, VirtuaNES support? (not sure if it's even necessary)
 v0-12-2
 
 - MMV::Added MMV support.
-- PXM::Partial PXM support (standard controllers only).
+- PXM::Experimental PXM support (untested).
 - GMV::Fixed file saving.
 - FMV::Fixed file saving.
 - FCM::Fixed saving the wrong movie start type and length of the controller data.

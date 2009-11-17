@@ -318,7 +318,11 @@ namespace MovieSplicer.UI.Methods
             tv.Nodes[2].Nodes.Add("Author: " + movie.Extra.Author);
 
             tv.Nodes.Add("CD-ROM Information");
-            tv.Nodes[3].Nodes.Add("CD-ROM ID(s): " + movie.Extra.ROM);
+            tv.Nodes[3].Nodes.Add("CD-ROM Count: " + movie.PXMSpecific.CDRomCount);
+            for (int i = 0; i < movie.PXMSpecific.CDRomCount; i++)
+            {
+                tv.Nodes[3].Nodes.Add("CD-ROM ID " + (i + 1) + ":  " + movie.Extra.ROM.Substring(i * 9, 9));
+            }
 
             tv.Nodes.Add("Controllers");
             tv.Nodes[4].Nodes.Add("Controller 1 Type: " + movie.PXMSpecific.GetControllerTypeString(0));
