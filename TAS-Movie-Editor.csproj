@@ -171,10 +171,6 @@
       <SubType>Designer</SubType>
       <DependentUpon>frmSubtitles.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ui\GoToDialog.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>GoToDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
@@ -212,12 +208,6 @@
     </Compile>
     <Compile Include="ui\frmSubtitles.Designer.cs">
       <DependentUpon>frmSubtitles.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ui\GoToDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ui\GoToDialog.Designer.cs">
-      <DependentUpon>GoToDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="ui\methods\AppSettings.cs" />
     <Compile Include="ui\methods\SubtitleGenerator.cs" />

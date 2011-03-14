@@ -54,7 +54,7 @@ namespace MovieSplicer.UI
         private TASMovie                Movie;
         private TASMovieInputCollection FrameData;
         private TASMovieInputCollection FrameBuffer;
-        private UndoBuffer[]            UndoHistory;
+        private UndoBuffer              UndoHistory;
         
         // will contain the message history for this session
         frmMessages Msg = new frmMessages();
@@ -68,6 +68,7 @@ namespace MovieSplicer.UI
         {
             InitializeComponent();
             frd = new FindReplaceDialog(this);
+            UndoHistory = new UndoBuffer();
             
             this.Text = APP_TITLE + " v" + VERSION;            
             populateRecentFiles();
@@ -258,113 +259,120 @@ namespace MovieSplicer.UI
 
             // copy the clean frame data to the undo buffer as the first item
             mnuUndoChange.Enabled = true;
-            UndoHistory = new UndoBuffer[0];
 
             // make sure the file isn't locked before we do anything else
-            try { System.IO.File.OpenRead(filename); }
+            System.IO.FileStream fs = null;
+            try
+            {
+                fs = System.IO.File.OpenRead(filename);
+
+                FrameData.Format = IsValid(filename);
+                ResourceManager rm = new ResourceManager("MovieSplicer.Properties.Resources", GetType().Assembly);
+
+                // load the movie object up with the correct format and display a thumbnail
+                switch (FrameData.Format)
+                {
+                    case MovieType.SMV:
+                        Movie = new SNES9x(filename);
+                        Methods.PopulateMovieInfo.SMV(ref tvInfo, ref Movie);
+                        pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_smv"))).ToBitmap();
+                        break;
+                    case MovieType.FCM:
+                        Movie = new FCEU(filename);
+                        Methods.PopulateMovieInfo.FCM(ref tvInfo, ref Movie);
+                        pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_fcm"))).ToBitmap();
+                        break;
+                    case MovieType.GMV:
+                        Movie = new Gens(filename);
+                        Methods.PopulateMovieInfo.GMV(ref tvInfo, ref Movie);
+                        pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_gmv"))).ToBitmap();
+                        break;
+                    case MovieType.FMV:
+                        Movie = new Famtasia(filename);
+                        Methods.PopulateMovieInfo.FMV(ref tvInfo, ref Movie);
+                        pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_fmv"))).ToBitmap();
+                        break;
+                    case MovieType.VBM:
+                        Movie = new VisualBoyAdvance(filename);
+                        Methods.PopulateMovieInfo.VBM(ref tvInfo, ref Movie);
+                        pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_vbm"))).ToBitmap();
+                        break;
+                    case MovieType.M64:
+                        Movie = new Mupen64(filename);
+                        Methods.PopulateMovieInfo.M64(ref tvInfo, ref Movie);
+                        pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_m64"))).ToBitmap();
+                        break;
+                    case MovieType.MMV:
+                        Movie = new Dega(filename);
+                        Methods.PopulateMovieInfo.MMV(ref tvInfo, ref Movie);
+                        pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_mmv"))).ToBitmap();
+                        break;
+                    case MovieType.PXM:
+                        Movie = new PCSX(filename);
+                        Methods.PopulateMovieInfo.PXM(ref tvInfo, ref Movie);
+                        pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_pxm"))).ToBitmap();
+                        break;
+                    case MovieType.None:
+                        resetApplication();
+                        return;
+                }
+
+                // destroy the resource manager instance
+                rm = null;
+
+                // assign the shared input collection to the current movie's            
+                FrameData.Input = Movie.Input.FrameData;
+                FrameData.Controllers = Movie.Input.ControllerCount;
+
+                // set the number of controller columns
+                lvInput.SetColumns(Movie.Input.ControllerCount);
+                lvInput.VirtualMovieType = FrameData.Format;
+
+                // initialize editing fields            
+                bool[] activeControllers = { false, false, false, false, false };
+                for (int i = 0; i < Movie.Input.ControllerCount; i++)
+                    activeControllers[i] = Movie.Input.Controllers[i];
+                Editor.ToggleInputBoxes(activeControllers);
+
+                // trim the filename and throw it into a text field
+                txtMovieFilename.Text = FilenameFromPath(filename);
+
+                // enable grayed menu options
+                mnuSave.Enabled = true;
+                mnuSaveAs.Enabled = true;
+                mnuClose.Enabled = true;
+
+                // populate the virtual listview 
+                lvInput.ClearVirtualCache();
+                lvInput.VirtualListSource = FrameData.Input;
+                lvInput.VirtualListSize = FrameData.Input.Length;
+
+                // add frame count to statusbar
+                sbarFrameCount.Text = FrameData.Input.Length.ToString();
+
+                Editor.LoadSharedObjects(ref lvInput, ref FrameData.Input, ref UndoHistory, ref Msg);
+                Msg.AddMsg("Successfully loaded " + FilenameFromPath(filename));
+
+                // show subtitle export option
+                mnuExportSRT.Enabled = true;
+
+                Methods.AppSettings.Save(filename);
+                populateRecentFiles();
+
+                runMovieGeneratorToolStripMenuItem.Enabled = true;
+            }
             catch
             {
                 MessageBox.Show(this,
                     filename + " cannot be accessed at the moment.\nEither the file is locked or it doesn't exist.",
                     "File Access Error",
                     MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);
-                 return;
+                return;
             }
-
-            FrameData.Format = IsValid(filename);            
-            ResourceManager rm = new ResourceManager("MovieSplicer.Properties.Resources", GetType().Assembly);
-            
-            // load the movie object up with the correct format and display a thumbnail
-            switch (FrameData.Format)
-            {                
-                case MovieType.SMV:
-                    Movie = new SNES9x(filename);
-                    Methods.PopulateMovieInfo.SMV(ref tvInfo, ref Movie);
-                    pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_smv"))).ToBitmap();
-                    break;
-                case MovieType.FCM:
-                    Movie = new FCEU(filename);
-                    Methods.PopulateMovieInfo.FCM(ref tvInfo, ref Movie);
-                    pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_fcm"))).ToBitmap();
-                    break;
-                case MovieType.GMV:
-                    Movie = new Gens(filename);
-                    Methods.PopulateMovieInfo.GMV(ref tvInfo, ref Movie);
-                    pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_gmv"))).ToBitmap();
-                    break;
-                case MovieType.FMV:
-                    Movie = new Famtasia(filename);
-                    Methods.PopulateMovieInfo.FMV(ref tvInfo, ref Movie);
-                    pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_fmv"))).ToBitmap();
-                    break;
-                case MovieType.VBM:
-                    Movie = new VisualBoyAdvance(filename);
-                    Methods.PopulateMovieInfo.VBM(ref tvInfo, ref Movie);
-                    pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_vbm"))).ToBitmap();
-                    break;
-                case MovieType.M64:
-                    Movie = new Mupen64(filename);
-                    Methods.PopulateMovieInfo.M64(ref tvInfo, ref Movie);
-                    pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_m64"))).ToBitmap();
-                    break;
-                case MovieType.MMV:
-                    Movie = new Dega(filename);
-                    Methods.PopulateMovieInfo.MMV(ref tvInfo, ref Movie);
-                    pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_mmv"))).ToBitmap();
-                    break;
-                case MovieType.PXM:
-                    Movie = new PCSX(filename);
-                    Methods.PopulateMovieInfo.PXM(ref tvInfo, ref Movie);
-                    pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_pxm"))).ToBitmap();
-                    break;
-                case MovieType.None:
-                    resetApplication();
-                    return;
+            finally
+            {
+                if (fs != null) fs.Close();
             }
-
-            // destroy the resource manager instance
-            rm = null;
-
-            // assign the shared input collection to the current movie's            
-            FrameData.Input       = Movie.Input.FrameData;
-            FrameData.Controllers = Movie.Input.ControllerCount;
-
-            // set the number of controller columns
-            lvInput.SetColumns(Movie.Input.ControllerCount);
-            lvInput.VirtualMovieType = FrameData.Format;
-
-            // initialize editing fields            
-            bool[] activeControllers = { false, false, false, false, false };
-            for (int i = 0; i < Movie.Input.ControllerCount; i++)
-                activeControllers[i] = Movie.Input.Controllers[i];            
-            Editor.ToggleInputBoxes(activeControllers); 
-
-            // trim the filename and throw it into a text field
-            txtMovieFilename.Text = FilenameFromPath(filename);
-
-            // enable grayed menu options
-            mnuSave.Enabled   = true;
-            mnuSaveAs.Enabled = true;
-            mnuClose.Enabled  = true;
-
-            // populate the virtual listview 
-            lvInput.ClearVirtualCache();   
-            lvInput.VirtualListSource = FrameData.Input;
-            lvInput.VirtualListSize   = FrameData.Input.Length;
-
-            // add frame count to statusbar
-            sbarFrameCount.Text = FrameData.Input.Length.ToString();
-
-            Editor.LoadSharedObjects(ref lvInput, ref FrameData.Input, ref UndoHistory, ref Msg);            
-            Msg.AddMsg("Successfully loaded " + FilenameFromPath(filename));
-
-            // show subtitle export option
-            mnuExportSRT.Enabled = true;
-
-            Methods.AppSettings.Save(filename);
-            populateRecentFiles();
-
-            runMovieGeneratorToolStripMenuItem.Enabled = true;
         }
 
         /// <summary>
@@ -422,7 +430,7 @@ namespace MovieSplicer.UI
             mnuEditing.Enabled = false;
 
             // clear the undo history
-            UndoHistory = null;
+            UndoHistory.Changes = new TASMovieInput[0][];
             mnuUndoChange.Enabled = false;
 
             // clear the icon
@@ -732,12 +740,12 @@ namespace MovieSplicer.UI
             // make sure something is selected
             if (lvInput.SelectedIndices.Count == 0) return;
                                     
-            int frameIndex    = lvInput.SelectedIndices[0];            
-            int totalFrames   = lvInput.SelectedIndices.Count;
+            int[] selectedIndices = new int[lvInput.SelectedIndices.Count];            
+            lvInput.SelectedIndices.CopyTo(selectedIndices, 0);
 
             FrameBuffer.Controllers = FrameData.Controllers;
             FrameBuffer.Format      = FrameData.Format;
-            FrameBuffer.Input       = TASMovieInput.Copy(ref FrameData.Input, frameIndex, totalFrames);            
+            FrameBuffer.Input       = TASMovieInput.Copy(ref FrameData.Input, selectedIndices);            
             
             enablePasteControls();   
         }
@@ -851,7 +859,7 @@ namespace MovieSplicer.UI
             if (start > FrameData.Input.Length - 1) start = FrameData.Input.Length - 1;
             int position = TASMovieInput.Search(ref FrameData.Input, find, start, direction);
 
-            if (position > 0 && position < FrameData.Input.Length)
+            if (position >= 0 && position < FrameData.Input.Length)
             {
                 // clear the selection collection
                 // NOTE::This is since we will be creating a new selected items collection 
@@ -860,6 +868,7 @@ namespace MovieSplicer.UI
                 lvInput.SelectedIndices.Clear();
 
                 lvInput.Items[position].Selected = true;
+                lvInput.Items[position].Focused = true;
                 lvInput.Focus();
                 lvInput.EnsureVisible(position);
 
@@ -937,11 +946,34 @@ namespace MovieSplicer.UI
             Msg.AddMsg("Replaced frame(s) on position with " + lvInput.SelectedIndices[0]);
         }
 
+        public string getFrameNumberRange()
+        {
+            return Movie != null ? (Movie.Input.FrameData.Length - 1).ToString() : "no movie";
+        }
+
+        public void gotoFrameNumber(string text)
+        {
+            // if not numeric or no movie loaded
+            if (IsNumeric(text) == false || Movie == null) return;
+
+            int targetFrame = Convert.ToInt32(text);
+
+            // check for valid range
+            if (targetFrame < FrameData.Input.Length && targetFrame >= 0)
+            {
+                lvInput.SelectedIndices.Clear();
+                lvInput.Items[targetFrame].Selected = true;
+                lvInput.Items[targetFrame].Focused = true;
+                lvInput.Focus();
+                lvInput.EnsureVisible(targetFrame);
+            }
+        }
+
         private void findToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // if not numeric or no movie loaded
-            frd.Show(this);
             frd.SelectedTabIn(0);
+            frd.Show(this);
         }
 
         private void findNextToolStripMenuItem_Click(object sender, EventArgs e)
@@ -952,39 +984,15 @@ namespace MovieSplicer.UI
         private void replaceToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // if not numeric or no movie loaded
-            frd.Show(this);
             frd.SelectedTabIn(1);
+            frd.Show(this);
         }
 
         private void goToToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            UI.GoToDialog dlg = new UI.GoToDialog();
-            //dlg.Parent = this;
-
             // if not numeric or no movie loaded
-            dlg.LabelIn = ( Movie != null ? (Movie.Input.FrameData.Length-1).ToString() : "no movie" );
-            dlg.ShowDialog();
-
-            if (dlg.DialogResult != DialogResult.OK)
-                return;
-
-            // if not numeric or no movie loaded
-            if (IsNumeric(dlg.TextOut) == false || Movie == null) return;
-
-            // subtract 1 since we're looking for an index
-            int targetFrame = Convert.ToInt32(dlg.TextOut);
-
-            // check for valid range
-            if (targetFrame < FrameData.Input.Length && targetFrame >= 0)
-            {
-                for (int i = lvInput.SelectedIndices.Count-1; i >= 0 ; i--)
-                {
-                    lvInput.Items[lvInput.SelectedIndices[i]].Selected = false;
-                }
-                lvInput.Items[targetFrame].Selected = true;
-                lvInput.Focus();
-                lvInput.EnsureVisible(targetFrame);
-            }
+            frd.SelectedTabIn(2);
+            frd.Show(this);
         }
 
         private void selectAllToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1031,9 +1039,9 @@ namespace MovieSplicer.UI
 
         private void Undo()
         {
-            if (UndoHistory.Length > 0)
+            if (UndoHistory.Changes.Length > 0)
             {
-                FrameData.Input = UndoHistory[UndoHistory.Length - 1].Changes;
+                FrameData.Input = UndoHistory.Changes[UndoHistory.Changes.Length - 1];
                 UndoBuffer.Undo(ref UndoHistory);
 
                 Msg.AddMsg("Undid last change");

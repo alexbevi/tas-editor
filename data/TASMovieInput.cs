@@ -105,10 +105,10 @@ namespace MovieSplicer.Data
         /// 
         /// NOTE::Autofire update just adds the selected input to alternating frames
         /// </summary>        
-        public static void Insert(ref TASMovieInput[] input, TASMovieInput frame, bool[] updateFlag, bool autofireUpdate, int position, int length)
+        public static void Update(ref TASMovieInput[] input, TASMovieInput frame, bool[] updateFlag, bool autofireUpdate, int[] indices)
         {
-            TASMovieInput[] temp = new TASMovieInput[length];
-            for (int i = 0; i < length; i++)
+            TASMovieInput[] temp = new TASMovieInput[indices.Length];
+            for (int i = 0; i < indices.Length; i++)
             {                                
                 temp[i] = new TASMovieInput();
                 for (int j = 0; j < updateFlag.Length; j++)
@@ -119,17 +119,17 @@ namespace MovieSplicer.Data
                     if (autofireUpdate)
                     {
                         if (i % 2 == 1)
-                            temp[i].Controller[j] = (updateFlag[j]) ? null : input[position + i].Controller[j];
+                            temp[i].Controller[j] = (updateFlag[j]) ? null : input[indices[i]].Controller[j];
                         else
-                            temp[i].Controller[j] = (updateFlag[j]) ? frame.Controller[j] : input[position + i].Controller[j];
+                            temp[i].Controller[j] = (updateFlag[j]) ? frame.Controller[j] : input[indices[i]].Controller[j];
                     }
                     else
-                        temp[i].Controller[j] = (updateFlag[j]) ? frame.Controller[j] : input[position + i].Controller[j];
+                        temp[i].Controller[j] = (updateFlag[j]) ? frame.Controller[j] : input[indices[i]].Controller[j];
                 }
             }
 
-            for (int i = 0; i < length; i++)
-                input[position + i] = temp[i];
+            for (int i = 0; i < indices.Length; i++)
+                input[indices[i]] = temp[i];
 
             // OLD .. DOESN'T WORK 100%
             //for (int i = position; i < position + length; i++)
@@ -143,10 +143,10 @@ namespace MovieSplicer.Data
         /// 
         /// NOTE::Autofire update just adds the selected input to alternating frames
         /// </summary>        
-        public static void Update(ref TASMovieInput[] input, TASMovieInput frame, bool[] updateFlag, bool autofireUpdate, int position, int length)
+        public static void UpdatePlus(ref TASMovieInput[] input, TASMovieInput frame, bool[] updateFlag, bool autofireUpdate, int[] indices)
         {
-            TASMovieInput[] temp = new TASMovieInput[length];
-            for (int i = 0; i < length; i++)
+            TASMovieInput[] temp = new TASMovieInput[indices.Length];
+            for (int i = 0; i < indices.Length; i++)
             {
                 temp[i] = new TASMovieInput();
                 for (int j = 0; j < updateFlag.Length; j++)
@@ -157,17 +157,19 @@ namespace MovieSplicer.Data
                     if (autofireUpdate)
                     {
                         if (i % 2 == 1)
-                            temp[i].Controller[j] = (updateFlag[j]) ? null : input[position + i].Controller[j];
+                            temp[i].Controller[j] = input[indices[i]].Controller[j];
                         else
-                            temp[i].Controller[j] = (updateFlag[j]) ? frame.Controller[j] : input[position + i].Controller[j];
+                            temp[i].Controller[j] = (updateFlag[j]) ? input[indices[i]].Controller[j] + frame.Controller[j] : input[indices[i]].Controller[j];
                     }
                     else
-                        temp[i].Controller[j] = (updateFlag[j]) ? frame.Controller[j] : input[position + i].Controller[j];
+                        temp[i].Controller[j] = (updateFlag[j]) ? input[indices[i]].Controller[j] + frame.Controller[j] : input[indices[i]].Controller[j];
                 }
             }
 
-            for (int i = 0; i < length; i++)
-                input[position + i] = input[position + i] + temp[i];           
+            for (int i = 0; i < indices.Length; i++)
+            {
+                input[indices[i]] = temp[i];
+            }
         }
 
         /// <summary>
@@ -189,12 +191,12 @@ namespace MovieSplicer.Data
         /// Copy a given number of frames at the desired position by extracting them to a new
         /// array
         /// </summary>        
-        public static TASMovieInput[] Copy(ref TASMovieInput[] input, int position, int length)
+        public static TASMovieInput[] Copy(ref TASMovieInput[] input, int[] indices)
         {
-            TASMovieInput[] temp = new TASMovieInput[length];
+            TASMovieInput[] temp = new TASMovieInput[indices.Length];
 
-            for (int i = 0; i < length; i++)
-                temp[i] = input[position + i];
+            for (int i = 0; i < indices.Length; i++)
+                temp[i] = input[indices[i]];
 
             return temp;
         }

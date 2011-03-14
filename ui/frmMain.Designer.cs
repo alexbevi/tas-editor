@@ -686,6 +686,7 @@ namespace MovieSplicer.UI
             this.lvInput.UseCompatibleStateImageBehavior = false;
             this.lvInput.View = System.Windows.Forms.View.Details;
             this.lvInput.VirtualMode = true;
+            this.lvInput.DoubleClick += new System.EventHandler(this.mnuEditing_Click);
             this.lvInput.DragDrop += new System.Windows.Forms.DragEventHandler(this.lvInput_DragDrop);
             this.lvInput.DragEnter += new System.Windows.Forms.DragEventHandler(this.lvInput_DragEnter);
             this.lvInput.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.lvInput_KeyPress);
