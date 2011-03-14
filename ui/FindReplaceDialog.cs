@@ -40,7 +40,6 @@ namespace MovieSplicer.UI
             }
             else
             {
-                lblFrameNumber.Text = "Frame: (" + m_parent.getFrameNumberRange() + ")";
                 txtFrameNumber.Focus();
             }
         }
@@ -63,7 +62,6 @@ namespace MovieSplicer.UI
             }
             else
             {
-                lblFrameNumber.Text = "Frame: (" + m_parent.getFrameNumberRange() + ")";
                 txtFrameNumber.Focus();
             }
         }
@@ -92,7 +90,6 @@ namespace MovieSplicer.UI
         private void btnFind_Click(object sender, EventArgs e)
         {
             m_parent.findNext(txtFind.Text, radDown.Checked);
-            Focus();
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
@@ -119,7 +116,6 @@ namespace MovieSplicer.UI
         private void btnReplaceFindNext_Click(object sender, EventArgs e)
         {
             m_parent.findNext(txtReplace.Text, radDownReplace.Checked);
-            Focus();
         }
 
         private void btnReplace_Click(object sender, EventArgs e)
@@ -130,7 +126,6 @@ namespace MovieSplicer.UI
         private void btnReplaceAll_Click(object sender, EventArgs e)
         {
             m_parent.replaceAllItems(txtReplace.Text, txtReplaceWith.Text, radDownReplace.Checked);
-            Focus();
         }
 
         private void btnGoto_Click(object sender, EventArgs e)
@@ -200,7 +195,10 @@ namespace MovieSplicer.UI
 
         public string GotoFrameNumberLabel
         {
-            set { lblFrameNumber.Text = "Frame: (" + value + ")"; }
+            set
+            {
+                lblFrameNumber.Text = "Frame (" + value + "):";
+            }
         }
     }
 }

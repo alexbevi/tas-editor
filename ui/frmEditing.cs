@@ -104,14 +104,9 @@ namespace MovieSplicer.UI
         {
             if (lvInput.SelectedIndices.Count == 0) return;
 
-            int frameIndex = lvInput.SelectedIndices[0];
-            int framePosition = Convert.ToInt32(lvInput.Items[frameIndex].Text);
-            int totalFrames = lvInput.SelectedIndices[lvInput.SelectedIndices.Count - 1] - frameIndex + 1;
             bool[] updateFlag = { false, false, false, false };
 
             TASMovieInput updated = new TASMovieInput();
-            for (int i = 0; i < updated.Controller.Length; i++)
-                updated.Controller[i] = FrameData[frameIndex].Controller[i];
 
             if (sender == button1)
             {
@@ -164,8 +159,10 @@ namespace MovieSplicer.UI
             // prompt for multiple frame insertion
             if (lvInput.SelectedIndices.Count > 1 && EditingPrompts)
             {
-                DialogResult confirmUpdate = MessageBox.Show(MovieSplicer.UI.frmMain.frm, "Are you sure you want to update the " + totalFrames + " frames with the same input?",
-                    "Confirm Multiple Frame Update", MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
+                DialogResult confirmUpdate = MessageBox.Show(MovieSplicer.UI.frmMain.frm,
+                    "Are you sure you want to update the " + lvInput.SelectedIndices.Count + " frames with the same input?",
+                    "Confirm Multiple Frame Update",
+                    MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
                 if (confirmUpdate != DialogResult.OK) return;
             }
 
@@ -181,8 +178,8 @@ namespace MovieSplicer.UI
                 TASMovieInput.Update(ref FrameData, updated, updateFlag, AutoFire, selectedIndices);
 
             lvInput.ClearVirtualCache();
-            lvInput.Refresh();            
-            Msg.AddMsg("Updated " + totalFrames + " frame(s) at frame " + framePosition);
+            lvInput.Refresh();
+            Msg.AddMsg("Updated " + lvInput.SelectedIndices.Count + " frame(s)");
         }
 
         /// <summary>
@@ -194,11 +191,12 @@ namespace MovieSplicer.UI
             if (IsNumeric(txtJumpToFrame.Text) == false || FrameData == null) return;
 
             // subtract 1 since we're looking for an index
-            int targetFrame = Convert.ToInt32(txtJumpToFrame.Text) - 1;
+            int targetFrame = Convert.ToInt32(txtJumpToFrame.Text);
 
             // check for valid range
-            if (targetFrame <= FrameData.Length && targetFrame >= 0)
+            if (targetFrame >= 0 && targetFrame < FrameData.Length)
             {
+                lvInput.SelectedIndices.Clear();
                 lvInput.Items[targetFrame].Selected = true;
                 lvInput.Items[targetFrame].Focused = true;
                 lvInput.Focus();
@@ -211,12 +209,28 @@ namespace MovieSplicer.UI
         /// </summary>        
         private void btnFindInput_Click(object sender, EventArgs e)
         {
-            if (FrameData == null || txtJumpToFrame.Text.Length == 0) return;
+            if (FrameData == null) return;
 
-            int start = (lvInput.SelectedIndices.Count > 0) ? lvInput.SelectedIndices[0] + 1 : 0;                        
-            int position = TASMovieInput.Search(ref FrameData, txtJumpToFrame.Text, start, true);
+            int start = (lvInput.SelectedIndices.Count > 0) ? lvInput.SelectedIndices[0] + 1 : 0;
+            int end   = lvInput.Items.Count;
+            int position = TASMovieInput.Search(ref FrameData, txtJumpToFrame.Text, start, end);
 
-            if (position > 0 && position < FrameData.Length)
+            if (position < 0)
+            {
+                if (start > 0)
+                {
+                    DialogResult answer = MessageBox.Show(MovieSplicer.UI.frmMain.frm,
+                        "Input pattern not found between selected position and end of movie.\nContinue searching from the beginning?",
+                        "Continue",
+                        MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
+                    if (answer == DialogResult.OK)
+                    {
+                        position = TASMovieInput.Search(ref FrameData, txtJumpToFrame.Text, 0, start);
+                    }
+                }
+            }
+
+            if (position >= 0 && position < FrameData.Length)
             {
                 // clear the selection collection
                 // NOTE::This is since we will be creating a new selected items collection 
@@ -225,12 +239,13 @@ namespace MovieSplicer.UI
                 lvInput.SelectedIndices.Clear();
 
                 lvInput.Items[position].Selected = true;
+                lvInput.Items[position].Focused = true;
                 lvInput.Focus();
                 lvInput.EnsureVisible(position);
             }
             else
             {
-                MessageBox.Show(MovieSplicer.UI.frmMain.frm, "Input pattern not found between selected position and end of movie", "Sorry",
+                MessageBox.Show(MovieSplicer.UI.frmMain.frm, "Input pattern not found", "Sorry",
                     MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);
             }
         }

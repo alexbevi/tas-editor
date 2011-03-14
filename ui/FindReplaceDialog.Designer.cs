@@ -50,10 +50,10 @@ namespace MovieSplicer.UI
             this.txtReplace = new System.Windows.Forms.TextBox();
             this.lblReplace = new System.Windows.Forms.Label();
             this.tagGoto = new System.Windows.Forms.TabPage();
-            this.txtFrameNumber = new System.Windows.Forms.TextBox();
-            this.lblFrameNumber = new System.Windows.Forms.Label();
-            this.btnGotoOk = new System.Windows.Forms.Button();
             this.btnGotoCancel = new System.Windows.Forms.Button();
+            this.btnGotoOk = new System.Windows.Forms.Button();
+            this.lblFrameNumber = new System.Windows.Forms.Label();
+            this.txtFrameNumber = new System.Windows.Forms.TextBox();
             this.tagControl.SuspendLayout();
             this.tabFind.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -88,7 +88,7 @@ namespace MovieSplicer.UI
             this.tagControl.Controls.Add(this.tabFind);
             this.tagControl.Controls.Add(this.tabReplace);
             this.tagControl.Controls.Add(this.tagGoto);
-            this.tagControl.Location = new System.Drawing.Point(8, 7);
+            this.tagControl.Location = new System.Drawing.Point(12, 2);
             this.tagControl.Name = "tagControl";
             this.tagControl.SelectedIndex = 0;
             this.tagControl.Size = new System.Drawing.Size(322, 148);
@@ -114,9 +114,9 @@ namespace MovieSplicer.UI
             // 
             this.groupBox1.Controls.Add(this.radDown);
             this.groupBox1.Controls.Add(this.radUp);
-            this.groupBox1.Location = new System.Drawing.Point(21, 64);
+            this.groupBox1.Location = new System.Drawing.Point(12, 69);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(165, 39);
+            this.groupBox1.Size = new System.Drawing.Size(172, 42);
             this.groupBox1.TabIndex = 4;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Search direction";
@@ -125,7 +125,7 @@ namespace MovieSplicer.UI
             // 
             this.radDown.AutoSize = true;
             this.radDown.Checked = true;
-            this.radDown.Location = new System.Drawing.Point(81, 18);
+            this.radDown.Location = new System.Drawing.Point(78, 18);
             this.radDown.Name = "radDown";
             this.radDown.Size = new System.Drawing.Size(47, 16);
             this.radDown.TabIndex = 5;
@@ -145,16 +145,16 @@ namespace MovieSplicer.UI
             // 
             // txtFind
             // 
-            this.txtFind.Location = new System.Drawing.Point(80, 19);
+            this.txtFind.Location = new System.Drawing.Point(81, 19);
             this.txtFind.Name = "txtFind";
-            this.txtFind.Size = new System.Drawing.Size(106, 21);
+            this.txtFind.Size = new System.Drawing.Size(105, 21);
             this.txtFind.TabIndex = 2;
             this.txtFind.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtFind_KeyPress);
             // 
             // lblFind
             // 
             this.lblFind.AutoSize = true;
-            this.lblFind.Location = new System.Drawing.Point(18, 22);
+            this.lblFind.Location = new System.Drawing.Point(10, 22);
             this.lblFind.Name = "lblFind";
             this.lblFind.Size = new System.Drawing.Size(65, 12);
             this.lblFind.TabIndex = 1;
@@ -226,7 +226,7 @@ namespace MovieSplicer.UI
             // 
             this.txtReplaceWith.Location = new System.Drawing.Point(89, 42);
             this.txtReplaceWith.Name = "txtReplaceWith";
-            this.txtReplaceWith.Size = new System.Drawing.Size(94, 21);
+            this.txtReplaceWith.Size = new System.Drawing.Size(95, 21);
             this.txtReplaceWith.TabIndex = 9;
             this.txtReplaceWith.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtReplaceWith_KeyPress);
             // 
@@ -243,9 +243,9 @@ namespace MovieSplicer.UI
             // 
             this.groupBox2.Controls.Add(this.radDownReplace);
             this.groupBox2.Controls.Add(this.radUpReplace);
-            this.groupBox2.Location = new System.Drawing.Point(12, 71);
+            this.groupBox2.Location = new System.Drawing.Point(12, 69);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(171, 42);
+            this.groupBox2.Size = new System.Drawing.Size(172, 42);
             this.groupBox2.TabIndex = 10;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Search direction";
@@ -254,7 +254,7 @@ namespace MovieSplicer.UI
             // 
             this.radDownReplace.AutoSize = true;
             this.radDownReplace.Checked = true;
-            this.radDownReplace.Location = new System.Drawing.Point(88, 18);
+            this.radDownReplace.Location = new System.Drawing.Point(78, 18);
             this.radDownReplace.Name = "radDownReplace";
             this.radDownReplace.Size = new System.Drawing.Size(47, 16);
             this.radDownReplace.TabIndex = 11;
@@ -265,7 +265,7 @@ namespace MovieSplicer.UI
             // radUpReplace
             // 
             this.radUpReplace.AutoSize = true;
-            this.radUpReplace.Location = new System.Drawing.Point(21, 18);
+            this.radUpReplace.Location = new System.Drawing.Point(20, 18);
             this.radUpReplace.Name = "radUpReplace";
             this.radUpReplace.Size = new System.Drawing.Size(35, 16);
             this.radUpReplace.TabIndex = 10;
@@ -276,7 +276,7 @@ namespace MovieSplicer.UI
             // 
             this.txtReplace.Location = new System.Drawing.Point(89, 15);
             this.txtReplace.Name = "txtReplace";
-            this.txtReplace.Size = new System.Drawing.Size(94, 21);
+            this.txtReplace.Size = new System.Drawing.Size(95, 21);
             this.txtReplace.TabIndex = 8;
             this.txtReplace.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtReplace_KeyPress);
             // 
@@ -303,23 +303,16 @@ namespace MovieSplicer.UI
             this.tagGoto.Text = "Goto";
             this.tagGoto.UseVisualStyleBackColor = true;
             // 
-            // txtFrameNumber
+            // btnGotoCancel
             // 
-            this.txtFrameNumber.Location = new System.Drawing.Point(171, 28);
-            this.txtFrameNumber.MaxLength = 20;
-            this.txtFrameNumber.Name = "txtFrameNumber";
-            this.txtFrameNumber.Size = new System.Drawing.Size(103, 21);
-            this.txtFrameNumber.TabIndex = 3;
-            this.txtFrameNumber.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtFrameNumber_KeyPress);
-            // 
-            // lblFrameNumber
-            // 
-            this.lblFrameNumber.AutoSize = true;
-            this.lblFrameNumber.Location = new System.Drawing.Point(45, 31);
-            this.lblFrameNumber.Name = "lblFrameNumber";
-            this.lblFrameNumber.Size = new System.Drawing.Size(59, 12);
-            this.lblFrameNumber.TabIndex = 4;
-            this.lblFrameNumber.Text = "Frame ():";
+            this.btnGotoCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btnGotoCancel.Location = new System.Drawing.Point(171, 86);
+            this.btnGotoCancel.Name = "btnGotoCancel";
+            this.btnGotoCancel.Size = new System.Drawing.Size(65, 22);
+            this.btnGotoCancel.TabIndex = 6;
+            this.btnGotoCancel.Text = "&Cancel";
+            this.btnGotoCancel.UseVisualStyleBackColor = true;
+            this.btnGotoCancel.Click += new System.EventHandler(this.btnGotoCancel_Click);
             // 
             // btnGotoOk
             // 
@@ -331,16 +324,23 @@ namespace MovieSplicer.UI
             this.btnGotoOk.UseVisualStyleBackColor = true;
             this.btnGotoOk.Click += new System.EventHandler(this.btnGoto_Click);
             // 
-            // btnGotoCancel
+            // lblFrameNumber
             // 
-            this.btnGotoCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnGotoCancel.Location = new System.Drawing.Point(171, 86);
-            this.btnGotoCancel.Name = "btnGotoCancel";
-            this.btnGotoCancel.Size = new System.Drawing.Size(65, 22);
-            this.btnGotoCancel.TabIndex = 6;
-            this.btnGotoCancel.Text = "&Cancel";
-            this.btnGotoCancel.UseVisualStyleBackColor = true;
-            this.btnGotoCancel.Click += new System.EventHandler(this.btnGotoCancel_Click);
+            this.lblFrameNumber.AutoSize = true;
+            this.lblFrameNumber.Location = new System.Drawing.Point(45, 31);
+            this.lblFrameNumber.Name = "lblFrameNumber";
+            this.lblFrameNumber.Size = new System.Drawing.Size(107, 12);
+            this.lblFrameNumber.TabIndex = 4;
+            this.lblFrameNumber.Text = "Frame (no movie):";
+            // 
+            // txtFrameNumber
+            // 
+            this.txtFrameNumber.Location = new System.Drawing.Point(171, 28);
+            this.txtFrameNumber.MaxLength = 20;
+            this.txtFrameNumber.Name = "txtFrameNumber";
+            this.txtFrameNumber.Size = new System.Drawing.Size(103, 21);
+            this.txtFrameNumber.TabIndex = 3;
+            this.txtFrameNumber.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtFrameNumber_KeyPress);
             // 
             // FindReplaceDialog
             // 
@@ -355,8 +355,7 @@ namespace MovieSplicer.UI
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Find/Replace";
-            this.TopMost = true;
+            this.Text = "Find/Replace/Goto";
             this.Load += new System.EventHandler(this.FindReplaceDialog_Load);
             this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.FindReplaceDialog_KeyPress);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FindReplaceDialog_FormClosing);

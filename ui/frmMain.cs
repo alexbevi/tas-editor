@@ -349,6 +349,7 @@ namespace MovieSplicer.UI
 
                 // add frame count to statusbar
                 sbarFrameCount.Text = FrameData.Input.Length.ToString();
+                frd.GotoFrameNumberLabel = getFrameNumberRange();
 
                 Editor.LoadSharedObjects(ref lvInput, ref FrameData.Input, ref UndoHistory, ref Msg);
                 Msg.AddMsg("Successfully loaded " + FilenameFromPath(filename));
@@ -408,10 +409,6 @@ namespace MovieSplicer.UI
             mnuClose.Enabled  = false;
             mnuExportSRT.Enabled = true;
 
-            // reset filename
-            txtMovieFilename.Text = "";
-            sbarFrameCount.Text   = "0";
-
             // reset the input list
             lvInput.SetColumns(0);
             lvInput.VirtualListSize = 0;
@@ -433,10 +430,17 @@ namespace MovieSplicer.UI
             UndoHistory.Changes = new TASMovieInput[0][];
             mnuUndoChange.Enabled = false;
 
+            Movie = null;
+
             // clear the icon
             pbFormat.Image = null;
 
             runMovieGeneratorToolStripMenuItem.Enabled = false;
+
+            // reset filename
+            txtMovieFilename.Text = "";
+            sbarFrameCount.Text = "0";
+            frd.GotoFrameNumberLabel = getFrameNumberRange();
         }
 
         /// <summary>
@@ -566,6 +570,7 @@ namespace MovieSplicer.UI
             lvInput.Refresh();
 
             sbarFrameCount.Text = FrameData.Input.Length.ToString();
+            frd.GotoFrameNumberLabel = getFrameNumberRange();
 
             // NOTE::refresh the object pointers
             // DEBUG::Not the most elegant solution
@@ -578,7 +583,7 @@ namespace MovieSplicer.UI
         /// update the inputArray, or prompt for insertion of multiple frames based
         /// on how many frames were selected.
         /// </summary>
-        private void cmnuitemInsertFrame_Click(object sender, EventArgs e)
+        private void insertFrames()
         {
             int framePosition = FrameData.Input.Length - 1;
             int totalFrames = 1;
@@ -607,7 +612,7 @@ namespace MovieSplicer.UI
             }
 
             UndoBuffer.Add(ref UndoHistory, ref FrameData.Input);
-            TASMovieInput.Insert(ref FrameData.Input, framePosition, totalFrames);
+            TASMovieInput.Insert(ref FrameData.Input, new TASMovieInput(), framePosition, totalFrames);
 
             updateControlsAfterEdit();
             Msg.AddMsg("Inserted " + totalFrames + " frame(s) at position " + framePosition);
@@ -618,7 +623,7 @@ namespace MovieSplicer.UI
         /// update the inputArray, or prompt for insertion of multiple frames based
         /// on how many frames were selected.
         /// </summary>
-        private void cmnuitemAppendFrame_Click(object sender, EventArgs e)
+        private void appendFrames()
         {
             int framePosition = FrameData.Input.Length;
             int totalFrames = 1;
@@ -647,7 +652,7 @@ namespace MovieSplicer.UI
             }
 
             UndoBuffer.Add(ref UndoHistory, ref FrameData.Input);
-            TASMovieInput.Insert(ref FrameData.Input, framePosition, totalFrames);
+            TASMovieInput.Insert(ref FrameData.Input, new TASMovieInput(), framePosition, totalFrames);
 
             updateControlsAfterEdit();
             Msg.AddMsg("Appended " + totalFrames + " frame(s) after position " + framePosition);
@@ -657,20 +662,21 @@ namespace MovieSplicer.UI
         /// Remove the row from the listview at the selectedIndex point and
         /// update the inputArray, or if multiple rows have been selected, prompt for deletion
         /// </summary>
-        private void cmnuitemRemoveFrames_Click(object sender, EventArgs e)
+        private void removeFrames()
         {
             // make sure something is selected
             if (lvInput.SelectedIndices.Count == 0) return;
 
-            int frameIndex    = lvInput.SelectedIndices[0];
-            int framePosition = Convert.ToInt32(lvInput.Items[frameIndex].Text);
-            int totalFrames   = lvInput.SelectedIndices[lvInput.SelectedIndices.Count - 1] - frameIndex + 1;
+            int[] selectedIndices = new int[lvInput.SelectedIndices.Count];
+            lvInput.SelectedIndices.CopyTo(selectedIndices, 0);
+
+            //int framePosition = Convert.ToInt32(lvInput.Items[frameIndex].Text);
 
             // prompt for multiple frame insertion
             if (lvInput.SelectedIndices.Count > 1 && mnuEditingPrompt.Checked)
             {
                 DialogResult confirmDelete = MessageBox.Show(this,
-                        "Are you sure you want to remove the selected " + totalFrames + " frames", 
+                        "Are you sure you want to remove the selected " + lvInput.SelectedIndices.Count + " frames", 
                         "Confirm Multiple Frame Removal",
                         MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
  
@@ -678,29 +684,50 @@ namespace MovieSplicer.UI
             }
 
             UndoBuffer.Add(ref UndoHistory, ref FrameData.Input);
-            TASMovieInput.Remove(ref FrameData.Input, frameIndex, totalFrames);
+            TASMovieInput.Remove(ref FrameData.Input, selectedIndices);
 
+            //*
             // HACK::ensures that the virtual list doesn't try to access an element that 
             // no longer exists after a block of frames is deleted
-            int selected = lvInput.SelectedIndices[0];
-            if (selected <= FrameData.Input.Length)
+            int focusPos = selectedIndices[selectedIndices.Length - 1] - selectedIndices.Length;
+            if (FrameData.Input.Length > 0)
             {
-                // if we've removed all frames up to this point, the index == selected, so decrement
-                if (selected == FrameData.Input.Length) selected--;
-
                 // if we haven't removed all frames...
-                if (selected >= 0)
-                {
-                    lvInput.Items[selected].Selected = true;
-                    lvInput.Focus();
-                    lvInput.EnsureVisible(selected);
-                }
+                lvInput.Items[focusPos].Focused = true;
+                lvInput.Focus();
+                lvInput.EnsureVisible(focusPos);
             }
+            lvInput.SelectedIndices.Clear();
+            //*/
 
             updateControlsAfterEdit();
-            Msg.AddMsg("Removed " + totalFrames + " frame(s) after frame " + framePosition);
+            Msg.AddMsg("Removed " + lvInput.SelectedIndices.Count + " frame(s)");
         }
-       
+
+        /// <summary>
+        /// Insert frame (context menu)
+        /// </summary>
+        private void cmnuitemInsertFrame_Click(object sender, EventArgs e)
+        {
+            insertFrames();
+        }
+
+        /// <summary>
+        /// Append frame (context menu)
+        /// </summary>
+        private void cmnuitemAppendFrame_Click(object sender, EventArgs e)
+        {
+            appendFrames();
+        }
+
+        /// <summary>
+        /// Remove frame (context menu)
+        /// </summary>
+        private void cmnuitemRemoveFrames_Click(object sender, EventArgs e)
+        {
+            removeFrames();
+        }
+
     #endregion
     
     #region Copy-Pasting
@@ -749,39 +776,136 @@ namespace MovieSplicer.UI
             
             enablePasteControls();   
         }
+
+        /// <summary>
+        /// Cut the selected frames to the buffer arraylist
+        /// </summary>
+        private void cutFrames()
+        {
+            copyFrames();
+            removeFrames();
+        }
         
         /// <summary>
-        /// Insert the buffered frame input at the selected position.
+        /// Insert the buffered frame input at/after the selected position.
         /// </summary>
         private void pasteFrames(bool after)
         {
-            // check for a valid paste position
-            if (lvInput.SelectedIndices.Count == 0) return;
-                        
-            int frameIndex    = lvInput.SelectedIndices[0];
-            int framePosition = Convert.ToInt32(lvInput.Items[frameIndex].Text);            
+            bool notEmpty = (lvInput.Items.Count > 0);
 
-            // confirm that the paste should occur
+            if (notEmpty)
+            {
+                // check for a valid paste position
+                if (lvInput.SelectedIndices.Count == 0) return;
+            }
+
+            int framePos = notEmpty ? (after ? lvInput.SelectedIndices[lvInput.SelectedIndices.Count - 1] + 1: lvInput.SelectedIndices[0]) : 0;
+
+            // confirm whether to paste frames
             if (mnuEditingPrompt.Checked)
             {
-                DialogResult confirmPaste = 
-                MessageBox.Show(this,
-                        "Are you sure you want to paste " + FrameBuffer.Input.Length + " frame(s) " + 
-                        (after ? "after" : "before") + " frame " + framePosition, 
+                DialogResult confirmPaste = MessageBox.Show(this,
+                        "Paste " + FrameBuffer.Input.Length + " frame(s) "
+                        + (notEmpty && after ? "after frame " + (framePos - 1) : "at frame " + framePos) + " ?", 
                         "Confirm Paste",
                         MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
- 
+
                 if (confirmPaste != DialogResult.OK) return;
             }
 
             UndoBuffer.Add(ref UndoHistory, ref FrameData.Input);
-            TASMovieInput.Paste(ref FrameData.Input, ref FrameBuffer.Input, (after ? frameIndex + 1 : frameIndex));
-            updateControlsAfterEdit();
+            TASMovieInput.Insert(ref FrameData.Input, ref FrameBuffer.Input, framePos);
 
-            Msg.AddMsg("Pasted " + FrameBuffer.Input.Length + " frame(s)" + (after ? "after" : "before") + " frame " + framePosition);
+           updateControlsAfterEdit();
+
+           lvInput.SelectedIndices.Clear();
+            for (int i = 0; i < FrameBuffer.Input.Length; i++)
+            {
+                lvInput.Items[framePos + i].Selected = true;
+            }
+
+            int focusPos = lvInput.SelectedIndices[lvInput.SelectedIndices.Count - 1];
+            lvInput.Items[focusPos].Focused = true;
+            lvInput.Focus();
+            lvInput.EnsureVisible(focusPos);
+            lvInput.Refresh();
+
+            Msg.AddMsg("Pasted " + FrameBuffer.Input.Length + " frame(s)");
         }
 
-                
+        /// <summary>
+        /// Insert the buffered frame input at/after each selected position.
+        /// </summary>
+        private void pasteFramesMultiple(bool after)
+        {
+            // check for a valid paste position
+            if (lvInput.SelectedIndices.Count <= 1) return;
+
+            int[] selectedIndices = new int[lvInput.SelectedIndices.Count];
+            if (after)
+                for (int i = 0; i < selectedIndices.Length; i++)
+                    selectedIndices[i] = lvInput.SelectedIndices[i] + 1;
+            else
+                lvInput.SelectedIndices.CopyTo(selectedIndices, 0);
+
+            bool multiplePaste = false;
+            // ask whether to paste multiple times
+            if (mnuEditingPrompt.Checked)
+            {
+                DialogResult confirmPaste = MessageBox.Show(this,
+                        "Paste " + selectedIndices.Length + " chunks of " + FrameBuffer.Input.Length + " frame(s) "
+                        + (after ? "after" : "before") + " each selected frame?\nWarning: this might be extremely slow!",
+                        "Confirm Paste",
+                        MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
+
+                if (confirmPaste == DialogResult.Yes) multiplePaste = true;
+                else if (confirmPaste == DialogResult.No) multiplePaste = false;
+                else return;
+            }
+
+            UndoBuffer.Add(ref UndoHistory, ref FrameData.Input);
+            if (multiplePaste)
+                TASMovieInput.InsertMultiple(ref FrameData.Input, ref FrameBuffer.Input, selectedIndices);
+            else
+                TASMovieInput.Insert(ref FrameData.Input, ref FrameBuffer.Input,
+                    (after ? selectedIndices[selectedIndices.Length - 1] : selectedIndices[0]));
+
+            lvInput.ClearVirtualCache();
+            lvInput.VirtualListSource = FrameData.Input;
+            lvInput.VirtualListSize = FrameData.Input.Length;
+            lvInput.SelectedIndices.Clear();
+            lvInput.Refresh();
+
+            if (multiplePaste)
+            {
+                for (int i = 0; i < selectedIndices.Length; i++)
+                {
+                    for (int j = 0; j < FrameBuffer.Input.Length; j++)
+                    {
+                        lvInput.Items[selectedIndices[i] + i * FrameBuffer.Input.Length + j].Selected = true;
+                    }
+                }
+            }
+            else
+            {
+                int startPos = (after ? selectedIndices[selectedIndices.Length - 1] : selectedIndices[0]);
+                for (int i = 0; i < FrameBuffer.Input.Length; i++)
+                {
+                    lvInput.Items[startPos + i].Selected = true;
+                }
+            }
+            int focusPos = lvInput.SelectedIndices[lvInput.SelectedIndices.Count - 1];
+            lvInput.Items[focusPos].Focused = true;
+            lvInput.Focus();
+            lvInput.EnsureVisible(focusPos);
+            updateControlsAfterEdit();
+
+            if (multiplePaste)
+                Msg.AddMsg("Pasted " + lvInput.SelectedIndices.Count + " chunks of " + FrameBuffer.Input.Length + " frame(s)");
+            else
+                Msg.AddMsg("Pasted " + FrameBuffer.Input.Length + " frame(s)");
+        }
+
         /// <summary>
         /// Show the buffer form (pass in the buffer array and the buffer's MovieType)
         /// </summary>        
@@ -804,6 +928,14 @@ namespace MovieSplicer.UI
         private void mnuCopy_Click(object sender, EventArgs e)
         {
             copyFrames();
+        }
+
+        /// <summary>
+        /// Cut Frames (main menu)
+        /// </summary>        
+        private void mnuCut_Click(object sender, EventArgs e)
+        {
+            cutFrames();
         }
 
         /// <summary>
@@ -831,6 +963,14 @@ namespace MovieSplicer.UI
         }
 
         /// <summary>
+        /// Cut Frames (context menu)
+        /// </summary>        
+        private void cmnuitemCutFrames_Click(object sender, EventArgs e)
+        {
+            cutFrames();
+        }
+
+        /// <summary>
         /// Paste frames before (context menu)
         /// </summary>
         private void cmnuitemPasteFramesBefore_Click(object sender, EventArgs e)
@@ -849,15 +989,38 @@ namespace MovieSplicer.UI
     #endregion                                                              
 
     #region Select/Find/Replace/GoTo
-        public bool findNext( string find, bool direction )
+        public bool findNext( string find, bool downward )
         {
             if (Movie == null ) return false;
 
-            int start = (lvInput.SelectedIndices.Count > 0 ? lvInput.SelectedIndices[0] + 1 : 0 );
-            if (!direction) start = (lvInput.SelectedIndices.Count > 0 ? lvInput.SelectedIndices[0] - 1 : FrameData.Input.Length-1);
-            if (start < 0) start = 0;
-            if (start > FrameData.Input.Length - 1) start = FrameData.Input.Length - 1;
-            int position = TASMovieInput.Search(ref FrameData.Input, find, start, direction);
+            int start = 0;
+            int end   = lvInput.Items.Count;
+            if (downward)
+            {
+                start = lvInput.SelectedIndices.Count > 0 ? lvInput.SelectedIndices[0] + 1 : 0;
+            }
+            else
+            {
+                start = (lvInput.SelectedIndices.Count > 0 ? lvInput.SelectedIndices[lvInput.SelectedIndices.Count - 1] : end) - 1;
+                end   = -1;
+            }
+
+            int position = TASMovieInput.Search(ref FrameData.Input, find, start, end);
+            if (position < 0)
+            {
+                if (lvInput.SelectedIndices.Count > 0)
+                {
+                    DialogResult answer = MessageBox.Show(MovieSplicer.UI.frmMain.frm,
+                        "Input pattern not found between selected position and end of movie.\nContinue searching from the "
+                        + (downward ? "beginning" : "end") + " of the movie?", "Continue",
+                        MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
+                    if (answer == DialogResult.OK)
+                    {
+                        end      = downward ? 0 : lvInput.Items.Count - 1;
+                        position = TASMovieInput.Search(ref FrameData.Input, find, end, start);
+                    }
+                }
+            }
 
             if (position >= 0 && position < FrameData.Input.Length)
             {
@@ -877,7 +1040,7 @@ namespace MovieSplicer.UI
             else
             {
                 MessageBox.Show(this,
-                        "Input pattern not found between selected position and end of movie",
+                        "Input pattern not found",
                         "Sorry",
                         MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);
  
@@ -948,7 +1111,7 @@ namespace MovieSplicer.UI
 
         public string getFrameNumberRange()
         {
-            return Movie != null ? (Movie.Input.FrameData.Length - 1).ToString() : "no movie";
+            return Movie == null ? "no movie" : (FrameData.Input.Length > 0 ? "0-" + (FrameData.Input.Length - 1) : "empty movie");
         }
 
         public void gotoFrameNumber(string text)
@@ -971,28 +1134,40 @@ namespace MovieSplicer.UI
 
         private void findToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // if not numeric or no movie loaded
             frd.SelectedTabIn(0);
-            frd.Show(this);
+            if (frd.Visible)
+                frd.Focus();
+            else
+                frd.Show(this);
+            frd.SelectedTabIn(0);
         }
 
         private void findNextToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            findNext(frd.FindOut, frd.FindUpOrDownOut);
+            if (frd.FindOut.Length > 0)
+                findNext(frd.FindOut, frd.FindUpOrDownOut);
+            else
+                findToolStripMenuItem_Click(sender, e);
         }
 
         private void replaceToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // if not numeric or no movie loaded
             frd.SelectedTabIn(1);
-            frd.Show(this);
+            if (frd.Visible)
+                frd.Focus();
+            else
+                frd.Show(this);
+            frd.SelectedTabIn(1);
         }
 
         private void goToToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // if not numeric or no movie loaded
             frd.SelectedTabIn(2);
-            frd.Show(this);
+            if (frd.Visible)
+                frd.Focus();
+            else
+                frd.Show(this);
+            frd.SelectedTabIn(2);
         }
 
         private void selectAllToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1044,9 +1219,11 @@ namespace MovieSplicer.UI
                 FrameData.Input = UndoHistory.Changes[UndoHistory.Changes.Length - 1];
                 UndoBuffer.Undo(ref UndoHistory);
 
-                Msg.AddMsg("Undid last change");
+                lvInput.SelectedIndices.Clear();
                 updateControlsAfterEdit();
-            }
+ 
+                Msg.AddMsg("Undid last change");
+           }
         }
         #endregion
 
@@ -1081,6 +1258,5 @@ namespace MovieSplicer.UI
             frmAbout frm = new frmAbout();
             frm.ShowDialog();
         }
-
     }
 }

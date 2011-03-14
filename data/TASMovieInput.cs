@@ -60,24 +60,6 @@ namespace MovieSplicer.Data
     #region Methods
 
         /// <summary>
-        /// Insert a given number of blank frames (new TASMovieInput()) at the
-        /// desired position
-        /// </summary>        
-        public static void Insert(ref TASMovieInput[] input, int position, int length)
-        {
-            TASMovieInput[] temp = new TASMovieInput[input.Length + length];
-
-            for (int i = 0; i < position; i++)
-                temp[i] = input[i];
-            for (int j = 0; j < length; j++)
-                temp[position + j] = new TASMovieInput();
-            for (int k = position; k < input.Length; k++)
-                temp[k + length] = input[k];
-
-            input = temp;
-        }
-
-        /// <summary>
         /// Insert a given number of assigned frames (TASMovieInput()) at the
         /// desired position
         /// </summary>        
@@ -91,6 +73,63 @@ namespace MovieSplicer.Data
                 temp[position + j] = frame;
             for (int k = position; k < input.Length; k++)
                 temp[k + length] = input[k];
+
+            input = temp;
+        }
+
+        /// <summary>
+        /// Insert a given number of frames passed through a buffer at the
+        /// desired position
+        /// </summary>        
+        public static void Insert(ref TASMovieInput[] input, ref TASMovieInput[] buffer, int position)
+        {
+            TASMovieInput[] temp = new TASMovieInput[input.Length + buffer.Length];
+
+            for (int i = 0; i < position; i++)
+                temp[i] = input[i];
+            for (int j = 0; j < buffer.Length; j++)
+                temp[position + j] = buffer[j];
+            for (int k = position; k < input.Length; k++)
+                temp[k + buffer.Length] = input[k];
+
+            input = temp;
+        }
+
+        /// <summary>
+        /// Insert repeatedly a given number of frames passed through a buffer at each
+        /// desired position
+        /// </summary>        
+        public static void InsertMultiple(ref TASMovieInput[] input, ref TASMovieInput[] buffer, int[] indices)
+        {
+            int blockCount = indices.Length;
+            int blockSize  = buffer.Length;
+            TASMovieInput[] temp = new TASMovieInput[input.Length + blockSize * blockCount];
+
+            bool pastEnd = (indices[blockCount - 1] < input.Length ? false : true);
+
+            int i = 0;
+            for (int j = 0; j < blockCount; i++)
+            {
+                if (i == indices[j])
+                {
+                    for (int k = 0; k < blockSize; k++)
+                    {
+                        temp[i + blockSize * j + k] = buffer[k];
+                    }
+                    j++;
+
+                    // takes care of paste-after
+                    if (pastEnd && j == blockCount)
+                    {
+                        input = temp;
+                        return;
+                    }
+                }
+                temp[i + blockSize * j] = input[i];
+            }
+
+            for (int k = indices[blockCount - 1] + 1; k < input.Length; k++)
+                temp[blockSize * blockCount + k] = input[k];
 
             input = temp;
         }
@@ -175,14 +214,24 @@ namespace MovieSplicer.Data
         /// <summary>
         /// Remove a given number of frames at the desired position
         /// </summary>        
-        public static void Remove(ref TASMovieInput[] input, int position, int length)
+        public static void Remove(ref TASMovieInput[] input, int[] indices)
         {
-            TASMovieInput[] temp = new TASMovieInput[input.Length - length];
+            TASMovieInput[] temp = new TASMovieInput[input.Length - indices.Length];
 
-            for (int i = 0; i < position; i++)
-                temp[i] = input[i];
-            for (int j = position; j < temp.Length; j++)
-                temp[j] = input[j + length];
+            int i = 0;
+            for (int j = 0; j < indices.Length; )
+            {
+                if (i + j != indices[j])
+                {
+                    temp[i] = input[i + j];
+                    i++;
+                }
+                else
+                    j++;
+            }
+
+            for (int k = indices[indices.Length - 1] + 1; k < input.Length; i++, k++)
+                temp[i] = input[k];
 
             input = temp;
         }
@@ -199,24 +248,6 @@ namespace MovieSplicer.Data
                 temp[i] = input[indices[i]];
 
             return temp;
-        }
-
-        /// <summary>
-        /// Insert a given number of blank frames (new TASMovieInput()) at the
-        /// desired position
-        /// </summary>        
-        public static void Paste(ref TASMovieInput[] input, ref TASMovieInput[] buffer, int position)
-        {
-            TASMovieInput[] temp = new TASMovieInput[input.Length + buffer.Length];
-
-            for (int i = 0; i < position; i++)
-                temp[i] = input[i];
-            for (int j = 0; j < buffer.Length; j++)
-                temp[position + j] = buffer[j];
-            for (int k = position; k < input.Length; k++)
-                temp[k + buffer.Length] = input[k];
-
-            input = temp;
         }
 
         /// <summary>
@@ -242,23 +273,23 @@ namespace MovieSplicer.Data
         /// Cycle through the input collection returning an index of the first available match
         /// from the given offset
         /// </summary>                
-        public static int Search(ref TASMovieInput[] input, string pattern, int startPosition, bool direction)
+        public static int Search(ref TASMovieInput[] input, string pattern, int startPosition, int endPosition)
         {
-            if (direction == true )
+            if (startPosition < endPosition)
             {
-                for (int i = startPosition; i < input.Length; i++)
+                for (int i = startPosition; i < endPosition; i++)
                     for (int j = 0; j < input[i].Controller.Length; j++)
                         if (input[i].Controller[j] != null)
                             if (input[i].Controller[j] == pattern) return i;
             }
             else
             {
-                for (int i = startPosition; i > -1; i--)
+                for (int i = startPosition; i > endPosition; i--)
                     for (int j = 0; j < input[i].Controller.Length; j++)
                         if (input[i].Controller[j] != null)
                             if (input[i].Controller[j] == pattern) return i;
             }
-            return 0;
+            return -1;
         }
     
         /// <summary>
