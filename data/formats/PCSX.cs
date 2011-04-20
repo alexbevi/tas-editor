@@ -154,6 +154,11 @@ namespace MovieSplicer.Data.Formats
             0x34  // string: name of the author
         };
 
+        public static void PCSXHelp(object sender, EventArgs e)
+        {
+            // help here;
+       }
+
         public PCSX(string PXMFile)
         {
             Filename = PXMFile;

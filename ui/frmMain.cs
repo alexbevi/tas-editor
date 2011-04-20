@@ -311,11 +311,13 @@ namespace MovieSplicer.UI
                         Movie = new PCSX(filename);   // shares with PXM
                         Methods.PopulateMovieInfo.PXM(ref tvInfo, ref Movie);   // shares with PXM
                         pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_pjm"))).ToBitmap();
+                        //pbFormat.Click += new EventHandler(PCSX.PCSXHelp);
                         break;
                     case MovieType.PXM:
                         Movie = new PCSX(filename);   // shares with PJM
                         Methods.PopulateMovieInfo.PXM(ref tvInfo, ref Movie);   // shares with PJM
                         pbFormat.Image = ((System.Drawing.Icon)(rm.GetObject("icon_pxm"))).ToBitmap();
+                        //pbFormat.Click += new EventHandler(PCSX.PCSXHelp);
                         break;
                     case MovieType.None:
                         resetApplication();
@@ -529,6 +531,9 @@ namespace MovieSplicer.UI
         /// </summary>        
         private void mnuEditing_Click(object sender, EventArgs e)
         {
+            if (Movie == null)
+                return;
+
             // NOTE::refresh the object pointers
             Editor.LoadSharedObjects(ref lvInput, ref FrameData.Input, ref UndoHistory, ref Msg);   
 
