@@ -41,12 +41,12 @@ namespace MovieSplicer.UI
         public frmSubtitles(ref TASMovieInputCollection input)
         {
             InitializeComponent();
-            Input = input;          
+            Input = input;
         }
 
         /// <summary>
         /// Close the subtitles form
-        /// </summary>        
+        /// </summary>
         private void btnCancel_Click(object sender, EventArgs e)
         {
             this.Close();
@@ -54,23 +54,23 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Browse for an output location
-        /// </summary>        
+        /// </summary>
         private void btnBrowse_Click(object sender, EventArgs e)
         {
             saveDlg = new SaveFileDialog();
             saveDlg.Filter = SRT_FILTER;
-            saveDlg.ShowDialog();            
+            saveDlg.ShowDialog();
 
-            txtFilename.Text = saveDlg.FileName;            
+            txtFilename.Text = saveDlg.FileName;
         }
 
         /// <summary>
         /// Export the current movie out as a subtitle file
-        /// </summary>        
+        /// </summary>
         private void btnExport_Click(object sender, EventArgs e)
         {
             // validate objects and values first
-            if (Input.Input == null && txtFilename.Text.Length == 0) return;
+            if (Input.Input == null || txtFilename.Text.Length == 0) return;
             if (!IsNumeric(txtAVITiming.Text) || !IsNumeric(txtOffset.Text))
             {
                 MessageBox.Show(frmMain.frm, "Timing/Offset values must be numeric", "Ooops",
@@ -78,15 +78,20 @@ namespace MovieSplicer.UI
                 return;
             }
 
-            // create the subgenerator object
-            SubtitleGenerator subGen = new SubtitleGenerator(ref Input, txtFilename.Text);
-            subGen.Offset = Convert.ToInt32(txtOffset.Text);
-            subGen.FPS    = Convert.ToDouble(txtAVITiming.Text);
-            subGen.Export();
-            subGen = null;
+            try
+            {
+                // create the subgenerator object
+                SubtitleGenerator subGen = new SubtitleGenerator(ref Input, txtFilename.Text);
+                subGen.Offset = Convert.ToInt32(txtOffset.Text);
+                subGen.FPS = Convert.ToDouble(txtAVITiming.Text);
+                subGen.Export();
 
-            MessageBox.Show(frmMain.frm, "Subtitle file exported", "Congrats",
-                MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);
-        }           
+                MessageBox.Show(frmMain.frm, "Subtitle file exported", "Congrats",
+                    MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);
+            }
+            catch
+            {
+            }
+        }
     }
 }

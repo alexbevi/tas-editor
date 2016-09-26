@@ -20,7 +20,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA    * 
  *                                                                              *
  * Conventions:                                                                 *
- * - Class Level Variables, Methods and Properties are denoted with each word   *   
+ * - Class Level Variables, Methods and Properties are denoted with each word   *
  *   appearing with the first letter capitalized: ie. FrameData, Save()         *
  * - private Class Variables and methods are denoted with the first word being  *
  *   lowercase, then the subsequent words having their first letter             *
@@ -46,7 +46,7 @@ using MovieSplicer.Data.Formats;
 using MovieSplicer.Components;
 
 namespace MovieSplicer.UI
-{    
+{
     public partial class frmMain : TASForm
     {
         public static frmMain frm;
@@ -55,12 +55,52 @@ namespace MovieSplicer.UI
         private TASMovieInputCollection FrameData;
         private TASMovieInputCollection FrameBuffer;
         private UndoBuffer              UndoHistory;
-        
+
         // will contain the message history for this session
         frmMessages Msg = new frmMessages();
         frmEditing  Editor;
         FindReplaceDialog frd;
-        
+
+        /// <summary>
+        /// the only public method
+        /// </summary>
+        public void reloadMovie(string filename)
+        {
+            switch (FrameData.Format)
+            {
+                case MovieType.SMV:
+                    Methods.PopulateMovieInfo.SMV(ref tvInfo, ref Movie);
+                    break;
+                case MovieType.FCM:
+                    Methods.PopulateMovieInfo.FCM(ref tvInfo, ref Movie);
+                    break;
+                case MovieType.GMV:
+                    Methods.PopulateMovieInfo.GMV(ref tvInfo, ref Movie);
+                    break;
+                case MovieType.FMV:
+                    Methods.PopulateMovieInfo.FMV(ref tvInfo, ref Movie);
+                    break;
+                case MovieType.VBM:
+                    Methods.PopulateMovieInfo.VBM(ref tvInfo, ref Movie);
+                    break;
+                case MovieType.M64:
+                    Methods.PopulateMovieInfo.M64(ref tvInfo, ref Movie);
+                    break;
+                case MovieType.MMV:
+                    Methods.PopulateMovieInfo.MMV(ref tvInfo, ref Movie);
+                    break;
+                case MovieType.PJM:
+                    Methods.PopulateMovieInfo.PXM(ref tvInfo, ref Movie);   // shares with PXM
+                    break;
+                case MovieType.PXM:
+                    Methods.PopulateMovieInfo.PXM(ref tvInfo, ref Movie);   // shares with PJM
+                    break;
+                case MovieType.None:
+                    resetApplication();
+                    return;
+            }
+        }
+
         /// <summary>
         /// Class constructor. Sets up the common components and controls
         /// </summary>
@@ -69,11 +109,11 @@ namespace MovieSplicer.UI
             InitializeComponent();
             frd = new FindReplaceDialog(this);
             UndoHistory = new UndoBuffer();
-            
-            this.Text = APP_TITLE + " v" + VERSION;            
+
+            this.Text = APP_TITLE + " v" + VERSION;
             populateRecentFiles();
-        }                               
-        
+        }
+
         // pass menu options to editor on change
         // NOTE::effective, but optimal?
         private void mnuAutoFireOption_CheckStateChanged(object sender, EventArgs e)
@@ -89,20 +129,20 @@ namespace MovieSplicer.UI
     #region Frame Data Handlers
 
         /// <summary>
-        /// Populate edit controls with frame data        
+        /// Populate edit controls with frame data
         /// </summary>
         private void lvInput_Clicked(object sender, EventArgs e)
         {
             if (lvInput.SelectedIndices.Count > 0 && FrameData.Format != MovieType.None)
             {
                 ListViewItem lvi = lvInput.Items[lvInput.SelectedIndices[0]];
-                Editor.PopulateEditFields(lvi);                
+                Editor.PopulateEditFields(lvi);
             }
         }
 
         /// <summary>
         /// Populate edit controls if navigating via arrow keys
-        /// </summary>        
+        /// </summary>
         private void lvInput_KeyUp(object sender, KeyEventArgs e)
         {
             if (lvInput.SelectedIndices.Count > 0 && FrameData.Format != MovieType.None)
@@ -114,7 +154,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Edit the movie when th euser submits new input
-        /// </summary>        
+        /// </summary>
         private void lvInput_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (lvInput.SelectedIndices.Count == 0) return;
@@ -224,7 +264,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Change the drag cursor
-        /// </summary>        
+        /// </summary>
         private void lvInput_DragEnter(object sender, DragEventArgs e)
         {
             e.Effect = DragDropEffects.Move;
@@ -232,7 +272,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Load the move that's dropped
-        /// </summary>        
+        /// </summary>
         private void lvInput_DragDrop(object sender, DragEventArgs e)
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
@@ -241,18 +281,18 @@ namespace MovieSplicer.UI
             // and ignore the rest
             loadMovie(files[0], false);
         }
-    
+
     #endregion
-   
+
     #region Menu Actions
 
         /// <summary>
         /// Loads a TAS into the editor
-        /// </summary>        
+        /// </summary>
         private void loadMovie(string filename, bool fromRecent)
-        {            
+        {
             resetApplication();
-            
+
             // initialize the editor
             Editor = new frmEditing();
             mnuEditing.Enabled = true;
@@ -265,7 +305,22 @@ namespace MovieSplicer.UI
             try
             {
                 fs = System.IO.File.OpenRead(filename);
+            }
+            catch
+            {
+                MessageBox.Show(this,
+                    filename + " cannot be accessed at the moment.\nEither the file is locked or it doesn't exist.",
+                    "File Access Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);
+                return;
+            }
+            finally
+            {
+                if (fs != null) fs.Close();
+            }
 
+            try
+            {
                 FrameData.Format = IsValid(filename);
                 ResourceManager rm = new ResourceManager("MovieSplicer.Properties.Resources", GetType().Assembly);
 
@@ -327,18 +382,20 @@ namespace MovieSplicer.UI
                 // destroy the resource manager instance
                 rm = null;
 
-                // assign the shared input collection to the current movie's            
+                // assign the shared input collection to the current movie's
                 FrameData.Input = Movie.Input.FrameData;
                 FrameData.Controllers = Movie.Input.ControllerCount;
 
-                // set the number of controller columns
-                lvInput.SetColumns(Movie.Input.ControllerCount);
-                lvInput.VirtualMovieType = FrameData.Format;
-
-                // initialize editing fields            
+                // initialize editing fields
                 bool[] activeControllers = { false, false, false, false, false };
-                for (int i = 0; i < Movie.Input.ControllerCount; i++)
-                    activeControllers[i] = Movie.Input.Controllers[i];
+                int[]  activeSubItems = new int[Movie.Input.ControllerCount];
+                int j = 0;
+                for (int i = 0; i < Movie.Input.Controllers.Length; i++)
+                    if (Movie.Input.Controllers[i])
+                    {
+                        activeControllers[i] = true;
+                        activeSubItems[j++]    = i;
+                    }
                 Editor.ToggleInputBoxes(activeControllers);
 
                 // trim the filename and throw it into a text field
@@ -351,8 +408,15 @@ namespace MovieSplicer.UI
 
                 // populate the virtual listview 
                 lvInput.ClearVirtualCache();
-                lvInput.VirtualListSource = FrameData.Input;
-                lvInput.VirtualListSize = FrameData.Input.Length;
+                lvInput.VirtualSubItemsActive = activeControllers;
+                lvInput.VirtualActiveSubItems = activeSubItems;
+                lvInput.VirtualSubItemNames   = Movie.ControllerNames;
+                lvInput.VirtualListSource     = FrameData.Input;
+                lvInput.VirtualListSize       = FrameData.Input.Length;
+
+                // set the number of controller columns
+                lvInput.SetColumns(Movie.Input.ControllerCount);
+                lvInput.VirtualMovieType = FrameData.Format;
 
                 // add frame count to statusbar
                 sbarFrameCount.Text = FrameData.Input.Length.ToString();
@@ -372,8 +436,8 @@ namespace MovieSplicer.UI
             catch
             {
                 MessageBox.Show(this,
-                    filename + " cannot be accessed at the moment.\nEither the file is locked or it doesn't exist.",
-                    "File Access Error",
+                    filename + "An unknown error occurred.",
+                    "Unknown Error",
                     MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);
                 return;
             }
@@ -393,13 +457,13 @@ namespace MovieSplicer.UI
             foreach (string file in files)
             {
                 if (file == null) return;
-                mnuOpenRecent.DropDown.Items.Add(file, null, new System.EventHandler(this.recentFileClicked));    
+                mnuOpenRecent.DropDown.Items.Add(file, null, new System.EventHandler(this.recentFileClicked));
             }
         }
 
         /// <summary>
         /// Recent file(s) list click handler
-        /// </summary>        
+        /// </summary>
         private void recentFileClicked(object sender, EventArgs e)
         {
             loadMovie(sender.ToString(), true);
@@ -452,7 +516,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Show an OpenFileDialog to allow a file to be selected and loaded
-        /// </summary>        
+        /// </summary>
         private void mnuOpen_Click(object sender, EventArgs e)
         {
             openDlg        = new OpenFileDialog();
@@ -461,8 +525,8 @@ namespace MovieSplicer.UI
 
             if (openDlg.FileName.Length > 0)
                 loadMovie(openDlg.FileName, false);
-            
-            openDlg.Dispose();            
+
+            openDlg.Dispose();
         }
 
         /// <summary>
@@ -483,11 +547,11 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Save the current movie out to a new file
-        /// </summary>        
+        /// </summary>
         private void mnuSaveAs_Click(object sender, EventArgs e)
         {
             if (FrameData.Format != MovieType.None)
-            {                               
+            {
                 frmSaveAs frm = new frmSaveAs(ref Movie, ref FrameData, "new-");
                 frm.ShowDialog(); frm.Dispose();
             }
@@ -495,7 +559,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Close the currently open file
-        /// </summary>        
+        /// </summary>
         private void mnuClose_Click(object sender, EventArgs e)
         {
             resetApplication();
@@ -503,7 +567,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Show the message history window
-        /// </summary>        
+        /// </summary>
         private void mnuMessageHistory_Click(object sender, EventArgs e)
         {
             Msg.ShowDialog(this);
@@ -511,7 +575,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Terminate the application
-        /// </summary>        
+        /// </summary>
         private void mnuExit_Click(object sender, EventArgs e)
         {
             Application.Exit();
@@ -519,7 +583,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Show the splicing form
-        /// </summary>        
+        /// </summary>
         private void mnuSplice_Click(object sender, EventArgs e)
         {
             frmSplice frm = new frmSplice();
@@ -528,14 +592,14 @@ namespace MovieSplicer.UI
 
         /// <summary>
         ///  Display the editor windows
-        /// </summary>        
+        /// </summary>
         private void mnuEditing_Click(object sender, EventArgs e)
         {
             if (Movie == null)
                 return;
 
             // NOTE::refresh the object pointers
-            Editor.LoadSharedObjects(ref lvInput, ref FrameData.Input, ref UndoHistory, ref Msg);   
+            Editor.LoadSharedObjects(ref lvInput, ref FrameData.Input, ref UndoHistory, ref Msg);
 
             if (!Editor.Visible)
                 Editor.Show(this);
@@ -545,7 +609,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Load the subtitle export form
-        /// </summary>        
+        /// </summary>
         private void mnuExportSRT_Click(object sender, EventArgs e)
         {
             frmSubtitles frm = new frmSubtitles(ref FrameData);
@@ -554,17 +618,17 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Show the movie compare form
-        /// </summary>    
+        /// </summary>
         private void mnuCompareMovieInputRange_Click(object sender, EventArgs e)
         {
             frmCompare frm = new frmCompare();
             frm.ShowDialog(); frm.Dispose();
         }
 
-    #endregion   
-   
+    #endregion
+
     #region Editing
-        
+
         /////////////////////////////////////////////////////////////////////////////////
         // TODO::Move all editing code out of the main class and into the editor class //
         /////////////////////////////////////////////////////////////////////////////////
@@ -585,7 +649,7 @@ namespace MovieSplicer.UI
             // NOTE::refresh the object pointers
             // DEBUG::Not the most elegant solution
             Editor.LoadSharedObjects(ref lvInput, ref FrameData.Input, ref UndoHistory, ref Msg); 
-            
+
         }
 
         /// <summary>
@@ -627,7 +691,7 @@ namespace MovieSplicer.UI
             updateControlsAfterEdit();
             Msg.AddMsg("Inserted " + totalFrames + " frame(s) at position " + framePosition);
         }
-   
+
         /// <summary>
         /// Append a blank row into the listview after the selectedIndex point and
         /// update the inputArray, or prompt for insertion of multiple frames based
@@ -739,14 +803,14 @@ namespace MovieSplicer.UI
         }
 
     #endregion
-    
+
     #region Copy-Pasting
-        
+
         /// <summary>
         /// Reset the paste-specific controls to their default values
         /// </summary>
         private void resetPasteControls()
-        {            
+        {
             sbarCopyBufferSize.Text     = "0";
             FrameBuffer.Format          = MovieType.None;
             sbarCopyBufferType.Text     = Enum.GetName(typeof(MovieType), FrameBuffer.Format);
@@ -776,15 +840,15 @@ namespace MovieSplicer.UI
         {
             // make sure something is selected
             if (lvInput.SelectedIndices.Count == 0) return;
-                                    
-            int[] selectedIndices = new int[lvInput.SelectedIndices.Count];            
+
+            int[] selectedIndices = new int[lvInput.SelectedIndices.Count];
             lvInput.SelectedIndices.CopyTo(selectedIndices, 0);
 
             FrameBuffer.Controllers = FrameData.Controllers;
             FrameBuffer.Format      = FrameData.Format;
-            FrameBuffer.Input       = TASMovieInput.Copy(ref FrameData.Input, selectedIndices);            
-            
-            enablePasteControls();   
+            FrameBuffer.Input       = TASMovieInput.Copy(ref FrameData.Input, selectedIndices);
+
+            enablePasteControls();
         }
 
         /// <summary>
@@ -795,7 +859,7 @@ namespace MovieSplicer.UI
             copyFrames();
             removeFrames();
         }
-        
+
         /// <summary>
         /// Insert the buffered frame input at/after the selected position.
         /// </summary>
@@ -918,13 +982,13 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Show the buffer form (pass in the buffer array and the buffer's MovieType)
-        /// </summary>        
+        /// </summary>
         private void mnuViewBuffer_Click(object sender, EventArgs e)
         {
             frmBuffer frm = new frmBuffer(ref FrameBuffer);
             frm.ShowDialog(this);
             frm.Dispose(ref FrameBuffer);
-            
+
             // if the buffer array comes back empty, reset all the copy/paste options
             if (FrameBuffer.Input == null)
                 resetPasteControls();
@@ -934,7 +998,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Copy Frames (main menu)
-        /// </summary>        
+        /// </summary>
         private void mnuCopy_Click(object sender, EventArgs e)
         {
             copyFrames();
@@ -942,7 +1006,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Cut Frames (main menu)
-        /// </summary>        
+        /// </summary>
         private void mnuCut_Click(object sender, EventArgs e)
         {
             cutFrames();
@@ -950,7 +1014,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Paste frames before (main menu)
-        /// </summary>        
+        /// </summary>
         private void mnuPasteBefore_Click(object sender, EventArgs e)
         {
             pasteFrames(false);
@@ -958,7 +1022,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Paste frames after (main menu)
-        /// </summary>        
+        /// </summary>
         private void mnuPasteAfter_Click(object sender, EventArgs e)
         {
             pasteFrames(true);
@@ -966,7 +1030,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Copy Frames (context menu)
-        /// </summary>        
+        /// </summary>
         private void cmnuitemCopyFrames_Click(object sender, EventArgs e)
         {
             copyFrames();
@@ -974,7 +1038,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Cut Frames (context menu)
-        /// </summary>        
+        /// </summary>
         private void cmnuitemCutFrames_Click(object sender, EventArgs e)
         {
             cutFrames();
@@ -994,9 +1058,9 @@ namespace MovieSplicer.UI
         private void cmnuitemPasteFramesAfter_Click(object sender, EventArgs e)
         {
             pasteFrames(true);
-        }        
+        }
 
-    #endregion                                                              
+    #endregion
 
     #region Select/Find/Replace/GoTo
         public bool findNext( string find, bool downward )
@@ -1082,7 +1146,7 @@ namespace MovieSplicer.UI
             int start = 0;
             int end = FrameData.Input.Length;
             bool search = !(lvInput.SelectedIndices.Count > 1);
-            
+
             UndoBuffer.Add(ref UndoHistory, ref FrameData.Input);
 
             int totalReplacements = 0;
@@ -1216,7 +1280,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Undo a change
-        /// </summary>        
+        /// </summary>
         private void mnuUndoChange_Click(object sender, EventArgs e)
         {
             Undo();
@@ -1253,7 +1317,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Launch the external CHM (Help file)
-        /// </summary>        
+        /// </summary>
         private void mnuContent_Click(object sender, EventArgs e)
         {
             if (System.IO.File.Exists("tas-movie-editor.chm"))

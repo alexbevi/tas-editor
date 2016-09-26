@@ -30,6 +30,10 @@ namespace MovieSplicer.UI
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmEditing));
             this.grpEditing = new System.Windows.Forms.GroupBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.chkFrameDataC5 = new System.Windows.Forms.CheckBox();
+            this.button5 = new System.Windows.Forms.Button();
+            this.txtFrameDataC5 = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.button4 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
@@ -46,17 +50,15 @@ namespace MovieSplicer.UI
             this.txtFrameDataC4 = new System.Windows.Forms.TextBox();
             this.btnUpdate = new System.Windows.Forms.Button();
             this.txtFrameDataC1 = new System.Windows.Forms.TextBox();
-            this.btnFindInput = new System.Windows.Forms.Button();
-            this.btnGotoFrame = new System.Windows.Forms.Button();
-            this.txtJumpToFrame = new System.Windows.Forms.TextBox();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.grpEditing.SuspendLayout();
-            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // grpEditing
             // 
+            this.grpEditing.Controls.Add(this.label1);
+            this.grpEditing.Controls.Add(this.chkFrameDataC5);
+            this.grpEditing.Controls.Add(this.button5);
+            this.grpEditing.Controls.Add(this.txtFrameDataC5);
             this.grpEditing.Controls.Add(this.label2);
             this.grpEditing.Controls.Add(this.button4);
             this.grpEditing.Controls.Add(this.button3);
@@ -75,10 +77,51 @@ namespace MovieSplicer.UI
             this.grpEditing.Controls.Add(this.txtFrameDataC1);
             this.grpEditing.Location = new System.Drawing.Point(12, 11);
             this.grpEditing.Name = "grpEditing";
-            this.grpEditing.Size = new System.Drawing.Size(350, 90);
+            this.grpEditing.Size = new System.Drawing.Size(436, 90);
             this.grpEditing.TabIndex = 10;
             this.grpEditing.TabStop = false;
             this.grpEditing.Text = "Input Editor";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(190, 20);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(41, 12);
+            this.label1.TabIndex = 22;
+            this.label1.Text = "Batch:";
+            // 
+            // chkFrameDataC5
+            // 
+            this.chkFrameDataC5.AutoSize = true;
+            this.chkFrameDataC5.Enabled = false;
+            this.chkFrameDataC5.Location = new System.Drawing.Point(154, 19);
+            this.chkFrameDataC5.Name = "chkFrameDataC5";
+            this.chkFrameDataC5.Size = new System.Drawing.Size(30, 16);
+            this.chkFrameDataC5.TabIndex = 15;
+            this.chkFrameDataC5.Text = "5";
+            this.chkFrameDataC5.UseVisualStyleBackColor = true;
+            // 
+            // button5
+            // 
+            this.button5.Enabled = false;
+            this.button5.Location = new System.Drawing.Point(347, 69);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(79, 21);
+            this.button5.TabIndex = 9;
+            this.button5.Text = "Update #&5";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.btnUpdate_Click);
+            // 
+            // txtFrameDataC5
+            // 
+            this.txtFrameDataC5.Enabled = false;
+            this.txtFrameDataC5.Location = new System.Drawing.Point(347, 42);
+            this.txtFrameDataC5.Name = "txtFrameDataC5";
+            this.txtFrameDataC5.Size = new System.Drawing.Size(79, 21);
+            this.txtFrameDataC5.TabIndex = 4;
+            this.txtFrameDataC5.DoubleClick += new System.EventHandler(this.txtFrameDataC5_DoubleClick);
+            this.txtFrameDataC5.EnabledChanged += new System.EventHandler(this.txtFrameDataC5_EnabledChanged);
             // 
             // label2
             // 
@@ -92,9 +135,9 @@ namespace MovieSplicer.UI
             // button4
             // 
             this.button4.Enabled = false;
-            this.button4.Location = new System.Drawing.Point(260, 69);
+            this.button4.Location = new System.Drawing.Point(261, 69);
             this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(78, 21);
+            this.button4.Size = new System.Drawing.Size(79, 21);
             this.button4.TabIndex = 8;
             this.button4.Text = "Update #&4";
             this.button4.UseVisualStyleBackColor = true;
@@ -105,7 +148,7 @@ namespace MovieSplicer.UI
             this.button3.Enabled = false;
             this.button3.Location = new System.Drawing.Point(176, 69);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(78, 21);
+            this.button3.Size = new System.Drawing.Size(79, 21);
             this.button3.TabIndex = 7;
             this.button3.Text = "Update #&3";
             this.button3.UseVisualStyleBackColor = true;
@@ -114,9 +157,9 @@ namespace MovieSplicer.UI
             // button2
             // 
             this.button2.Enabled = false;
-            this.button2.Location = new System.Drawing.Point(92, 69);
+            this.button2.Location = new System.Drawing.Point(91, 69);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(78, 21);
+            this.button2.Size = new System.Drawing.Size(79, 21);
             this.button2.TabIndex = 6;
             this.button2.Text = "Update #&2";
             this.button2.UseVisualStyleBackColor = true;
@@ -127,7 +170,7 @@ namespace MovieSplicer.UI
             this.button1.Enabled = false;
             this.button1.Location = new System.Drawing.Point(7, 69);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(78, 21);
+            this.button1.Size = new System.Drawing.Size(79, 21);
             this.button1.TabIndex = 5;
             this.button1.Text = "Update #&1";
             this.button1.UseVisualStyleBackColor = true;
@@ -135,7 +178,7 @@ namespace MovieSplicer.UI
             // 
             // txtFrameData
             // 
-            this.txtFrameData.Location = new System.Drawing.Point(7, 14);
+            this.txtFrameData.Location = new System.Drawing.Point(237, 15);
             this.txtFrameData.Name = "txtFrameData";
             this.txtFrameData.Size = new System.Drawing.Size(79, 21);
             this.txtFrameData.TabIndex = 10;
@@ -144,10 +187,10 @@ namespace MovieSplicer.UI
             // chkAppendInput
             // 
             this.chkAppendInput.AutoSize = true;
-            this.chkAppendInput.Location = new System.Drawing.Point(243, -1);
+            this.chkAppendInput.Location = new System.Drawing.Point(322, -1);
             this.chkAppendInput.Name = "chkAppendInput";
             this.chkAppendInput.Size = new System.Drawing.Size(96, 16);
-            this.chkAppendInput.TabIndex = 9;
+            this.chkAppendInput.TabIndex = 18;
             this.chkAppendInput.Text = "Append Input";
             this.chkAppendInput.UseVisualStyleBackColor = true;
             // 
@@ -155,7 +198,7 @@ namespace MovieSplicer.UI
             // 
             this.chkFrameDataC4.AutoSize = true;
             this.chkFrameDataC4.Enabled = false;
-            this.chkFrameDataC4.Location = new System.Drawing.Point(200, 19);
+            this.chkFrameDataC4.Location = new System.Drawing.Point(118, 19);
             this.chkFrameDataC4.Name = "chkFrameDataC4";
             this.chkFrameDataC4.Size = new System.Drawing.Size(30, 16);
             this.chkFrameDataC4.TabIndex = 14;
@@ -166,7 +209,7 @@ namespace MovieSplicer.UI
             // 
             this.chkFrameDataC3.AutoSize = true;
             this.chkFrameDataC3.Enabled = false;
-            this.chkFrameDataC3.Location = new System.Drawing.Point(164, 19);
+            this.chkFrameDataC3.Location = new System.Drawing.Point(82, 19);
             this.chkFrameDataC3.Name = "chkFrameDataC3";
             this.chkFrameDataC3.Size = new System.Drawing.Size(30, 16);
             this.chkFrameDataC3.TabIndex = 13;
@@ -177,7 +220,7 @@ namespace MovieSplicer.UI
             // 
             this.chkFrameDataC2.AutoSize = true;
             this.chkFrameDataC2.Enabled = false;
-            this.chkFrameDataC2.Location = new System.Drawing.Point(128, 19);
+            this.chkFrameDataC2.Location = new System.Drawing.Point(46, 19);
             this.chkFrameDataC2.Name = "chkFrameDataC2";
             this.chkFrameDataC2.Size = new System.Drawing.Size(30, 16);
             this.chkFrameDataC2.TabIndex = 12;
@@ -187,7 +230,7 @@ namespace MovieSplicer.UI
             // txtFrameDataC3
             // 
             this.txtFrameDataC3.Enabled = false;
-            this.txtFrameDataC3.Location = new System.Drawing.Point(176, 42);
+            this.txtFrameDataC3.Location = new System.Drawing.Point(177, 42);
             this.txtFrameDataC3.Name = "txtFrameDataC3";
             this.txtFrameDataC3.Size = new System.Drawing.Size(79, 21);
             this.txtFrameDataC3.TabIndex = 2;
@@ -198,7 +241,7 @@ namespace MovieSplicer.UI
             // 
             this.chkFrameDataC1.AutoSize = true;
             this.chkFrameDataC1.Enabled = false;
-            this.chkFrameDataC1.Location = new System.Drawing.Point(92, 19);
+            this.chkFrameDataC1.Location = new System.Drawing.Point(10, 19);
             this.chkFrameDataC1.Name = "chkFrameDataC1";
             this.chkFrameDataC1.Size = new System.Drawing.Size(30, 16);
             this.chkFrameDataC1.TabIndex = 11;
@@ -208,7 +251,7 @@ namespace MovieSplicer.UI
             // txtFrameDataC2
             // 
             this.txtFrameDataC2.Enabled = false;
-            this.txtFrameDataC2.Location = new System.Drawing.Point(91, 42);
+            this.txtFrameDataC2.Location = new System.Drawing.Point(92, 42);
             this.txtFrameDataC2.Name = "txtFrameDataC2";
             this.txtFrameDataC2.Size = new System.Drawing.Size(79, 21);
             this.txtFrameDataC2.TabIndex = 1;
@@ -218,7 +261,7 @@ namespace MovieSplicer.UI
             // txtFrameDataC4
             // 
             this.txtFrameDataC4.Enabled = false;
-            this.txtFrameDataC4.Location = new System.Drawing.Point(261, 42);
+            this.txtFrameDataC4.Location = new System.Drawing.Point(262, 42);
             this.txtFrameDataC4.Name = "txtFrameDataC4";
             this.txtFrameDataC4.Size = new System.Drawing.Size(79, 21);
             this.txtFrameDataC4.TabIndex = 3;
@@ -227,7 +270,7 @@ namespace MovieSplicer.UI
             // 
             // btnUpdate
             // 
-            this.btnUpdate.Location = new System.Drawing.Point(236, 16);
+            this.btnUpdate.Location = new System.Drawing.Point(322, 16);
             this.btnUpdate.Name = "btnUpdate";
             this.btnUpdate.Size = new System.Drawing.Size(104, 21);
             this.btnUpdate.TabIndex = 19;
@@ -245,63 +288,12 @@ namespace MovieSplicer.UI
             this.txtFrameDataC1.DoubleClick += new System.EventHandler(this.txtFrameDataC1_DoubleClick);
             this.txtFrameDataC1.EnabledChanged += new System.EventHandler(this.txtFrameDataC1_EnabledChanged);
             // 
-            // btnFindInput
-            // 
-            this.btnFindInput.Location = new System.Drawing.Point(91, 63);
-            this.btnFindInput.Name = "btnFindInput";
-            this.btnFindInput.Size = new System.Drawing.Size(81, 21);
-            this.btnFindInput.TabIndex = 31;
-            this.btnFindInput.Text = "&Find Input";
-            this.btnFindInput.UseVisualStyleBackColor = true;
-            this.btnFindInput.Click += new System.EventHandler(this.btnFindInput_Click);
-            // 
-            // btnGotoFrame
-            // 
-            this.btnGotoFrame.Location = new System.Drawing.Point(6, 63);
-            this.btnGotoFrame.Name = "btnGotoFrame";
-            this.btnGotoFrame.Size = new System.Drawing.Size(79, 21);
-            this.btnGotoFrame.TabIndex = 30;
-            this.btnGotoFrame.Text = "&Goto Frame";
-            this.btnGotoFrame.UseVisualStyleBackColor = true;
-            this.btnGotoFrame.Click += new System.EventHandler(this.btnGo_Click);
-            // 
-            // txtJumpToFrame
-            // 
-            this.txtJumpToFrame.Location = new System.Drawing.Point(6, 34);
-            this.txtJumpToFrame.MaxLength = 15;
-            this.txtJumpToFrame.Name = "txtJumpToFrame";
-            this.txtJumpToFrame.Size = new System.Drawing.Size(166, 21);
-            this.txtJumpToFrame.TabIndex = 29;
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.btnFindInput);
-            this.groupBox1.Controls.Add(this.btnGotoFrame);
-            this.groupBox1.Controls.Add(this.txtJumpToFrame);
-            this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Location = new System.Drawing.Point(368, 11);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(182, 90);
-            this.groupBox1.TabIndex = 11;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Input Locator";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(3, 19);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(215, 12);
-            this.label1.TabIndex = 31;
-            this.label1.Text = "Enter frame number or input pattern";
-            // 
             // frmEditing
             // 
             this.AcceptButton = this.btnUpdate;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(560, 111);
-            this.Controls.Add(this.groupBox1);
+            this.ClientSize = new System.Drawing.Size(460, 111);
             this.Controls.Add(this.grpEditing);
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -316,8 +308,6 @@ namespace MovieSplicer.UI
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmEditing_FormClosing);
             this.grpEditing.ResumeLayout(false);
             this.grpEditing.PerformLayout();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -328,23 +318,22 @@ namespace MovieSplicer.UI
         private System.Windows.Forms.CheckBox chkFrameDataC4;
         private System.Windows.Forms.CheckBox chkFrameDataC3;
         private System.Windows.Forms.CheckBox chkFrameDataC2;
-        private System.Windows.Forms.TextBox txtFrameDataC3;
         private System.Windows.Forms.CheckBox chkFrameDataC1;
-        private System.Windows.Forms.TextBox txtFrameDataC2;
+        private System.Windows.Forms.CheckBox chkFrameDataC5;
         private System.Windows.Forms.TextBox txtFrameDataC4;
-        private System.Windows.Forms.Button btnUpdate;
+        private System.Windows.Forms.TextBox txtFrameDataC3;
+        private System.Windows.Forms.TextBox txtFrameDataC2;
         private System.Windows.Forms.TextBox txtFrameDataC1;
-        private System.Windows.Forms.Button btnFindInput;
-        private System.Windows.Forms.Button btnGotoFrame;
-        private System.Windows.Forms.TextBox txtJumpToFrame;
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.CheckBox chkAppendInput;
         private System.Windows.Forms.TextBox txtFrameData;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button btnUpdate;
+        private System.Windows.Forms.CheckBox chkAppendInput;
+        private System.Windows.Forms.TextBox txtFrameDataC5;
+        private System.Windows.Forms.Button button5;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label1;
     }
 }

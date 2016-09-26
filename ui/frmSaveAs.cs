@@ -39,7 +39,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Create a new SaveAs for with a reference to a movie and its (updated) input
-        /// </summary>        
+        /// </summary>
         public frmSaveAs(ref TASMovie movie, ref TASMovieInputCollection movieData, string newFilePrefix)
         {
             InitializeComponent();
@@ -59,7 +59,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Save the selected movie
-        /// </summary>        
+        /// </summary>
         private void btnSave_Click(object sender, EventArgs e)
         {
             Movie.Extra.Author      = txtAuthor.Text;
@@ -74,7 +74,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Browse to a file to save
-        /// </summary>        
+        /// </summary>
         private void btnBrowse_Click(object sender, EventArgs e)
         {
             saveDlg = new SaveFileDialog();
@@ -91,12 +91,12 @@ namespace MovieSplicer.UI
                 case MovieType.SMV: saveDlg.Filter = SMV_FILTER; break;
                 case MovieType.VBM: saveDlg.Filter = VBM_FILTER; break;
             }
-           
+
             saveDlg.FileName = txtFilename.Text;
-            saveDlg.ShowDialog();                        
+            saveDlg.ShowDialog();
 
             if (saveDlg.FileName.Length > 0) Filename = saveDlg.FileName;
             txtFilename.Text = Filename;
-        }        
+        }
     }
 }

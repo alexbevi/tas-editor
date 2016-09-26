@@ -38,16 +38,16 @@ namespace MovieSplicer.Data.Formats
             public string VideoPlugin;
             public string AudioPlugin;
             public string InputPlugin;
-            public string RSPPlugin;            
+            public string RSPPlugin;
 
             public FormatSpecific(byte[] controllers)
             {
-                Controller = new ControllerConfig[4];                
+                Controller = new ControllerConfig[4];
 
                 for (int i = 0; i < 4; i++)
                 {
                     Controller[i].Option = new bool[3];
-                    if ((1 & (controllers[i] << 0)) == 1) Controller[i].Option[0] = true;                        
+                    if ((1 & (controllers[i] << 0)) == 1) Controller[i].Option[0] = true;
                     if ((1 & (controllers[i] << 4)) == 1) Controller[i].Option[1] = true;
                     if ((1 & (controllers[i] << 8)) == 1) Controller[i].Option[2] = true;
                 }
@@ -61,7 +61,7 @@ namespace MovieSplicer.Data.Formats
         }
 
         /// <summary>
-        /// The Option (bool array) contains configuration information about a controller                
+        /// The Option (bool array) contains configuration information about a controller
         /// </summary>
         public struct ControllerConfig
         {
@@ -90,7 +90,7 @@ namespace MovieSplicer.Data.Formats
           0x1C, // 2-byte unsigned int: movie start type
                 //      value 1: movie begins from snapshot (the snapshot will be loaded from an external file
                 //               with the movie's filename and a .st extension)
-                //      value 2: movie begins from poweron  
+                //      value 2: movie begins from poweron
                 //      other values: invalid movie
           0x1E, // 2-byte unsigned int: reserved, should be 0
           0x20, // 4-byte unsigned int: controller flags
@@ -113,12 +113,12 @@ namespace MovieSplicer.Data.Formats
 
         /// <summary>
         /// Create a fully instantiated M64 object from the passed file
-        /// </summary>        
+        /// </summary>
         public Mupen64(string M64File)
         {
             Filename = M64File;
-            FillByteArrayFromFile(M64File, ref FileContents);                        
-            
+            FillByteArrayFromFile(M64File, ref FileContents);
+
             Header = new TASHeader();
             Header.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
             Header.Version       = Read32(ref FileContents, Offsets[1]);
@@ -162,7 +162,7 @@ namespace MovieSplicer.Data.Formats
 
             Input = new TASInput(4, false);
             for (int i = 0; i < 4; i++)
-                Input.Controllers[i] = M64Specific.Controller[i].Option[0];                       
+                Input.Controllers[i] = M64Specific.Controller[i].Option[0];
 
             getFrameInput(ref FileContents);
         }
@@ -170,13 +170,13 @@ namespace MovieSplicer.Data.Formats
         private void getFrameInput(ref byte[] byteArray)
         {
             // NOTE::ControllerInputs is how many times the game polled for data, NOT how many VIs happen during a movie
-            Input.FrameData = new TASMovieInput[ControllerInputs];                        
+            Input.FrameData = new TASMovieInput[ControllerInputs];
 
             // parse frame data
-            for (int i = 0; i < ControllerInputs; i++)            
+            for (int i = 0; i < ControllerInputs; i++)
             {
                 Input.FrameData[i] = new TASMovieInput();
-               
+
                 // cycle through the controller data for the current frame
                 for (int j = 0; j < Input.ControllerCount; j++)
                 {
@@ -185,10 +185,10 @@ namespace MovieSplicer.Data.Formats
                         BYTES_PER_FRAME);
 
                     Input.FrameData[i].Controller[j] = parseControllerData(frame);
-                }                   
-            }                       
+                }
+            }
         } 
-     
+
         /// <summary>
         /// Convert the binary representation of input to meaningful values 
         /// </summary>
@@ -350,7 +350,7 @@ namespace MovieSplicer.Data.Formats
 
         /// <summary>
         /// Save the content of the frame data back out to an M64 file
-        /// </summary>        
+        /// </summary>
         public override void Save(string filename, ref TASMovieInput[] input)
         {
             byte[] head = ReadBytes(ref FileContents, 0, ControllerDataOffset);
@@ -389,7 +389,7 @@ namespace MovieSplicer.Data.Formats
 
         /// <summary>
         /// Update the metadata information in the M64
-        /// </summary>        
+        /// </summary>
         private void updateMetadata(ref byte[] byteArray)
         {
             // TODO: convert this to be m64 compliant insted of stolen from smv
@@ -431,5 +431,5 @@ namespace MovieSplicer.Data.Formats
             return (string[])inputsArray.ToArray(typeof(string));
         }
 
-    }    
+    }
 }

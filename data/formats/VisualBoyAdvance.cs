@@ -54,8 +54,8 @@ namespace MovieSplicer.Data.Formats
                 for (int j = 0; j < BIOSFlags.Length; j++)
                     BIOSFlags[j] = ((1 & (bios >> j)) == 1) ? true : false;
             }
-        }        
-        
+        }
+
         public FormatSpecific VBMSpecific;
 
         private string[] InputValues = { "A", "B", "s", "S", ">", "<", "^", "v", "R", 
@@ -127,14 +127,14 @@ namespace MovieSplicer.Data.Formats
 
             SaveStateOffset      = Read32(ref FileContents, Offsets[17]);
             ControllerDataOffset = Read32(ref FileContents, Offsets[18]);
-            
+
             Header = new TASHeader();
             Header.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
             Header.Version       = Read32(ref FileContents, Offsets[1]);
             Header.UID           = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
             Header.FrameCount    = Read32(ref FileContents, Offsets[3]);    // FIXME: unreliable
             Header.RerecordCount = Read32(ref FileContents, Offsets[4]);
-            
+
             Options = new TASOptions(true);
             Options.MovieStartFlag[0] = ((1 & (FileContents[Offsets[5]] >> 0)) == 1) ? true : false;
             Options.MovieStartFlag[1] = ((1 & (FileContents[Offsets[5]] >> 1)) == 1) ? true : false;
@@ -171,12 +171,12 @@ namespace MovieSplicer.Data.Formats
 
         private void getFrameInput(ref byte[] byteArray)
         {
-            Input.FrameData = new TASMovieInput[Header.FrameCount];            
+            Input.FrameData = new TASMovieInput[Header.FrameCount];
             int position = 0;
             int i = 0;
 
             while (position < Header.FrameCount)
-            {                
+            {
                 Input.FrameData[position] = new TASMovieInput();
                 for (int j = 0; j < 4; j++)
                 {
@@ -185,15 +185,15 @@ namespace MovieSplicer.Data.Formats
                         byte[] frame = ReadBytes(ref byteArray, ControllerDataOffset + i + j, 2);
                         Input.FrameData[position].Controller[j] = parseControllerData(frame);
                         i++;
-                    }                    
+                    }
                 }
                 position++; i++;
-            }                        
+            }
         }
 
         /// <summary>
         /// Parse the 2-byte controller state value to a string
-        /// </summary>        
+        /// </summary>
         private string parseControllerData(byte[] bytes)
         {
             string input = "";
@@ -209,19 +209,19 @@ namespace MovieSplicer.Data.Formats
 
         /// <summary>
         /// Convert the string input to a 2-byte controller state value 
-        /// </summary>      
+        /// </summary>
         private byte[] parseControllerData(string frameInput)
         {
             byte[] input = { 0x00, 0x00 };
-            
+
             if (frameInput == null || frameInput == "") return input;
 
             for (int i = 0; i < 8; i++)
             {
                 if (frameInput.Contains(InputValues[i])) input[0] |= (byte)(1 << i);
                 // input at InputValues[10] not used
-                if (frameInput.Contains(InputValues[i + 8]) && i != 3) input[1] |= (byte)(1 << i);            
-            }                            
+                if (frameInput.Contains(InputValues[i + 8])) input[1] |= (byte)(1 << i);
+            }
 
             return input;
         }
@@ -231,7 +231,7 @@ namespace MovieSplicer.Data.Formats
         /// 
         /// TODO::This isn't the most elegant solution, but there's a major performance hit
         /// if I try to repeatedly resize the array from within the loop.
-        /// </summary>        
+        /// </summary>
         public override void Save(string filename, ref TASMovieInput[] input)
         {
             byte[] head = ReadBytes(ref FileContents, 0, ControllerDataOffset);
@@ -240,7 +240,7 @@ namespace MovieSplicer.Data.Formats
 
             // get the size of the file byte[] (minus the header)
             for (int i = 0; i < input.Length; i++)
-                for (int j = 0; j < controllers; j++)                                   
+                for (int j = 0; j < controllers; j++)
                         size += 2;
 
             // create the output array and copy in the contents
@@ -250,7 +250,7 @@ namespace MovieSplicer.Data.Formats
             // add the controller data
             int position = 0;
             for (int i = 0; i < input.Length; i++)
-            {               
+            {
                 for (int j = 0; j < controllers; j++)
                 {
                     // check if the controller we're about to process is used
@@ -258,8 +258,8 @@ namespace MovieSplicer.Data.Formats
                     {
                         byte[] parsed = parseControllerData(input[i].Controller[j]);
                         outputFile[head.Length + position++] = parsed[0];
-                        outputFile[head.Length + position++] = parsed[1];                        
-                    }                    
+                        outputFile[head.Length + position++] = parsed[1];
+                    }
                 }
             }
             // update the movie description and author
@@ -289,7 +289,7 @@ namespace MovieSplicer.Data.Formats
             //frm.Show();
             /////////////////
 
-            WriteByteArrayToFile(ref outputFile, filename, input.Length - 1, Offsets[3]);            
+            WriteByteArrayToFile(ref outputFile, filename, input.Length - 1, Offsets[3]);
         }
 
         public override string[] GetUsableInputs()

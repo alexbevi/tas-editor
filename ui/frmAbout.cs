@@ -38,7 +38,7 @@ namespace MovieSplicer.UI
             label1.Text = APP_TITLE;
             label2.Text = "Version " + VERSION;
             lblBuild.Text = BUILD_DATE;
-        }       
+        }
 
         private void lnkEmail_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {

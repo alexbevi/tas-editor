@@ -33,25 +33,25 @@ namespace MovieSplicer.UI
 {
     public partial class frmEditing : TASForm
     {
-        public TASListView     lvInput;                
+        public TASListView     lvInput;
         public TASMovieInput[] FrameData;
         public UndoBuffer      UndoHistory;
         public frmMessages     Msg;
 
         public bool AutoFire;
         public bool EditingPrompts;
-        
+
         public frmEditing()
         {
-            InitializeComponent();         
+            InitializeComponent();
         }
 
         public void LoadSharedObjects(ref TASListView lv, ref TASMovieInput[] movie, ref UndoBuffer undo, ref frmMessages msg)
-        {                        
+        {
             lvInput     = lv;
             FrameData   = movie;
             UndoHistory = undo;
-            Msg         = msg;            
+            Msg         = msg;
         }
 
         // NOTE::These routines are just a quick hack to ensure that the edit field checkboxes
@@ -72,30 +72,37 @@ namespace MovieSplicer.UI
         {
             button4.Enabled = chkFrameDataC4.Enabled = txtFrameDataC4.Enabled;
         }
+        private void txtFrameDataC5_EnabledChanged(object sender, EventArgs e)
+        {
+            button5.Enabled = chkFrameDataC5.Enabled = txtFrameDataC5.Enabled;
+        }
 
         /// <summary>
         /// Determine which controller editing fields to make available
-        /// </summary>        
+        /// </summary>
         public void ToggleInputBoxes(bool[] activeControllers)
         {
             txtFrameDataC1.Enabled = activeControllers[0];
             txtFrameDataC2.Enabled = activeControllers[1];
             txtFrameDataC3.Enabled = activeControllers[2];
             txtFrameDataC4.Enabled = activeControllers[3];
+            txtFrameDataC5.Enabled = activeControllers[4];
         }
 
         /// <summary>
         /// Fill the editing text fields with the values from the currently selected
         /// row in the main list
-        /// </summary>        
+        /// </summary>
         public void PopulateEditFields(ListViewItem lvi)
         {
-            txtFrameDataC1.Text = lvi.SubItems[1].Text;
-            if (lvi.SubItems.Count > 2) txtFrameDataC2.Text = lvi.SubItems[2].Text;
-            if (lvi.SubItems.Count > 3) txtFrameDataC3.Text = lvi.SubItems[3].Text;
-            if (lvi.SubItems.Count > 4) txtFrameDataC4.Text = lvi.SubItems[4].Text;
-        }        
-        
+            int count = 0;
+            if (txtFrameDataC1.Enabled) txtFrameDataC1.Text = lvi.SubItems[++count].Text;
+            if (txtFrameDataC2.Enabled) txtFrameDataC2.Text = lvi.SubItems[++count].Text;
+            if (txtFrameDataC3.Enabled) txtFrameDataC3.Text = lvi.SubItems[++count].Text;
+            if (txtFrameDataC4.Enabled) txtFrameDataC4.Text = lvi.SubItems[++count].Text;
+            if (txtFrameDataC5.Enabled) txtFrameDataC5.Text = lvi.SubItems[++count].Text;
+        }
+
 
         /// <summary>
         /// Update the input array with the changed frame data
@@ -104,7 +111,7 @@ namespace MovieSplicer.UI
         {
             if (lvInput.SelectedIndices.Count == 0) return;
 
-            bool[] updateFlag = { false, false, false, false };
+            bool[] updateFlag = { false, false, false, false, false };
 
             TASMovieInput updated = new TASMovieInput();
 
@@ -128,6 +135,11 @@ namespace MovieSplicer.UI
                 updated.Controller[3] = txtFrameDataC4.Text;
                 updateFlag[3] = true;
             }
+            else if (sender == button5)
+            {
+                updated.Controller[4] = txtFrameDataC5.Text;
+                updateFlag[4] = true;
+            }
             else
             {
                 if (chkFrameDataC1.Checked)
@@ -150,10 +162,15 @@ namespace MovieSplicer.UI
                     updated.Controller[3] = txtFrameData.Text;
                     updateFlag[3] = true;
                 }
+                if (chkFrameDataC5.Checked)
+                {
+                    updated.Controller[4] = txtFrameData.Text;
+                    updateFlag[4] = true;
+                }
             }
 
             // if no controllers were set, return
-            if (updateFlag[0] == false && updateFlag[1] == false && updateFlag[2] == false && updateFlag[3] == false)
+            if (!updateFlag[0] && !updateFlag[1] && !updateFlag[2] && !updateFlag[3] && !updateFlag[4])
                 return;
 
             // prompt for multiple frame insertion
@@ -182,74 +199,6 @@ namespace MovieSplicer.UI
             Msg.AddMsg("Updated " + lvInput.SelectedIndices.Count + " frame(s)");
         }
 
-        /// <summary>
-        /// Jump to a selected frame
-        /// </summary>        
-        private void btnGo_Click(object sender, EventArgs e)
-        {
-            // if not numeric or no movie loaded
-            if (IsNumeric(txtJumpToFrame.Text) == false || FrameData == null) return;
-
-            // subtract 1 since we're looking for an index
-            int targetFrame = Convert.ToInt32(txtJumpToFrame.Text);
-
-            // check for valid range
-            if (targetFrame >= 0 && targetFrame < FrameData.Length)
-            {
-                lvInput.SelectedIndices.Clear();
-                lvInput.Items[targetFrame].Selected = true;
-                lvInput.Items[targetFrame].Focused = true;
-                lvInput.Focus();
-                lvInput.EnsureVisible(targetFrame);
-            }
-        }
-
-        /// <summary>
-        /// Locate the selected substring in the current TASMovieInput[] object
-        /// </summary>        
-        private void btnFindInput_Click(object sender, EventArgs e)
-        {
-            if (FrameData == null) return;
-
-            int start = (lvInput.SelectedIndices.Count > 0) ? lvInput.SelectedIndices[0] + 1 : 0;
-            int end   = lvInput.Items.Count;
-            int position = TASMovieInput.Search(ref FrameData, txtJumpToFrame.Text, start, end);
-
-            if (position < 0)
-            {
-                if (start > 0)
-                {
-                    DialogResult answer = MessageBox.Show(MovieSplicer.UI.frmMain.frm,
-                        "Input pattern not found between selected position and end of movie.\nContinue searching from the beginning?",
-                        "Continue",
-                        MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
-                    if (answer == DialogResult.OK)
-                    {
-                        position = TASMovieInput.Search(ref FrameData, txtJumpToFrame.Text, 0, start);
-                    }
-                }
-            }
-
-            if (position >= 0 && position < FrameData.Length)
-            {
-                // clear the selection collection
-                // NOTE::This is since we will be creating a new selected items collection 
-                // with only 1 item (the resulting frame), but we don't want to clear if no results are
-                // found (since it'll just jump back to the top and repeat if we do)
-                lvInput.SelectedIndices.Clear();
-
-                lvInput.Items[position].Selected = true;
-                lvInput.Items[position].Focused = true;
-                lvInput.Focus();
-                lvInput.EnsureVisible(position);
-            }
-            else
-            {
-                MessageBox.Show(MovieSplicer.UI.frmMain.frm, "Input pattern not found", "Sorry",
-                    MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);
-            }
-        }
-
         public bool IsControllerChecked( int player )
         {
             if (player == 1)
@@ -260,6 +209,8 @@ namespace MovieSplicer.UI
                 return chkFrameDataC3.Checked;
             else if (player == 4)
                 return chkFrameDataC4.Checked;
+            else if (player == 5)
+                return chkFrameDataC5.Checked;
 
             return false;
         }
@@ -292,6 +243,10 @@ namespace MovieSplicer.UI
         {
             txtFrameData.Text = txtFrameDataC4.Text;
         }
+        private void txtFrameDataC5_DoubleClick(object sender, EventArgs e)
+        {
+            txtFrameData.Text = txtFrameDataC5.Text;
+        }
 
         private void txtFrameData_DoubleClick(object sender, EventArgs e)
         {
@@ -310,6 +265,10 @@ namespace MovieSplicer.UI
             if (chkFrameDataC4.Checked)
             {
                 txtFrameDataC4.Text = txtFrameData.Text;
+            }
+            if (chkFrameDataC5.Checked)
+            {
+                txtFrameDataC5.Text = txtFrameData.Text;
             }
         }
     }

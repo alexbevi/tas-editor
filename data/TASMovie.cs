@@ -26,7 +26,7 @@ using System.IO;
 using System.Windows.Forms;
 
 namespace MovieSplicer.Data
-{      
+{
     /// <summary>
     /// Base class for all emulator movie formats
     /// 
@@ -35,16 +35,26 @@ namespace MovieSplicer.Data
     /// ie. FCM, SMV ... etc)
     /// </summary>
     public class TASMovie
-    {        
+    {
         protected byte[]  FileContents;
         protected int     SaveStateOffset;
         protected int     ControllerDataOffset;
-        
+
         public string     Filename;
         public TASHeader  Header;
         public TASOptions Options;
         public TASExtra   Extra;
         public TASInput   Input;
+
+        private string[]  controllerNames = { "Controller 1", "Controller 2", "Controller 3",
+                                              "Controller 4", "Controller 5", "Controller 6"};
+        public virtual string[] ControllerNames
+        {
+            get
+            {
+                return controllerNames;
+            }
+        }
 
     #region Structures
 
@@ -58,9 +68,9 @@ namespace MovieSplicer.Data
             public string UID;
             public int    FrameCount;
             public int    RerecordCount;
-            public string EmulatorID;           
+            public string EmulatorID;
         }
-        
+
         /// <summary>
         /// Common Option items
         /// </summary>
@@ -74,7 +84,7 @@ namespace MovieSplicer.Data
             public string MovieStart
             {
                 get
-                {                    
+                {
                     if      (MovieStartFlag[0]) return "Save";
                     else if (MovieStartFlag[1]) return "Reset";
                     else if (MovieStartFlag[2]) return "Power On";
@@ -99,7 +109,7 @@ namespace MovieSplicer.Data
             {
                 FPS = 0;
                 MovieStartFlag  = (defaultFlags) ? new bool[3] : null;
-                MovieTimingFlag = (defaultFlags) ? new bool[2] : null;                
+                MovieTimingFlag = (defaultFlags) ? new bool[2] : null;
             }
         }
 
@@ -119,10 +129,25 @@ namespace MovieSplicer.Data
         /// Information about the controller configuration and frame input
         /// </summary>
         public struct TASInput
-        {            
+        {
             public bool[]          Controllers;
             public TASMovieInput[] FrameData;
-            
+
+            /// <summary>
+            /// Get the number of active controllers
+            /// </summary>
+            public int[] ActiveControllerIndices
+            {
+                get
+                {
+                    int[] temp = new int[ControllerCount];
+                    int j = 0;
+                    for (int i = 0; i < Controllers.Length; i++)
+                        if (Controllers[i]) temp[j++] = i;
+                    return temp;
+                }
+            }
+
             /// <summary>
             /// Get the number of active controllers
             /// </summary>
@@ -140,9 +165,9 @@ namespace MovieSplicer.Data
             /// <summary>
             /// Create a bool[] for the number of controllers specified by maxControllers
             /// enableControllers sets the starting values
-            /// </summary>            
+            /// </summary>
             public TASInput(int maxControllers, bool enableControllers)
-            {                                
+            {
                 Controllers = new bool[maxControllers];
                 for (int i = 0; i < maxControllers; i++)
                     Controllers[i] = enableControllers;
@@ -154,11 +179,11 @@ namespace MovieSplicer.Data
 
         /// <summary>
         /// overriden base method for saving back out to file
-        /// </summary>        
+        /// </summary>
         public virtual void Save(string filename, ref TASMovieInput[] input) 
         {
             byte[] empty = null;
-            WriteByteArrayToFile(ref empty, filename, 0, 0);
+            WriteByteArrayToFile(ref empty, filename, -1, -1);
         }
 
     #endregion
@@ -222,8 +247,9 @@ namespace MovieSplicer.Data
             MessageBox.Show(MovieSplicer.UI.frmMain.frm, filename + " written successfully", " Save",
                     MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);
 
+            MovieSplicer.UI.frmMain.frm.reloadMovie(filename);
         }
-        
+
         /// <summary>
         /// Convert a 2-byte little endian integer
         /// </summary>
@@ -236,12 +262,12 @@ namespace MovieSplicer.Data
         /// Convert a byte[] to a 4-byte little endian integer
         /// </summary>
         protected int Read32(ref byte[] byteArray, int position)
-        {            
+        {
             return Convert.ToInt32(  (byteArray[position] 
                                    | (byteArray[position+1] << 8) 
-                                   | (byteArray[position+2] << 16)  
+                                   | (byteArray[position+2] << 16)
                                    | (byteArray[position+3] << 24)));
-        }       
+        }
 
         /// <summary>
         /// Convert an integer to a 4-byte little endian byte array
@@ -257,16 +283,16 @@ namespace MovieSplicer.Data
         }
 
         /// <summary>
-        /// Write a 4-byte little endian integer into a byte array at the desired offset        
-        /// </summary>        
+        /// Write a 4-byte little endian integer into a byte array at the desired offset
+        /// </summary>
         protected void Write32(ref byte[] byteArray, int position, int value)
         {
             byte[] temp = Write32(value);
             for (int i = 0; i < 4; i++)
                 byteArray[position + i] = temp[i];
-            
+
         }
-        
+
         /// <summary>
         /// Convert a byte array into a string of HEX characters
         /// </summary>
@@ -305,10 +331,10 @@ namespace MovieSplicer.Data
 
         /// <summary>
         /// Convert a string value to a UTF-8 encoded byte array
-        /// </summary>        
+        /// </summary>
         protected byte[] WriteChars(string value)
-        {                        
-            return Encoding.UTF8.GetBytes(value);            
+        {
+            return Encoding.UTF8.GetBytes(value);
         }
 
         /// <summary>
@@ -325,15 +351,15 @@ namespace MovieSplicer.Data
 
         /// <summary>
         /// Convert a string value to a UTF-16 encoded byte array
-        /// </summary>        
+        /// </summary>
         protected byte[] WriteChars16(string value)
-        {            
+        {
             return Encoding.Unicode.GetBytes(value);
         }
 
         /// <summary>
         /// Get the null terminator position in a byte array
-        /// </summary>        
+        /// </summary>
         protected string ReadCharsNullTerminated(ref byte[] byteArray, int position)
         {
             const byte NULL_TERMINATOR = 0x00;
@@ -343,7 +369,7 @@ namespace MovieSplicer.Data
         }
 
         /// <summary>
-        /// Convert a UTC file timestamp to a local string representation        
+        /// Convert a UTC file timestamp to a local string representation
         /// </summary>
         protected string ConvertUNIXTime(int timeStamp)
         {
@@ -367,7 +393,7 @@ namespace MovieSplicer.Data
             for (int i = 0; i < length; i++)
                 bytes[i] = byteArray[i + offset];
             return bytes;
-        }                      
+        }
 
     #endregion
 

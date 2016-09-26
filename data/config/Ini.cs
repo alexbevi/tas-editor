@@ -48,7 +48,7 @@ namespace AMS.Profile
     ///   [A Section]
     ///   An Entry=Some Value
     ///   Another Entry=Another Value
-    ///     
+    ///
     ///   [Another Section]
     ///   This is cool=True
     ///   </code>
@@ -137,7 +137,7 @@ namespace AMS.Profile
         ///   The <see cref="WritePrivateProfileString" /> API failed. </exception>
         /// <remarks>
         ///   If the INI file does not exist, it is created.
-        ///   The <see cref="Profile.Changing" /> event is raised before setting the value.  
+        ///   The <see cref="Profile.Changing" /> event is raised before setting the value.
         ///   If its <see cref="ProfileChangingArgs.Cancel" /> property is set to true, this method 
         ///   returns immediately without setting the value.  After the value has been set, 
         ///   the <see cref="Profile.Changed" /> event is raised. </remarks>
@@ -214,7 +214,7 @@ namespace AMS.Profile
         /// <exception cref="Win32Exception">
         ///   The <see cref="WritePrivateProfileString" /> API failed. </exception>
         /// <remarks>
-        ///   The <see cref="Profile.Changing" /> event is raised before removing the entry.  
+        ///   The <see cref="Profile.Changing" /> event is raised before removing the entry.
         ///   If its <see cref="ProfileChangingArgs.Cancel" /> property is set to true, this method 
         ///   returns immediately without removing the entry.  After the entry has been removed, 
         ///   the <see cref="Profile.Changed" /> event is raised. </remarks>
@@ -251,7 +251,7 @@ namespace AMS.Profile
         /// <exception cref="Win32Exception">
         ///   The <see cref="WritePrivateProfileString" /> API failed. </exception>
         /// <remarks>
-        ///   The <see cref="Profile.Changing" /> event is raised before removing the section.  
+        ///   The <see cref="Profile.Changing" /> event is raised before removing the section.
         ///   If its <see cref="ProfileChangingArgs.Cancel" /> property is set to true, this method 
         ///   returns immediately without removing the section.  After the section has been removed, 
         ///   the <see cref="Profile.Changed" /> event is raised. </remarks>

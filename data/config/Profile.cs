@@ -93,7 +93,7 @@ namespace AMS.Profile
         ///   Setting this property if ReadOnly is true. </exception>
         /// <remarks>
         ///   This is usually the name of the file where the data is stored. 
-        ///   The <see cref="Changing" /> event is raised before changing this property.  
+        ///   The <see cref="Changing" /> event is raised before changing this property.
         ///   If its <see cref="ProfileChangingArgs.Cancel" /> property is set to true, this property 
         ///   returns immediately without being changed.  After the property is changed, 
         ///   the <see cref="Changed" /> event is raised. </remarks>
@@ -124,10 +124,10 @@ namespace AMS.Profile
         ///   Setting this property if it's already true. </exception>
         /// <remarks>
         ///   A read-only profile does not allow any operations that alter sections,
-        ///   entries, or values, such as <see cref="SetValue" /> or <see cref="RemoveEntry" />.  
+        ///   entries, or values, such as <see cref="SetValue" /> or <see cref="RemoveEntry" />.
         ///   Once a profile has been marked read-only, it may no longer go back; 
         ///   attempting to do so causes an InvalidOperationException to be raised.
-        ///   The <see cref="Changing" /> event is raised before changing this property.  
+        ///   The <see cref="Changing" /> event is raised before changing this property.
         ///   If its <see cref="ProfileChangingArgs.Cancel" /> property is set to true, this property 
         ///   returns immediately without being changed.  After the property is changed, 
         ///   the <see cref="Changed" /> event is raised. </remarks>
@@ -157,7 +157,7 @@ namespace AMS.Profile
         /// <summary>
         ///   Gets the name associated with the profile by default. </summary>
         /// <remarks>
-        ///   This property needs to be implemented by derived classes.  
+        ///   This property needs to be implemented by derived classes.
         ///   See <see cref="IProfile.DefaultName">IProfile.DefaultName</see> for additional remarks. </remarks>
         /// <seealso cref="Name" />
         public abstract string DefaultName
@@ -478,11 +478,11 @@ namespace AMS.Profile
         /// <exception cref="InvalidOperationException">
         ///	  <see cref="Profile.Name" /> is null or empty. </exception>
         /// <remarks>
-        ///   The returned DataSet will be named using the <see cref="Name" /> property.  
+        ///   The returned DataSet will be named using the <see cref="Name" /> property.
         ///   It will contain one table for each section, and each entry will be represented by a column inside the table.
         ///   Each table will contain only one row where the values will stored corresponding to each column (entry). 
         ///   <para>
-        ///   This method serves as a convenient way to extract the profile's data to this generic medium known as the DataSet.  
+        ///   This method serves as a convenient way to extract the profile's data to this generic medium known as the DataSet.
         ///   This allows it to be moved to many different places, including a different type of profile object 
         ///   (eg., INI to XML conversion). </para>
         ///   <para>
@@ -536,9 +536,9 @@ namespace AMS.Profile
         /// <exception cref="ArgumentNullException">
         ///   ds is null. </exception>
         /// <remarks>
-        ///   Each table in the DataSet represents a section of the profile.  
+        ///   Each table in the DataSet represents a section of the profile.
         ///   Each column of each table represents an entry.  And for each column, the corresponding value
-        ///   of the first row is the value to be passed to <see cref="SetValue" />.  
+        ///   of the first row is the value to be passed to <see cref="SetValue" />.
         ///   Note that only the first row is imported; additional rows are ignored.
         ///   <para>
         ///   This method serves as a convenient way to take any data inside a generic DataSet and 
@@ -578,7 +578,7 @@ namespace AMS.Profile
         ///   when composing the DefaultName.  These implementations take the value returned by this
         ///   property and add their own specific extension (.ini, .xml, .config, etc.).
         ///   <para>
-        ///   For Windows applications, this property returns the full path of the executable.  
+        ///   For Windows applications, this property returns the full path of the executable.
         ///   For Web applications, this returns the full path of the web.config file without 
         ///   the .config extension.  </para></remarks>
         /// <seealso cref="DefaultName" />
@@ -715,7 +715,7 @@ namespace AMS.Profile
         ///   This method should be invoked prior to making a change to the profile so that the
         ///   Changing event is raised, giving a chance to the handlers to prevent the change from
         ///   happening (by setting e.Cancel to true). This method calls each individual handler 
-        ///   associated with the Changing event and checks the resulting e.Cancel flag.  
+        ///   associated with the Changing event and checks the resulting e.Cancel flag.
         ///   If it's true, it stops and does not call of any remaining handlers since the change 
         ///   needs to be prevented anyway. </remarks>
         /// <seealso cref="Changing" />

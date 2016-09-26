@@ -37,11 +37,11 @@ namespace MovieSplicer.UI.Methods
         /// <summary>
         /// Load the contents of an external file to the copy buffer
         /// Returns the column count
-        /// </summary>        
+        /// </summary>
         public static void Load(string filename, ref TASMovieInputCollection buffer)
         {
             StreamReader reader = File.OpenText(filename);
-            string header = reader.ReadLine();            
+            string header = reader.ReadLine();
 
             int controllers = 0;
 
@@ -53,14 +53,14 @@ namespace MovieSplicer.UI.Methods
                 return;
             }
 
-            string lineItem = null;            
+            string lineItem = null;
             while ((lineItem = reader.ReadLine()) != null)
             {
                 TASMovieInput[] frame = new TASMovieInput[1];
                 string[]        split  = lineItem.Split('|');
                 for (int i = 0; i < split.Length; i++)
                     frame[0].Controller[i] = split[i];
-                                    
+
                 TASMovieInput.Insert(ref buffer.Input, ref frame, buffer.Input.Length);
                 controllers = split.Length;
             }
@@ -73,7 +73,7 @@ namespace MovieSplicer.UI.Methods
 
         /// <summary>
         /// Save the contents of the copy buffer out to file
-        /// </summary>        
+        /// </summary>
         public static void Save(string filename, ref TASMovieInputCollection buffer)
         {
             TextWriter writer = File.CreateText(filename);
@@ -89,7 +89,7 @@ namespace MovieSplicer.UI.Methods
                 }
                 lineItem = lineItem.Remove(lineItem.Length - 1); // trim last char
                 writer.WriteLine(lineItem);
-            }            
+            }
             writer.Close(); writer.Dispose();
         }
     }

@@ -32,11 +32,11 @@ using MovieSplicer.UI.Methods;
 using MovieSplicer.Components;
 
 namespace MovieSplicer.UI
-{    
+{
     public partial class frmBuffer : TASForm
     {
-        TASMovieInputCollection bufferedInput;        
-        
+        TASMovieInputCollection bufferedInput;
+
         public frmBuffer()
         {
             InitializeComponent();
@@ -52,14 +52,14 @@ namespace MovieSplicer.UI
 
             if (buffer.Input != null)
             {
-                bufferedInput = buffer;               
+                bufferedInput = buffer;
                 bindControllerDataToListview();
             }
         }
 
         /// <summary>
         /// Destroy the form object, but pass the buffer back
-        /// </summary>        
+        /// </summary>
         public void Dispose(ref TASMovieInputCollection buffer)
         {
             buffer = bufferedInput;
@@ -78,7 +78,7 @@ namespace MovieSplicer.UI
             lvInputBuffer.VirtualListSize   = bufferedInput.Input.Length;
             lvInputBuffer.VirtualListSource = bufferedInput.Input;
             lvInputBuffer.SetColumns(bufferedInput.Controllers);
-        }        
+        }
 
 
         /// <summary>
@@ -87,18 +87,18 @@ namespace MovieSplicer.UI
         private void clearBuffer()
         {
             bufferedInput.Input  = null;
-            bufferedInput.Format = MovieType.None;            
+            bufferedInput.Format = MovieType.None;
 
             lvInputBuffer.VirtualListSize = 0;
             lvInputBuffer.Clear(); lvInputBuffer.Columns.Add("Frame");
 
-            sbarMovieType.Text = "None";            
+            sbarMovieType.Text = "None";
         }
 
 
         /// <summary>
         /// Clear the Buffer (listview and related objects)
-        /// </summary>        
+        /// </summary>
         private void btnClear_Click(object sender, EventArgs e)
         {
             // if this object hasn't been created yet, return
@@ -108,20 +108,20 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Save the contents of the copy buffer to an external file
-        /// </summary>        
+        /// </summary>
         private void btnSave_Click(object sender, EventArgs e)
         {
             SaveFileDialog dlg = new SaveFileDialog();
             dlg.Filter = "TAS Movie Editor Copy Buffer (*.tmb)|*.tmb";
             dlg.ShowDialog();
-            if (dlg.FileName.Length > 0)            
+            if (dlg.FileName.Length > 0)
                 Methods.MovieBufferIO.Save(dlg.FileName, ref bufferedInput);
-            
+
         }
 
         /// <summary>
         /// Load the contents of an external file to the copy buffer
-        /// </summary>        
+        /// </summary>
         private void btnLoad_Click(object sender, EventArgs e)
         {
             OpenFileDialog dlg = new OpenFileDialog();
@@ -129,7 +129,7 @@ namespace MovieSplicer.UI
             dlg.ShowDialog();
             if (dlg.FileName.Length > 0)
             {
-                TASMovieInputCollection buffer = new TASMovieInputCollection(true);                                
+                TASMovieInputCollection buffer = new TASMovieInputCollection(true);
                 MovieBufferIO.Load(dlg.FileName, ref buffer);
 
                 sbarMovieType.Text = Enum.GetName(typeof(MovieType), buffer.Format);
@@ -137,9 +137,9 @@ namespace MovieSplicer.UI
                 if (buffer.Input.Length > 0)
                 {
                     lvInputBuffer.Clear(); lvInputBuffer.Columns.Add("Frame");
-                    bufferedInput = buffer;                                        
+                    bufferedInput = buffer;
                     bindControllerDataToListview();
-                }              
+                }
                 else 
                     clearBuffer(); 
             }
@@ -147,7 +147,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Close the View Buffer form
-        /// </summary>        
+        /// </summary>
         private void btnClose_Click(object sender, EventArgs e)
         {
             this.Close();

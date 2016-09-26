@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Windows.Forms;
 
 using MovieSplicer.Data;
 
@@ -31,7 +32,7 @@ namespace MovieSplicer.UI.Methods
     /// Output frame input to an SRT subtitle file
     /// </summary>
     public class SubtitleGenerator
-    {      
+    {
         string[] inputOut = { "Start", "Select", "Up", "Down", "Left", "Right", "A", "B", "C", "X", "Y", "Z", "L", "R", "Mode" };
         string[] inputIn  = { "S", "s", "^", "v", "<", ">", "A", "B", "C", "X", "Y", "Z", "L", "R", "Mode" };
 
@@ -42,12 +43,12 @@ namespace MovieSplicer.UI.Methods
 
         /// <summary>
         /// Instantiate the SubtitleGenerator with an inputCollection and a filename
-        /// </summary>        
+        /// </summary>
         public SubtitleGenerator(ref TASMovieInputCollection movie, string filename)
         {
             Movie    = movie;
             Filename = filename;
-            
+
             // set default values
             Offset   = 0;
             FPS      = 60;
@@ -60,38 +61,56 @@ namespace MovieSplicer.UI.Methods
         {
             int lastChange = 0;
             int position   = 0; // array accessor
-            int block      = 0; // subtitle block            
+            int block      = 0; // subtitle block
 
-            TASMovieInput temp;
-            TextWriter    writer = File.CreateText(Filename);            
-            
-            while (position < Movie.Input.Length - 1)
+            TextWriter writer;
+
+            try
             {
-                temp = Movie.Input[position]; position++;
-                if (areFramesEqual(temp, Movie.Input[position], Movie.Controllers) == false)                
-                {                    
-                    block++;
-                    writer.WriteLine(block.ToString() + "\n" +
-                        timeEncode(lastChange + Offset) + " --> " + timeEncode(position + Offset) + "\n" +
-                        frameEncode(Movie.Input[position - 1], Movie.Controllers) + "\n\n");
-                    
-                    lastChange = position;
-                }
-                
+                writer = File.CreateText(Filename);
             }
-            // write the last entry                                       
-            // NOTE::adding 1 to the position throws it out of bounds of the array, but we're
-            // not using as an accessor, so I'm not sure if this is correct (prolly not =P)
-            writer.WriteLine((block + 1).ToString() + "\n" +
-                timeEncode(lastChange + Offset) + " --> " + timeEncode(position + 1 + Offset) + "\n" +
-                frameEncode(Movie.Input[position], Movie.Controllers) + "\n\n");            
+            catch
+            {
+                MessageBox.Show(frmMain.frm,
+                    "Cannot open file!",
+                    "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);
+                throw;
+            }
 
-            writer.Close(); writer.Dispose();            
+            try
+            {
+                TASMovieInput temp;
+                while (position < Movie.Input.Length - 1)
+                {
+                    temp = Movie.Input[position]; position++;
+                    if (areFramesEqual(temp, Movie.Input[position], Movie.Controllers) == false)
+                    {
+                        block++;
+                        writer.WriteLine(block.ToString() + "\n" +
+                            timeEncode(lastChange + Offset) + " --> " + timeEncode(position + Offset) + "\n" +
+                            frameEncode(Movie.Input[position - 1], Movie.Controllers) + "\n\n");
+
+                        lastChange = position;
+                    }
+
+                }
+                // write the last entry
+                // NOTE::adding 1 to the position throws it out of bounds of the array, but we're
+                // not using as an accessor, so I'm not sure if this is correct (prolly not =P)
+                writer.WriteLine((block + 1).ToString() + "\n" +
+                    timeEncode(lastChange + Offset) + " --> " + timeEncode(position + 1 + Offset) + "\n" +
+                    frameEncode(Movie.Input[position], Movie.Controllers) + "\n\n");
+            }
+            finally
+            {
+                writer.Close(); writer.Dispose();
+            }
         }
-        
+
         /// <summary>
         /// Convert a frame number to a timecode
-        /// </summary>        
+        /// </summary>
         private string timeEncode(int frame)
         {
             double seconds = frame / FPS;
@@ -107,14 +126,14 @@ namespace MovieSplicer.UI.Methods
 
         /// <summary>
         /// Convert an input's controller values to a string
-        /// </summary>        
+        /// </summary>
         private string frameEncode(TASMovieInput input, int controllers)
         {
             string temp = "";
             for (int i = 0; i < controllers; i++)
             {
                 temp += "Controller #" + (i + 1) + ": ";
-                for (int j = 0; j < inputIn.Length; j++)                
+                for (int j = 0; j < inputIn.Length; j++)
                     if(input.Controller[i] != null)
                         if (input.Controller[i].Contains(inputIn[j])) temp += inputOut[j] + " ";
                 temp += "\n";
@@ -124,11 +143,11 @@ namespace MovieSplicer.UI.Methods
 
         /// <summary>
         /// Check if two TASMovieInput instances are equal
-        /// </summary>        
+        /// </summary>
         private bool areFramesEqual(TASMovieInput left, TASMovieInput right, int controllers)
         {
             for (int i = 0; i < controllers; i++)
-                if (left.Controller[i] == null && right.Controller[i] == null) return true;                
+                if (left.Controller[i] == null && right.Controller[i] == null) return true;
                 else if (left.Controller[i] == right.Controller[i]) return true;
             return false;
         }

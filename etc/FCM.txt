@@ -62,13 +62,12 @@ FCEU emits a "dummy" command of 0 if the current delta is about to overflow.
 
 The interpretation of the update data field depends on whether is a "control" or "controller" update. The "control" commands are listed as follows:
 
-   0     Take no action
+   0     End of File
    1     Reset
-   2     Power cycle
+   2     Power Cycle
    7     VS System Insert Coin
    8     VS System Dipswitch 0 Toggle
-  24     FDS Insert
-  25     FDS Eject
+  24     FDS Eject/Insert
   26     FDS Select Side
 
 The controller update data is formatted as follows

@@ -133,7 +133,7 @@ v0-10-1
        (frames were offset ... didn't line up) - thanks Zefiris
 - SMV::Fixed read/write bug that was dropping the last frame - thanks Zefiris
 - SMV::Fixed extra data (rom info) being dropped when metadata was updated
-- VBM::Fixed read/write bug that was dropping the last frame - thanks again Zefiris :)    
+- VBM::Fixed read/write bug that was dropping the last frame - thanks again Zefiris :)
 
 
 v0-10
@@ -152,7 +152,7 @@ v0-10
 - ETC::Added reordering buttons to the splicer (so movie positions can be swapped)
 - ETC::Added append mode to editor (allows you to add an input to the end of a group of frames
        without replacing the contents)
-- ETC::Splicer now prompts for location of output file       
+- ETC::Splicer now prompts for location of output file
 - SMV::Fixed metadata reading (not sure what happened there, but i was reading nulls somehow :P)
 - SMV::metadata updating
 - FCM::metadata updating
@@ -171,10 +171,10 @@ v0-9-2
 -  UI::Adding/Removing now no longer repositions the position within the list unless a large remove
        is performed
 -  UI::Pasted blocks are now inserted AFTER the target frame 
-       (who'd a thought that adding 1 to an index would be so complicated :P)    
--  UI::Added undo functionality          
+       (who'd a thought that adding 1 to an index would be so complicated :P)
+-  UI::Added undo functionality
 -  UI::SaveAs now defaults a filename ("new-" prepended to existing filename)
-- ETC::Application messages now written out to the Message History (CTRL+M)       
+- ETC::Application messages now written out to the Message History (CTRL+M)
 - M64::Input now parses (ControlInput though, there's no way to match it up directly to the frames)
 
 
@@ -201,20 +201,20 @@ v0-9
 -  UI::Selection no longer clears following an update (so you can re-edit the same block without 
        re-selecting it)
 -  UI::Added checkboxes next to controller edit field so individual controller tracks
-       can be updated during a group edit (as opposed to everything for all tracks being replicated)      
+       can be updated during a group edit (as opposed to everything for all tracks being replicated)
 -  UI::Replacing the System.Collections.ArrayList dependance has solved a bug that forced
        me to clear the copy buffer after each paste (if I didn't, the app would crash). This means
        that you can paste the same buffer block as many times as you'd like.
        This also addresses the memory deallocation issue that was occuring randomly when accessing
-       data in the FrameData list (I may never know wtf was up with that)      
+       data in the FrameData list (I may never know wtf was up with that)
 -  UI::Completely rewrote add / remove frame(s) routines
 -  UI::Fixed a bug that caused the application to crash if a large block of frames was removed
        (basically, the virtual list was still trying to access elements that were out of range)
 -  UI::Autofire update option enabled (Options -> Auto-Fire Updated). Checking this only updates
-       alternating frames. (May prove useful to some).   
+       alternating frames. (May prove useful to some).
 -  UI::Find Input enabled (This allows you to search for the first instance of an input pattern
        in the current movie. Searching begins from either the currently selected frame, or from zero.
-       Note that this is beta, so search patterns must conform to the order input is displayed)           
+       Note that this is beta, so search patterns must conform to the order input is displayed)
 - SMV::Completely rewrote format handler code
 - FCM::Completely rewrote format handler code
 - FMV::Completely rewrote format handler code
@@ -239,7 +239,7 @@ v0-8-1
 
 v0-8
 
-- UI::Changed application title to TAS Movie Editor (no longer TAS Movie Splicer)   
+- UI::Changed application title to TAS Movie Editor (no longer TAS Movie Splicer)
 - UI::Tabbed interface removed. Replaced by a treeview.
 - UI::Fixed a bug where the app would crash if trying to access a locked file
 - UI::Removed frame count and file name from status bar (frame count no longer used in 
@@ -263,7 +263,7 @@ v0-7-1
 - UI::Fixed the tab locking when a movie's loaded (the old method was annoying since
     the ui would flash if you clicked a tab)
 - UI::Fixed a bug in the splicer that wasn't allowing source movies to be loaded
-    
+
 
 v0-7
 
@@ -292,7 +292,7 @@ v0-6
 - FCM::Add/Remove/Edit frame data enabled
 - SMV::Edit functions now work from the context menu
     (no more seperate menu options to add/remove)
-- SMV::Save/SaveAs now work with this format   
+- SMV::Save/SaveAs now work with this format
 - GMV::Splicing enabled 
 
 

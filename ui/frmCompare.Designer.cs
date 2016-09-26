@@ -252,7 +252,7 @@ namespace MovieSplicer.UI
             this.ResumeLayout(false);
             this.PerformLayout();
 
-        }        
+        }
 
         #endregion
 

@@ -31,10 +31,10 @@ namespace MovieSplicer.Components
 {
     /// <summary>
     /// This is essentially a subclass of System.Windows.Forms.ListView that provides
-    /// an auto-expanding last column and virtualization.   
+    /// an auto-expanding last column and virtualization.
     /// </summary>
     public class TASCompareListView: ListView
-    {     
+    {
         private const int WM_PAINT = 0xF;
 
         public TASMovieInputCollection Source;
@@ -45,8 +45,8 @@ namespace MovieSplicer.Components
 
         // Cache items
         private ListViewItem[] cache;
-        private int            firstItem;        
-        
+        private int            firstItem;
+
         /// <summary>
         /// Create a new TASListView object with an event handler on RetriveVirtualItem
         /// </summary>
@@ -55,9 +55,9 @@ namespace MovieSplicer.Components
             this.DoubleBuffered = true;
             this.RetrieveVirtualItem += new RetrieveVirtualItemEventHandler(GetVirtualItem);
             this.CacheVirtualItems   += new CacheVirtualItemsEventHandler(CacheVirtualItemsList);
-            this.VirtualMode = true;           
-        }               
-       
+            this.VirtualMode = true;
+        }
+
         /// <summary>
         // Various message handlers for this control
         /// </summary>
@@ -71,13 +71,13 @@ namespace MovieSplicer.Components
                 case WM_PAINT:
                     if (this.View == View.Details && this.Columns.Count > 0)
                         this.Columns[this.Columns.Count - 1].Width = -2;
-                    break;                
+                    break;
             }
 
             // pass messages on to the base control for processing
             base.WndProc(ref message);
-        }   
-        
+        }
+
     #region Methods
 
         /// <summary>
@@ -90,21 +90,21 @@ namespace MovieSplicer.Components
         public void SetColumns()
         {
             if (this.Columns.Count > 0) return;
-            
+
             this.Columns.Clear();
-            
-            this.Columns.Add("Movie 1", 100);            
+
+            this.Columns.Add("Movie 1", 100);
             for (int i = 0; i < Source.Controllers; i++)
                 this.Columns.Add("Controller " + (i + 1), 200);
-            
-            this.Columns.Add("Movie 2", 100);            
+
+            this.Columns.Add("Movie 2", 100);
             for (int j = 0; j < Target.Controllers; j++)
                 this.Columns.Add("Controller " + (j + 1), 200);
         }
-        
+
         /// <summary>
         /// Get the index of the specified item
-        /// </summary>        
+        /// </summary>
         private void GetVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
         {
             // If we have the item cached, return it. Otherwise, recreate it.
@@ -116,7 +116,7 @@ namespace MovieSplicer.Components
 
         /// <summary>
         /// Get the item at a specified index
-        /// </summary>        
+        /// </summary>
         private ListViewItem GetListItem(int listIndex)
         {
             bool diff = false;
@@ -124,38 +124,38 @@ namespace MovieSplicer.Components
             //if(VirtualMovieType == TASForm.MovieType.VBM || 
             //   VirtualMovieType == TASForm.MovieType.SMV)
             //        lv = new ListViewItem((listIndex).ToString());
-            //else                                
-            
+            //else
+
             // if we're not out of (source) range, add the frame number
             lv.Text = (listIndex > Source.Input.Length - 1) ? "" : ((listIndex + SourceOffset).ToString());
-            
+
             for (int i = 0; i < Source.Controllers; i++)
             {
-                if (listIndex > Source.Input.Length - 1)                             
-                    lv.SubItems.Add("");                
-                else                             
-                    lv.SubItems.Add(Source.Input[listIndex].Controller[i]);                
+                if (listIndex > Source.Input.Length - 1)
+                    lv.SubItems.Add("");
+                else
+                    lv.SubItems.Add(Source.Input[listIndex].Controller[i]);
             }
-            
+
             // if we're not out of (target) range, add the frame number
             if (listIndex > Target.Input.Length - 1)
                 lv.SubItems.Add("");
             else
                 lv.SubItems.Add((listIndex + TargetOffset).ToString());
-            
+
             for (int j = 0; j < Target.Controllers ; j++)
-            {                
+            {
                 if (listIndex > Target.Input.Length - 1)
                     lv.SubItems.Add("");
-                else                
+                else
                     lv.SubItems.Add(Target.Input[listIndex].Controller[j]);
 
                 // check if the frames differ
-                if (listIndex < Source.Input.Length && listIndex < Target.Input.Length)                                    
+                if (listIndex < Source.Input.Length && listIndex < Target.Input.Length)
                     if (Source.Input[listIndex].Controller[j] != Target.Input[listIndex].Controller[j])
                         diff = true;
             }
-                           
+
             if (listIndex % 2 == 0) lv.BackColor = System.Drawing.Color.BlanchedAlmond;
             if (diff) lv.BackColor = System.Drawing.Color.AliceBlue;
 
@@ -172,7 +172,7 @@ namespace MovieSplicer.Components
 
         /// <summary>
         /// Cache current view
-        /// </summary>        
+        /// </summary>
         private void CacheVirtualItemsList(object sender, CacheVirtualItemsEventArgs e)
         {
             // Only recreate the cache if we need to.

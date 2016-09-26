@@ -33,8 +33,8 @@ namespace MovieSplicer.Components
     public class TASForm : Form
     {
         public const string APP_TITLE  = "TAS Movie Editor";
-        public const string VERSION    = "0.12.2-interim";
-        public const string BUILD_DATE = "2011-04-20 @ 21:00";
+        public const string VERSION    = "0.12.2";
+        public const string BUILD_DATE = "2016-9-5 @ 07:00";
 
         public const string TAS_FILTER = ALL_FILTER + "|" + FCM_FILTER + "|" + FMV_FILTER + "|" + 
                                          GMV_FILTER + "|" + M64_FILTER + "|" + MMV_FILTER + "|" + 
@@ -111,7 +111,7 @@ namespace MovieSplicer.Components
             string[] filePath;
             filePath = pathToFile.Split(splitter);
             return filePath[filePath.Length - 1];
-        }        
+        }
 
         /// <summary>
         /// Read first 4-bytes from file
@@ -171,9 +171,9 @@ namespace MovieSplicer.Components
 
         /// <summary>
         /// Return a format specific object
-        /// </summary>        
+        /// </summary>
         public TASMovie LoadMovie(string filename, MovieType fileType)
-        {            
+        {
             switch (fileType)
             {
                 case MovieType.SMV:
@@ -196,7 +196,7 @@ namespace MovieSplicer.Components
 
         /// <summary>
         /// Convert a value to an integer
-        /// </summary>        
+        /// </summary>
         public int CInt(object value)
         {
             return Convert.ToInt32(value);

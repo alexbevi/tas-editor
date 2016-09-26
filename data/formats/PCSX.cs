@@ -26,8 +26,17 @@ namespace MovieSplicer.Data.Formats
 {
     public class PCSX : TASMovie
     {
+        private string[] controllerNames = { "Controller 1", "Controller 2", "Control Events" };
+        public override string[] ControllerNames
+        {
+            get
+            {
+                return controllerNames;
+            }
+        }
+
         private static int[] BYTES_PER_FRAME = { 1, 4, 0, 0, 2, 6, 0, 6, 0 };
-        
+
         /// <summary>
         /// Contains Format Specific items
         /// </summary>
@@ -168,13 +177,13 @@ namespace MovieSplicer.Data.Formats
 
             ControllerDataOffset = Read32(ref FileContents, Offsets[14]);
             SaveStateOffset      = Read32(ref FileContents, Offsets[9]);
-           
+
             Header = new TASHeader();
             Header.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
             Header.Version       = Read32(ref FileContents, Offsets[1]);
             Header.FrameCount    = Read32(ref FileContents, Offsets[7]);
             Header.RerecordCount = Read32(ref FileContents, Offsets[8]);
-                      
+
             Options = new TASOptions(true);
             Options.MovieStartFlag[0]  = (1 & (FileContents[Offsets[3]] >> 1)) == 1 ? true : false;
             Options.MovieStartFlag[1]  = (1 & (FileContents[Offsets[3]] >> 1)) == 0 ? true : false;
@@ -196,16 +205,16 @@ namespace MovieSplicer.Data.Formats
             PXMSpecific.MemoryCard2Offset = Read32(ref FileContents, Offsets[11]);
             PXMSpecific.CheatListOffset   = Read32(ref FileContents, Offsets[12]);
             PXMSpecific.CDRomIDOffset     = Read32(ref FileContents, Offsets[13]);
-            
+
             PXMSpecific.CDRomCount       = FileContents[PXMSpecific.CDRomIDOffset];
 
             Extra = new TASExtra();
             Extra.ROM = ReadChars(ref FileContents, PXMSpecific.CDRomIDOffset + 1, PXMSpecific.CDRomCount * 9);
             Extra.Author = ReadChars(ref FileContents, Offsets[16], Read32(ref FileContents, Offsets[15]));
-           
+
             Input = new TASInput(3, true);
 
-            getFrameInput(ref FileContents);                                     
+            getFrameInput(ref FileContents);
         }
 
         private void getFrameInput(ref byte[] byteArray)
@@ -320,7 +329,7 @@ namespace MovieSplicer.Data.Formats
         private string parseStandardControllerData(byte[] byteArray, int pos)
         {
             string input = "";
-            
+
             // check the first byte of input
             for (int i = 0; i < 8; i++)
             {
@@ -333,7 +342,7 @@ namespace MovieSplicer.Data.Formats
                 if ((1 & (byteArray[pos + 1] >> j)) == 1)
                     input += InputValues[j + 8];
             }
-    
+
             return input;
         }
 
@@ -345,13 +354,13 @@ namespace MovieSplicer.Data.Formats
             byte[] input = { 0x00, 0x00 };
 
             if (frameInput == null || frameInput == "") return input;
-            
-            for (int i = 0; i < 8; i++)            
-                if (frameInput.Contains(InputValues[i])) input[0] |= (byte)(1 << i);  
+
+            for (int i = 0; i < 8; i++)
+                if (frameInput.Contains(InputValues[i])) input[0] |= (byte)(1 << i);
 
             for (int j = 0; j < 8; j++)
-                if (frameInput.Contains(InputValues[j + 8])) input[1] |= (byte)(1 << j);                                        
-            
+                if (frameInput.Contains(InputValues[j + 8])) input[1] |= (byte)(1 << j);
+
             return input;
         }
 
@@ -491,7 +500,7 @@ namespace MovieSplicer.Data.Formats
 
             // add the controller data
             int position = newControllerDataOffset;
-            for (int i = 0; i < input.Length; i++)           
+            for (int i = 0; i < input.Length; i++)
             {
                 parseControllerData(input[i].Controller[0], Controller1Type).CopyTo(outputFile, position);
                 position += Controller1Size;
@@ -500,7 +509,7 @@ namespace MovieSplicer.Data.Formats
                 parseControlData(input[i].Controller[2]).CopyTo(outputFile, position);
                 position += ControlSize;
             }
-                    
+
             //// DEBUGGING //
             //MovieSplicer.UI.frmDebug frm = new MovieSplicer.UI.frmDebug();
             //for (int i = 0; i < FileContents.Length; i++)
@@ -515,7 +524,7 @@ namespace MovieSplicer.Data.Formats
             //frm.Show();
             /////////////////
 
-            WriteByteArrayToFile(ref outputFile, filename, input.Length, Offsets[7]);  
+            WriteByteArrayToFile(ref outputFile, filename, input.Length, Offsets[7]);
         }
 
         public override string[] GetUsableInputs()

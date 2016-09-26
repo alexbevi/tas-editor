@@ -27,7 +27,7 @@ namespace MovieSplicer.Data.moviegenerator
         public int originalframeposition;
         public MovieSplicer.Data.TASMovieInput[] Input;
         public int total_input;
-        
+
         public FrameWithInput(int number_inputs)
         {
             if (number_inputs < 1) number_inputs = 7;
@@ -241,7 +241,7 @@ public bool frameinsert_combineinputs;
 /// on frame 15 which got pushed to frame 20 then it will be
 /// overwritten by the insertion at frame 20.
 ///
-///  
+///
 /// 1 = The frames where insertion is to take place
 /// will be relative. They get pushed by insertions. So:
 ///
@@ -543,7 +543,7 @@ public bool frameremove_pushframelist_onremove;
         /// so remember to clear it between combinations.
         /// </summary>
         private int movieheader_endindex;
-        
+
         /// <summary>
         /// Each int on this array represents the state of one
         /// of the combination parts. Whether insertion, or 
@@ -1102,7 +1102,7 @@ public bool frameremove_pushframelist_onremove;
             ArrayList insertCombinationsArray = new ArrayList();
             ArrayList removeCombinationsArray = new ArrayList();
             ArrayList replaceCombinationsArray = new ArrayList();
-            
+
             //If there is input, add it to our list, we have to push this data
             for (int i = movieheader_endindex; i < movie.Input.FrameData.Length; i++)
             {
@@ -1294,7 +1294,7 @@ public bool frameremove_pushframelist_onremove;
             {
                 char[] separator = new char[1];
                 separator[0] = ',';
-                
+
                 string []vals;
                 vals = insert_combinations_restore.Split(separator);
                 for (int i = 0; i < insertCombinations.Length; i++)
@@ -1366,7 +1366,7 @@ public bool frameremove_pushframelist_onremove;
                 {
                     frameremove_iteration = -1;
                 }
-            
+
             //    frameremove_iteration = -1;
               //  frameremove_totalframesremovedsofar = 0;
 
@@ -1401,8 +1401,8 @@ public bool frameremove_pushframelist_onremove;
                         return;
                     };
                 };
-                
-                
+
+
                 //1. Update combinations for next save
                 //update remove combinations
                 //in case of overflow value is left broken
@@ -1413,7 +1413,7 @@ public bool frameremove_pushframelist_onremove;
                     addonemoreinsertsub = true; //and add one to next combination
                 }
                 MoveFrameRemoveGenerationForwardOneStep();
-                
+
                 if (addonemoreinsertsub)
                 {
                     addonemoreinsertsub = false;
@@ -1449,7 +1449,7 @@ public bool frameremove_pushframelist_onremove;
             };
 
             bool addonemore = true;
-            
+
             //reset last combination step
             //first time this is zero
             frameremove_totalframesremovedsofar -= removeCombinations[frameremove_iteration+1].value;
@@ -1495,7 +1495,7 @@ public bool frameremove_pushframelist_onremove;
                 frameinsert_iteration = -1;
                 return;
             };
-            
+
             bool addonemore = true;
 
             //reset last combination step
@@ -1558,7 +1558,7 @@ public bool frameremove_pushframelist_onremove;
                     }
                     continue;
                 }
-                
+
                 //new combination!
                 return false;
             }
@@ -1612,7 +1612,7 @@ public bool frameremove_pushframelist_onremove;
             int index_insertsubcomb = 0;
             int index_remove = 0;
             int index_replace = 0;
-            
+
             bool end = false;
             while (true)
             {
@@ -1684,7 +1684,7 @@ public bool frameremove_pushframelist_onremove;
                 if (frame < movie.Input.FrameData.Length) continue;
                 break;
             }
-            
+
             movie.Save(lastmoviesaved_index.ToString() + movie.Filename.Substring(movie.Filename.IndexOf(".")), ref baseinput);
 
             //clear garbage
@@ -2168,7 +2168,7 @@ public bool frameremove_pushframelist_onremove;
                                  "Some error while loading: " + fnfe.GetBaseException(),
                                  "Restore Saved Session",
                                  MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);
-                    
+
                     }*/
                 }
             sr.Close(); sr = null; fs.Dispose();
@@ -2229,7 +2229,7 @@ public bool frameremove_pushframelist_onremove;
                     combs[j] = 0;
                     continue;
                 }
-                
+
                 string s = "";
                 for (int i = 0; i < combs.Length; i++)
                 {

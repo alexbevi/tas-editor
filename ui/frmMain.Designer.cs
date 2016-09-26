@@ -814,7 +814,7 @@ namespace MovieSplicer.UI
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
         private System.Windows.Forms.ToolStripMenuItem mnuInputDescriptions;
         private System.Windows.Forms.ToolStripMenuItem cmnuitemCutFrames;
-        private System.Windows.Forms.ToolStripMenuItem mnuCut;       
+        private System.Windows.Forms.ToolStripMenuItem mnuCut;
     }
 }
 

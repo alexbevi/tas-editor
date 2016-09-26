@@ -168,11 +168,11 @@ namespace AMS.Profile
         /// <returns>
         ///   If the profile exists, the return value should be a DataSet object representing the profile; otherwise it's null. </returns>
         /// <remarks>
-        ///   The returned DataSet should be named using the <see cref="Name" /> property.  
+        ///   The returned DataSet should be named using the <see cref="Name" /> property.
         ///   It should contain one table for each section, and each entry should be represented by a column inside the table.
         ///   Each table should contain only one row where the values will be stored corresponding to each column (entry). 
         ///   <para>
-        ///   This method serves as a convenient way to extract the profile's data to this generic medium known as the DataSet.  
+        ///   This method serves as a convenient way to extract the profile's data to this generic medium known as the DataSet.
         ///   This allows it to be moved to many different places, including a different type of profile object 
         ///   (eg., INI to XML conversion). </para>
         /// </remarks>
@@ -184,7 +184,7 @@ namespace AMS.Profile
     ///   It represents a normal profile. </summary>
     /// <remarks>
     ///   This interface takes the members of IReadOnlyProfile (its base interface) and adds
-    ///   to it the rest of the members, which allow modifications to the profile.  
+    ///   to it the rest of the members, which allow modifications to the profile.
     ///   Altogether, this represents a complete profile object. </remarks>
     /// <seealso cref="IReadOnlyProfile" />
     /// <seealso cref="Profile" />
@@ -218,7 +218,7 @@ namespace AMS.Profile
         ///   Gets or sets whether the profile is read-only or not. </summary>
         /// <remarks>
         ///   A read-only profile should not allow any operations that alter sections,
-        ///   entries, or values, such as <see cref="SetValue" /> or <see cref="RemoveEntry" />.  
+        ///   entries, or values, such as <see cref="SetValue" /> or <see cref="RemoveEntry" />.
         ///   Once a profile has been marked read-only, it should be allowed to go back; 
         ///   attempting to do so should cause an InvalidOperationException to be raised.
         ///   The <see cref="Changing" /> and <see cref="Changed" /> events should be raised before 
@@ -272,9 +272,9 @@ namespace AMS.Profile
         /// <param name="ds">
         ///   The DataSet object containing the data to be set. </param>
         /// <remarks>
-        ///   Each table in the DataSet should be used to represent a section of the profile.  
+        ///   Each table in the DataSet should be used to represent a section of the profile.
         ///   Each column of each table should represent an entry.  And for each column, the corresponding value
-        ///   of the first row is the value that should be passed to <see cref="SetValue" />.  
+        ///   of the first row is the value that should be passed to <see cref="SetValue" />.
         ///   <para>
         ///   This method serves as a convenient way to take any data inside a generic DataSet and 
         ///   write it to any of the available profiles. </para></remarks>

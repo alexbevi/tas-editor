@@ -32,16 +32,16 @@ namespace MovieSplicer.UI.Methods
     /// Populate a TreeView control with parsed data from a movie object
     /// </summary>
     class PopulateMovieInfo
-    {       
+    {
         /// <summary>
         /// Populate an SNES9x movie file's header information
-        /// </summary>        
+        /// </summary>
         public static void SMV(ref TreeView tv, ref TASMovie smv)
         {
             SNES9x movie = (SNES9x)smv;
-            tv.Nodes.Clear();            
+            tv.Nodes.Clear();
 
-            tv.Nodes.Add("Header");            
+            tv.Nodes.Add("Header");
             tv.Nodes[0].Nodes.Add("Signature:      " + movie.Header.Signature);
             tv.Nodes[0].Nodes.Add("Version:        " + movie.Header.Version.ToString());
             tv.Nodes[0].Nodes.Add("UID:            " + movie.Header.UID);
@@ -73,9 +73,9 @@ namespace MovieSplicer.UI.Methods
             tv.Nodes[4].Nodes.Add("Controller 3 Present: " + movie.Input.Controllers[2].ToString());
             tv.Nodes[4].Nodes.Add("Controller 4 Present: " + movie.Input.Controllers[3].ToString());
             tv.Nodes[4].Nodes.Add("Controller 5 Present: " + movie.Input.Controllers[4].ToString());
-            
+
             movie = null; tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
-        }        
+        }
 
         /// <summary>
         /// Populate an FCE Ultra movie file's header information
@@ -109,7 +109,7 @@ namespace MovieSplicer.UI.Methods
 
             movie = null; tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
         }
-       
+
         /// <summary>
         /// Populate a VisualBoyAdvance movie file's header information
         /// </summary>
@@ -157,7 +157,7 @@ namespace MovieSplicer.UI.Methods
             tv.Nodes[4].Nodes.Add("Controller 4 Present: " + movie.Input.Controllers[3].ToString());
 
             movie = null; tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
-        }       
+        }
 
         /// <summary>
         /// Populate a Famtasia movie file's header information
@@ -179,8 +179,8 @@ namespace MovieSplicer.UI.Methods
             tv.Nodes[1].Nodes.Add("Controller 1: " + movie.Input.Controllers[0].ToString());
             tv.Nodes[1].Nodes.Add("Controller 2: " + movie.Input.Controllers[1].ToString());
 
-            movie = null; tv.ExpandAll(); tv.Nodes[0].EnsureVisible();            
-        }        
+            movie = null; tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
+        }
 
         /// <summary>
         /// Populate a Gens movie file's header information
@@ -336,6 +336,6 @@ namespace MovieSplicer.UI.Methods
             tv.Nodes[4].Nodes.Add("P2 Multitap On:    " + movie.PXMSpecific.P2MultitapToggle.ToString());
 
             movie = null; tv.ExpandAll(); tv.Nodes[0].EnsureVisible();
-        }       
+        }
     }
 }

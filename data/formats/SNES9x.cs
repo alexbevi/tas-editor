@@ -39,9 +39,14 @@ namespace MovieSplicer.Data.Formats
             public bool SYNCSOUND;
             public bool HASROMINFO;
             public bool NOCPUSHUTDOWN;
+            public int NumControllers;
+            public int[] PortsTypes;
+            public int NonJoypadSampleSize;
+            public int SampleSize;
 
-            public FormatSpecific(byte options)
+            public FormatSpecific(int version, ref byte[] contents, ref int[] Offsets)
             {
+                byte options = contents[Offsets[8]];
                 DATA_EXISTS   = (1 & (options >> 0)) == 1 ? true : false;
                 if (DATA_EXISTS)
                 {
@@ -63,11 +68,37 @@ namespace MovieSplicer.Data.Formats
                     HASROMINFO    = false;
                     NOCPUSHUTDOWN = false;
                 }
-            }
-        } 
 
-        const byte BYTES_PER_FRAME   = 2;
-        const byte EXTRAROMINFO_SIZE = 30;        
+                NumControllers = 0;
+                for (int c = 0; c < 5; c++)
+                {
+                    NumControllers += (1 & (contents[Offsets[5]] >> c));
+                }
+
+                PortsTypes = new int[2];
+                if (version > 1)
+                {
+                    for (int i = 0; i < 2; i++)
+                    {
+                        int type = contents[Offsets[12] + i];
+                        if (type < 2 || type > 4)
+                        {
+                            type = 0;
+                        }
+                        PortsTypes[i] = type;
+                    }
+                }
+                else
+                    PortsTypes[0] = PortsTypes[1] = 0;
+ 
+                NonJoypadSampleSize = BYTES_PER_FRAME[PortsTypes[0]] + BYTES_PER_FRAME[PortsTypes[1]];
+                SampleSize = NumControllers * BYTES_PER_FRAME[1] + NonJoypadSampleSize;
+           }
+        }
+
+        private static int[] BYTES_PER_FRAME = { 0, 2, 5, 6, 11, 2 };
+        const int EXTRAROMINFO_SIZE = 30;
+        private byte[][] unsupportedInputBuffer;
 
         public FormatSpecific SMVSpecific;
 
@@ -131,60 +162,65 @@ namespace MovieSplicer.Data.Formats
 
             ControllerDataOffset = Read32(ref FileContents, Offsets[10]);
             SaveStateOffset      = Read32(ref FileContents, Offsets[9]);
-           
+
             Header = new TASHeader();
             Header.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
             Header.Version       = Read32(ref FileContents, Offsets[1]);
             Header.UID           = ConvertUNIXTime(Read32(ref FileContents, Offsets[2]));
             Header.FrameCount    = Read32(ref FileContents, Offsets[4]) + 1;    // including the 0th frame
             Header.RerecordCount = Read32(ref FileContents, Offsets[3]);
-                      
+
             Options = new TASOptions(true);
             Options.MovieStartFlag[0]  = (1 & (FileContents[Offsets[6]] >> 0)) == 0 ? true : false;
             Options.MovieStartFlag[1]  = (1 & (FileContents[Offsets[6]] >> 0)) == 1 ? true : false;
             Options.MovieTimingFlag[0] = (1 & (FileContents[Offsets[6]] >> 1)) == 0 ? true : false;
             Options.MovieTimingFlag[1] = (1 & (FileContents[Offsets[6]] >> 1)) == 1 ? true : false;
 
-            SMVSpecific = new FormatSpecific(FileContents[Offsets[8]]);
-            
-            Extra = new TASExtra();            
+            SMVSpecific = new FormatSpecific(Header.Version, ref FileContents, ref Offsets);
+
+            Extra = new TASExtra();
             if (SMVSpecific.HASROMINFO)
             {
                 Extra.ROM = ReadChars(ref FileContents, 0x07 + SaveStateOffset - EXTRAROMINFO_SIZE, 23);
                 Extra.CRC = ReadHEXUnicode(ref FileContents, 0x03 + SaveStateOffset - EXTRAROMINFO_SIZE, 4);
             }
 
-            int MetaDataOffset = Header.Version == 1 ? Offsets[11] : Offsets[16];
-            int MetaDataLength = (SaveStateOffset - MetaDataOffset) - (SMVSpecific.HASROMINFO ? (int)EXTRAROMINFO_SIZE : 0);
+            int MetaDataOffset = (Header.Version == 1 ? Offsets[11] : Offsets[16]);
+            int MetaDataLength = (SaveStateOffset - MetaDataOffset) - (SMVSpecific.HASROMINFO ? EXTRAROMINFO_SIZE : 0);
             Extra.Author = ReadChars16(ref FileContents, MetaDataOffset, MetaDataLength);
-           
+
             Input = new TASInput(5, false);
             for (int c = 0; c < 5; c++)
-                Input.Controllers[c] = ((1 & (FileContents[Offsets[5]] >> c)) == 1) ? true : false;
+                Input.Controllers[c] = ((1 & (FileContents[Offsets[5]] >> c)) == 1 ? true : false);
 
-            getFrameInput(ref FileContents);                                     
+            getFrameInput(ref FileContents);
         }
 
         private void getFrameInput(ref byte[] byteArray)
         {
-            Input.FrameData = new TASMovieInput[Header.FrameCount];            
+            Input.FrameData = new TASMovieInput[Header.FrameCount];
             int controllers = Input.ControllerCount;
 
+            unsupportedInputBuffer = new byte[Header.FrameCount][];
             // parse frame data
             for (int i = 0; i < Header.FrameCount; i++)
-            {              
+            {
                 Input.FrameData[i] = new TASMovieInput();
                 // cycle through the controller data for the current frame
                 for (int j = 0; j < controllers; j++)
-                {                                            
-                    byte[] frame = ReadBytes(ref byteArray,
-                        ControllerDataOffset + ((i * controllers * BYTES_PER_FRAME) + (j * BYTES_PER_FRAME)),
-                        BYTES_PER_FRAME);
+                {
+                    byte[] frame = ReadBytes(ref byteArray, 
+                                      ControllerDataOffset + ((i * SMVSpecific.SampleSize) + (j * BYTES_PER_FRAME[1])),
+                                      BYTES_PER_FRAME[1]);
 
-                    Input.FrameData[i].Controller[j] = parseControllerData(frame);                                  
-                }                               
+                    Input.FrameData[i].Controller[j] = parseControllerData(frame);
+                }
+                // backup unsupported input data
+                unsupportedInputBuffer[i] = ReadBytes(ref byteArray,
+                                      ControllerDataOffset + ((i * SMVSpecific.SampleSize) + (controllers * BYTES_PER_FRAME[1])),
+                                      SMVSpecific.NonJoypadSampleSize);
             }
-            
+
             // DEBUG::Not sure why all of a sudden this routine stopped working,
             // but this adds a blank frame to the end of the movie (if necessary)
             //if (Input.FrameData[Input.FrameData.Length - 1] == null)
@@ -197,7 +233,7 @@ namespace MovieSplicer.Data.Formats
         private string parseControllerData(byte[] byteArray)
         {
             string   input = "";
-            
+
             // check the reset combo
             if ((byteArray[0] & byteArray[1]) == 0xFF)
             {
@@ -234,11 +270,11 @@ namespace MovieSplicer.Data.Formats
                 return input;
             }
 
-            for (int i = 0; i < 8; i++)            
-                if (frameInput.Contains(InputValues[i])) input[1] |= (byte)(1 << i);                                        
+            for (int i = 0; i < 8; i++)
+                if (frameInput.Contains(InputValues[i])) input[1] |= (byte)(1 << i);
             for (int j = 0; j < 8; j++)
-                if (frameInput.Contains(InputValues[j + 8])) input[0] |= (byte)(1 << j);                                        
-            
+                if (frameInput.Contains(InputValues[j + 8])) input[0] |= (byte)(1 << j);
+
             return input;
         }
 
@@ -246,24 +282,21 @@ namespace MovieSplicer.Data.Formats
         /// Save an SMV file back out to disk
         /// </summary>
         public override void Save(string filename, ref TASMovieInput[] input)
-        {            
+        {
             byte[] head = ReadBytes(ref FileContents, 0, ControllerDataOffset);
-            int size = 0;
-            int controllers = Input.ControllerCount;
-
-            // get the size of the file byte[] (minus the header)
-            for (int i = 0; i < input.Length; i++)
-                for (int j = 0; j < controllers; j++)                    
-                        size += BYTES_PER_FRAME;
+            SMVSpecific.SampleSize = Input.ControllerCount * BYTES_PER_FRAME[1] + SMVSpecific.NonJoypadSampleSize;
+            SMVSpecific.NumControllers = Input.ControllerCount;
 
             // create the output array and copy in the contents
-            byte[] outputFile = new byte[head.Length + size];
+            byte[] outputFile = new byte[head.Length + input.Length * SMVSpecific.SampleSize];
             head.CopyTo(outputFile, 0);
 
             // add the controller data
             int position = 0;
-            for (int i = 0; i < input.Length; i++)            
-                for (int j = 0; j < controllers; j++)                
+            for (int i = 0; i < input.Length; i++)
+            {
+                for (int j = 0; j < Input.Controllers.Length; j++)
+                {
                     // check if the controller we're about to process is used
                     if (Input.Controllers[j])
                     {
@@ -271,9 +304,21 @@ namespace MovieSplicer.Data.Formats
                         outputFile[head.Length + position++] = parsed[0];
                         outputFile[head.Length + position++] = parsed[1];
                     }
-                            
+                }
+                if (i >= unsupportedInputBuffer.Length)
+                {
+                    for (int k = 0; k < SMVSpecific.NonJoypadSampleSize; k++) 
+                        outputFile[head.Length + position++] = 0;
+                }
+                else
+                {
+                    for (int k = 0; k < SMVSpecific.NonJoypadSampleSize; k++)
+                        outputFile[head.Length + position++] = unsupportedInputBuffer[i][SMVSpecific.NonJoypadSampleSize + k];
+                }
+            }
+
             updateMetadata(ref outputFile);
-            
+
             //// DEBUGGING //
             //MovieSplicer.UI.frmDebug frm = new MovieSplicer.UI.frmDebug();
             //for (int i = 0; i < FileContents.Length; i++)
@@ -288,19 +333,22 @@ namespace MovieSplicer.Data.Formats
             //frm.Show();
             /////////////////
 
-            WriteByteArrayToFile(ref outputFile, filename, input.Length - 1, Offsets[4]);  
+            WriteByteArrayToFile(ref outputFile, filename, input.Length - 1, Offsets[4]);
         }
 
         /// <summary>
         /// Update the metadata information in the SMV
-        /// </summary>        
+        /// </summary>
         private void updateMetadata(ref byte[] byteArray)
         {
             int startPos = (Header.Version == 1) ? Offsets[11] : Offsets[16];
-            int extraROMLength = (SMVSpecific.HASROMINFO) ? Convert.ToInt32(EXTRAROMINFO_SIZE) : 0;
+            int extraROMLength = (SMVSpecific.HASROMINFO) ? EXTRAROMINFO_SIZE : 0;
             byte[] author = WriteChars16(Extra.Author);
             byte[] temp = new byte[startPos + author.Length + (byteArray.Length - SaveStateOffset + extraROMLength)];
 
+            byte newControllers = 0;
+            for (int i = 0; i < Input.Controllers.Length; i++ )
+                newControllers |= Convert.ToByte(Input.Controllers[i] ? 1 << i : 0);
             int newSaveStateOffset = startPos + author.Length + extraROMLength;
             int newCDataOffset = ControllerDataOffset + (newSaveStateOffset - SaveStateOffset);
 
@@ -311,10 +359,11 @@ namespace MovieSplicer.Data.Formats
             for (int k = 0; k < byteArray.Length - SaveStateOffset + extraROMLength; k++)
                 temp[k + newSaveStateOffset - extraROMLength] = byteArray[k + SaveStateOffset - extraROMLength];
 
+            temp[Offsets[5]] = newControllers;
             Write32(ref temp, Offsets[9], newSaveStateOffset);
-            Write32(ref temp, Offsets[10], newCDataOffset);            
+            Write32(ref temp, Offsets[10], newCDataOffset);
 
-            byteArray = temp;            
+            byteArray = temp;
         }
 
         public override string[] GetUsableInputs()

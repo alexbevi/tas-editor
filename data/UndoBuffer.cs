@@ -27,10 +27,10 @@ namespace MovieSplicer.Data
     public class UndoBuffer
     {
         public TASMovieInput[][] Changes;
-        
+
         /// <summary>
         /// Add a frame data collection to the undo buffer
-        /// </summary>        
+        /// </summary>
         public static void Add(ref UndoBuffer buffer, ref TASMovieInput[] change)
         {
             TASMovieInput[][] temp = new TASMovieInput[buffer.Changes.Length + 1][];
@@ -38,14 +38,14 @@ namespace MovieSplicer.Data
             if (buffer.Changes.Length > 0) buffer.Changes.CopyTo(temp, 0);
 
             temp[temp.Length - 1] = new TASMovieInput[change.Length];
-            change.CopyTo(temp[temp.Length - 1], 0);       
-            
+            change.CopyTo(temp[temp.Length - 1], 0);
+
             buffer.Changes = temp;
         }
 
         /// <summary>
         /// Return the last buffer value and remove it from the collections
-        /// </summary>        
+        /// </summary>
         public static void Undo(ref UndoBuffer buffer)
         {
             TASMovieInput[][] temp = new TASMovieInput[buffer.Changes.Length - 1][];

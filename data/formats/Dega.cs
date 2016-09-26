@@ -34,11 +34,11 @@ namespace MovieSplicer.Data.Formats
             public int PackSize;
             public bool Japan;
             public bool GameGear; 
-        }   
+        }
 
         const byte HEADER_SIZE = 64;
         public FormatSpecific MMVSpecific;
-        
+
         private string[] InputValues = { "^", "v", "<", ">", "1", "2", "S", "s" };
         private int[]    Offsets = {
             0x00, // 4-byte signature: "MMV\0"
@@ -73,14 +73,14 @@ namespace MovieSplicer.Data.Formats
             Header.Signature     = ReadHEX(ref FileContents, Offsets[0], 4);
             Header.Version       = Read32(ref FileContents, Offsets[1]);
             Header.FrameCount    = Read32(ref FileContents, Offsets[2]);
-            Header.RerecordCount = Read32(ref FileContents, Offsets[3]);         
+            Header.RerecordCount = Read32(ref FileContents, Offsets[3]);
 
             Options = new TASOptions(true);
             Options.MovieStartFlag[0]  = FileContents[Offsets[4]] == 0 ? true : false;
             Options.MovieStartFlag[1]  = FileContents[Offsets[4]] != 0 ? true : false;
             Options.MovieTimingFlag[0] = (1 & (FileContents[Offsets[9]] >> 1)) == 0 ? true : false;
             Options.MovieTimingFlag[1] = (1 & (FileContents[Offsets[9]] >> 1)) == 1 ? true : false;
-                     
+
             Extra = new TASExtra();
             Extra.Author = ReadChars(ref FileContents, Offsets[8], Offsets[9] - Offsets[8]);
             Extra.ROM = ReadChars(ref FileContents, Offsets[10], Offsets[11] - Offsets[10]);
@@ -128,7 +128,7 @@ namespace MovieSplicer.Data.Formats
 
             for (int i = 0; i < 8; i++)
                 if (((1 & frameValue >> i)) == 1) input += InputValues[i];
-           
+
             return input;
         }
 
@@ -139,9 +139,9 @@ namespace MovieSplicer.Data.Formats
         {
             byte input = 0;
             if (frameInput != null && frameInput != "")
-            {                
+            {
                 for (int i = 0; i < 8; i++)
-                    if (frameInput.Contains(InputValues[i])) input |= (byte)(1 << i);                
+                    if (frameInput.Contains(InputValues[i])) input |= (byte)(1 << i);
             }
             return input;
         }
@@ -178,7 +178,7 @@ namespace MovieSplicer.Data.Formats
 
         /// <summary>
         /// Update the metadata information in the MMV
-        /// </summary>        
+        /// </summary>
         private void updateMetadata(ref byte[] byteArray)
         {
             byte[] author = WriteChars(Extra.Author);

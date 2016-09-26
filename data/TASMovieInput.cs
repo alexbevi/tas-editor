@@ -34,18 +34,18 @@ namespace MovieSplicer.Data
     public struct TASMovieInputCollection
     {
         public int               Controllers;
-        public TASForm.MovieType Format;                
-        public TASMovieInput[]   Input;        
+        public TASForm.MovieType Format;
+        public TASMovieInput[]   Input;
 
         /// <summary>
         /// Initialize the Input array with zero elements and default data
         /// (just pass 'true' ... this is more a hack than anything else)
-        /// </summary>        
+        /// </summary>
         public TASMovieInputCollection(bool initialize)
-        {            
+        {
             Input       = new TASMovieInput[0];
             Format      = TASForm.MovieType.None;
-            Controllers = 0;        
+            Controllers = 0;
         }
     }
 
@@ -62,11 +62,11 @@ namespace MovieSplicer.Data
         /// <summary>
         /// Insert a given number of assigned frames (TASMovieInput()) at the
         /// desired position
-        /// </summary>        
+        /// </summary>
         public static void Insert(ref TASMovieInput[] input, TASMovieInput frame, int position, int length)
         {
             TASMovieInput[] temp = new TASMovieInput[input.Length + length];
-            
+
             for (int i = 0; i < position; i++)
                 temp[i] = input[i];
             for (int j = 0; j < length; j++)
@@ -80,7 +80,7 @@ namespace MovieSplicer.Data
         /// <summary>
         /// Insert a given number of frames passed through a buffer at the
         /// desired position
-        /// </summary>        
+        /// </summary>
         public static void Insert(ref TASMovieInput[] input, ref TASMovieInput[] buffer, int position)
         {
             TASMovieInput[] temp = new TASMovieInput[input.Length + buffer.Length];
@@ -98,7 +98,7 @@ namespace MovieSplicer.Data
         /// <summary>
         /// Insert repeatedly a given number of frames passed through a buffer at each
         /// desired position
-        /// </summary>        
+        /// </summary>
         public static void InsertMultiple(ref TASMovieInput[] input, ref TASMovieInput[] buffer, int[] indices)
         {
             int blockCount = indices.Length;
@@ -143,12 +143,12 @@ namespace MovieSplicer.Data
         /// similar frame)
         /// 
         /// NOTE::Autofire update just adds the selected input to alternating frames
-        /// </summary>        
+        /// </summary>
         public static void Update(ref TASMovieInput[] input, TASMovieInput frame, bool[] updateFlag, bool autofireUpdate, int[] indices)
         {
             TASMovieInput[] temp = new TASMovieInput[indices.Length];
             for (int i = 0; i < indices.Length; i++)
-            {                                
+            {
                 temp[i] = new TASMovieInput();
                 for (int j = 0; j < updateFlag.Length; j++)
                 {
@@ -181,7 +181,7 @@ namespace MovieSplicer.Data
         /// updateFlag is a collection of bool values to indicate which controller(s) to update
         /// 
         /// NOTE::Autofire update just adds the selected input to alternating frames
-        /// </summary>        
+        /// </summary>
         public static void UpdatePlus(ref TASMovieInput[] input, TASMovieInput frame, bool[] updateFlag, bool autofireUpdate, int[] indices)
         {
             TASMovieInput[] temp = new TASMovieInput[indices.Length];
@@ -213,7 +213,7 @@ namespace MovieSplicer.Data
 
         /// <summary>
         /// Remove a given number of frames at the desired position
-        /// </summary>        
+        /// </summary>
         public static void Remove(ref TASMovieInput[] input, int[] indices)
         {
             TASMovieInput[] temp = new TASMovieInput[input.Length - indices.Length];
@@ -239,7 +239,7 @@ namespace MovieSplicer.Data
         /// <summary>
         /// Copy a given number of frames at the desired position by extracting them to a new
         /// array
-        /// </summary>        
+        /// </summary>
         public static TASMovieInput[] Copy(ref TASMovieInput[] input, int[] indices)
         {
             TASMovieInput[] temp = new TASMovieInput[indices.Length];
@@ -252,16 +252,16 @@ namespace MovieSplicer.Data
 
         /// <summary>
         /// Splice two TASMovieInput collections together
-        /// </summary>        
+        /// </summary>
         public static TASMovieInput[] Splice(ref TASMovieInput[] source, ref TASMovieInput[] target, int sourceStart, int sourceEnd, int targetStart, int targetEnd)
         {
-            // NOTE::zero means start from the beginning, but if not, since it's an index, subtract 1                        
+            // NOTE::zero means start from the beginning, but if not, since it's an index, subtract 1
             if (targetStart != 0) targetStart--;
 
             TASMovieInput[] spliced = new TASMovieInput[(sourceEnd - sourceStart) + (targetEnd - targetStart)];
             for (int i = sourceStart; i < sourceEnd; i++)
                 spliced[i] = source[i];
-            
+
             int position = 0;
             for (int j = targetStart; j < targetEnd; j++)
                 spliced[sourceEnd + position++] = target[j];
@@ -272,7 +272,7 @@ namespace MovieSplicer.Data
         /// <summary>
         /// Cycle through the input collection returning an index of the first available match
         /// from the given offset
-        /// </summary>                
+        /// </summary>
         public static int Search(ref TASMovieInput[] input, string pattern, int startPosition, int endPosition)
         {
             if (startPosition < endPosition)
@@ -291,10 +291,10 @@ namespace MovieSplicer.Data
             }
             return -1;
         }
-    
+
         /// <summary>
         /// append controller data to an existing TASMovieInput object
-        /// </summary>        
+        /// </summary>
         public static TASMovieInput operator +(TASMovieInput left, TASMovieInput right)
         {
             TASMovieInput result = new TASMovieInput();

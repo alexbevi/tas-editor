@@ -32,14 +32,17 @@ namespace MovieSplicer.Components
 {
     /// <summary>
     /// This is essentially a subclass of System.Windows.Forms.ListView that provides
-    /// an auto-expanding last column and virtualization.   
+    /// an auto-expanding last column and virtualization.
     /// </summary>
     public class TASListView: ListView
-    {             
-        private const int WM_PAINT = 0xF;        
+    {
+        private const int WM_PAINT = 0xF;
 
+        public bool[]            VirtualSubItemsActive;
+        public int[]             VirtualActiveSubItems;
+        public string[]          VirtualSubItemNames;
         public TASMovieInput[]   VirtualListSource;
-        public TASForm.MovieType VirtualMovieType;        
+        public TASForm.MovieType VirtualMovieType;
 
         // Cache items
         private ListViewItem[] cache;
@@ -55,9 +58,9 @@ namespace MovieSplicer.Components
             this.DoubleBuffered = true;
             this.RetrieveVirtualItem += new RetrieveVirtualItemEventHandler(GetVirtualItem);
             this.CacheVirtualItems   += new CacheVirtualItemsEventHandler(CacheVirtualItemsList);
-            
+
             //ResourceManager rm = new ResourceManager("MovieSplicer.Properties.Resources", GetType().Assembly);
-            
+
             //// add our resource images to an imagelist (graphical representations of keys)
             //input = new ImageList();
             //input.Images.Add((System.Drawing.Image)(rm.GetObject("up")));
@@ -74,8 +77,8 @@ namespace MovieSplicer.Components
             //input.Images.Add((System.Drawing.Image)(rm.GetObject("R")));
 
             //rm = null;
-        }               
-       
+        }
+
         /// <summary>
         // Various message handlers for this control
         /// </summary>
@@ -94,8 +97,8 @@ namespace MovieSplicer.Components
 
             // pass messages on to the base control for processing
             base.WndProc(ref message);
-        }   
-        
+        }
+
     #region Methods
 
         /// <summary>
@@ -103,7 +106,7 @@ namespace MovieSplicer.Components
         /// 
         /// TODO::Now that the TASMovieInputCollection contains the controller count,
         /// is this necessary anymore?
-        /// </summary>       
+        /// </summary>
         public void SetColumns(int columns)
         {
             this.Columns.Clear();
@@ -112,12 +115,12 @@ namespace MovieSplicer.Components
             if (columns == 0) return;
 
             for (int i = 0; i < columns; i++)
-                this.Columns.Add("Controller " + (i + 1), 75);
+                this.Columns.Add(VirtualSubItemNames[VirtualActiveSubItems[i]], 75);
         }
-        
+
         /// <summary>
         /// Get the index of the specified item
-        /// </summary>        
+        /// </summary>
         private void GetVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
         {
 //            /*this.BeginUpdate();*/ // EPIC BUG FIX: THIS WAS MAKING MY CPU/GRAPHIC CARD FAN *WHINING*!
@@ -131,30 +134,28 @@ namespace MovieSplicer.Components
 
         /// <summary>
         /// Get the item at a specified index
-        /// </summary>        
+        /// </summary>
         private ListViewItem GetListItem(int listIndex)
-        {            
+        {
             ListViewItem lv;
-            if(VirtualMovieType == TASForm.MovieType.VBM || 
+            if (VirtualMovieType == TASForm.MovieType.VBM || 
                VirtualMovieType == TASForm.MovieType.SMV)
                 lv = new ListViewItem((listIndex).ToString());
             else
                 lv = new ListViewItem((listIndex + 1).ToString());
 
-            // get each controller used and its input for the frame            
-            for (int i = 0; i < this.Columns.Count - 1; i++)
-            {
-                // DEBUG::handles movie input with null entries in the
-                // the main array
-                if (VirtualListSource[listIndex] != null)                    
-                    lv.SubItems.Add(VirtualListSource[listIndex].Controller[i]);                                                       
-                //lv.SubItems.Add(new EXMultipleImagesListViewSubItem(ConvertStringToImage(VirtualListSource[listIndex].Controller[i]))); 
-                //else
-                //    lv.SubItems.Add("");
-            }
-               
+            // get each controller used and its input for the frame
+            // DEBUG::handles movie input with null entries in the
+            // the main array
+            if (VirtualListSource[listIndex] != null)
+                for (int i = 0; i < VirtualActiveSubItems.Length; i++)
+                    lv.SubItems.Add(VirtualListSource[listIndex].Controller[VirtualActiveSubItems[i]]);
+            //lv.SubItems.Add(new EXMultipleImagesListViewSubItem(ConvertStringToImage(VirtualListSource[listIndex].Controller[i]))); 
+            //else
+            //    lv.SubItems.Add("");
+
             if (listIndex % 2 == 0) lv.BackColor = System.Drawing.Color.BlanchedAlmond;
-            
+
             return lv;
         }
 
@@ -163,9 +164,9 @@ namespace MovieSplicer.Components
         /// 
         /// NOTE::I don't really like arraylists, but I didn't write the ExtendedListView class,
         /// and seeing as the author did a really good job, there's no need to re-write it ... for now :P
-        /// </summary>        
+        /// </summary>
         //private ArrayList ConvertStringToImage(string controller)
-        //{            
+        //{
         //    ArrayList arr = new ArrayList();
         //    if (controller == null) return arr;
         //    if (controller.Contains("^")) arr.Add(input.Images[0]);
@@ -194,7 +195,7 @@ namespace MovieSplicer.Components
 
         /// <summary>
         /// Cache current view
-        /// </summary>        
+        /// </summary>
         private void CacheVirtualItemsList(object sender, CacheVirtualItemsEventArgs e)
         {
             // Only recreate the cache if we need to.

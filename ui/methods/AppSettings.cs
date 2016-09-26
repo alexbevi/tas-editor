@@ -36,7 +36,7 @@ namespace MovieSplicer.UI.Methods
         /// Save a filename as the first recent file no matter it is old or new
         /// Bring up the new file if it is already on the list
         /// Only MAX_FILES are stored, so bump the last entry off the list
-        /// </summary>        
+        /// </summary>
         public static void Save(string filename)
         {
 
@@ -59,7 +59,7 @@ namespace MovieSplicer.UI.Methods
 
         /// <summary>
         /// Load the recent files from the ini file
-        /// </summary>        
+        /// </summary>
         public static string[] Load()
         {
             Ini settingsFile = new Ini();

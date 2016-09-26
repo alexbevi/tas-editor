@@ -33,36 +33,36 @@ using MovieSplicer.Components;
 namespace MovieSplicer.UI
 {
     public partial class frmCompare : TASForm
-    {       
+    {
         TASMovieInputCollection Source;
         TASMovieInputCollection Target;
 
         public frmCompare()
         {
-            InitializeComponent();            
-        }        
-       
+            InitializeComponent();
+        }
+
         /// <summary>
         /// Launch an OpenFileDialog an populate the TASMovieInputCollection object
         /// according to the type of movie file that's selected
-        /// </summary>        
+        /// </summary>
         private string loadMovie(ref TASMovieInputCollection location)
         {
             openDlg = new OpenFileDialog();
             openDlg.Filter = TAS_FILTER;
             openDlg.ShowDialog();
             string filename = openDlg.FileName;
-            openDlg.Dispose();            
-            
-            if (filename.Length == 0) return null;               
-            
+            openDlg.Dispose();
+
+            if (filename.Length == 0) return null;
+
             TASMovie movie = new TASMovie();
-            location = new TASMovieInputCollection();            
-            location.Format = IsValid(filename);                        
-                        
+            location = new TASMovieInputCollection();
+            location.Format = IsValid(filename);
+
             // load the movie object up with the correct format 
             switch (location.Format)
-            {                
+            {
                 case MovieType.SMV: movie = new SNES9x(filename); break;
                 case MovieType.FCM: movie = new FCEU(filename); break;
                 case MovieType.GMV: movie = new Gens(filename); break;
@@ -81,7 +81,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Load the Source movie (Movie 1)
-        /// </summary>        
+        /// </summary>
         private void btnLoadSource_Click(object sender, EventArgs e)
         {
             txtSource.Text = FilenameFromPath(loadMovie(ref Source));
@@ -94,7 +94,7 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Load the Target movie (Movie 2)
-        /// </summary>        
+        /// </summary>
         private void btnLoadTarget_Click(object sender, EventArgs e)
         {
             txtTarget.Text = FilenameFromPath(loadMovie(ref Target));
@@ -107,24 +107,24 @@ namespace MovieSplicer.UI
 
         /// <summary>
         /// Process the two movies, applying a range (if specified)
-        /// </summary>        
+        /// </summary>
         private void btnProcess_Click(object sender, EventArgs e)
         {
             TASMovieInputCollection source = Source;
             TASMovieInputCollection target = Target;
-            
+
             // default offsets to 1 so the frame representation starts from 1 instead of zero
             lvOutput.SourceOffset = 1;
             lvOutput.TargetOffset = 1;
-            
+
             if(IsNumeric(txtSourceStart.Text) && IsNumeric(txtSourceEnd.Text) && (txtSourceStart.Text.Length > 0) && (txtSourceEnd.Text.Length > 0))
             {
                 int start = CInt(txtSourceStart.Text);
                 int end   = CInt(txtSourceEnd.Text);
-                
+
                 source.Input = new TASMovieInput[end - start];
 
-                for (int i = 0; i < end - start; i++)                                   
+                for (int i = 0; i < end - start; i++)
                     source.Input[i] = Source.Input[i + start - 1];
 
                 lvOutput.SourceOffset = start;
@@ -146,22 +146,22 @@ namespace MovieSplicer.UI
             lvOutput.Source = source;
             lvOutput.Target = target;
             lvOutput.SetColumns();
-            lvOutput.VirtualListSize = (source.Input.Length > target.Input.Length) ? source.Input.Length : target.Input.Length;                       
+            lvOutput.VirtualListSize = (source.Input.Length > target.Input.Length) ? source.Input.Length : target.Input.Length;
         }
 
         /// <summary>
         /// Clear selected movies and re-enable the load controls
-        /// </summary>        
+        /// </summary>
         private void btnClear_Click(object sender, EventArgs e)
         {
             txtSource.Text = ""; txtSourceFrames.Text = ""; txtSourceStart.Text = ""; txtSourceEnd.Text = "";
             txtTarget.Text = ""; txtTargetFrames.Text = ""; txtTargetStart.Text = ""; txtTargetEnd.Text = "";
             btnLoadSource.Enabled = true;
-            btnLoadTarget.Enabled = true;            
+            btnLoadTarget.Enabled = true;
             lvOutput.ClearVirtualCache();
             lvOutput.Clear();
         }
 
-       
+
     }
 }
